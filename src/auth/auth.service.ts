@@ -35,7 +35,7 @@ export class AuthService {
 
     const accessToken = this.jwtService.sign(payload, {
       secret: this.configService.get<string>('JWT_SECRET'),
-      expiresIn: this.configService.get<string>('JWT_EXPIRATION'),
+      expiresIn: '24h', // Définir une durée fixe de 24 heures
     });
 
     return {

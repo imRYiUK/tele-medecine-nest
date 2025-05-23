@@ -42,7 +42,7 @@ let AuthService = AuthService_1 = class AuthService {
         };
         const accessToken = this.jwtService.sign(payload, {
             secret: this.configService.get('JWT_SECRET'),
-            expiresIn: this.configService.get('JWT_EXPIRATION'),
+            expiresIn: '24h',
         });
         return {
             access_token: accessToken,
