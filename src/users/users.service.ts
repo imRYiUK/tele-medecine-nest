@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, ConflictException } from '@nestjs/common';
 import { User } from './user.entity';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
@@ -95,5 +95,38 @@ export class UsersService {
   async hashPassword(password: string): Promise<string> {
     const salt = await bcrypt.genSalt(10);
     return bcrypt.hash(password, salt);
+  }
+
+  async register(email: string, password: string, roles: string[]): Promise<User> {
+    // Check if user already exists
+    const existingUser = await this.findOne(email);
+    if (existingUser) {
+      this.logger.warn(`Registration attempt with existing email: ${email}`);
+      throw new ConflictException('Email already registered');
+    }
+
+    // Hash the password
+    const hashedPassword = await this.hashPassword(password);
+
+    // Create the user
+    const user = await this.prisma.user.create({
+      data: {
+        email,
+        password: hashedPassword,
+        isActive: true,
+        failedLoginAttempts: 0,
+        roles: {
+          create: roles.map(role => ({
+            name: role,
+          })),
+        },
+      },
+      include: {
+        roles: true,
+      },
+    });
+
+    this.logger.log(`User registered successfully: ${email}`);
+    return user as unknown as User;
   }
 }

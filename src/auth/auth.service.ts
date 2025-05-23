@@ -62,9 +62,16 @@ export class AuthService {
   }
 
   async revokeToken(token: string) {
-    // In a real application, you would add the token to a blacklist
-    // or use Redis to store revoked tokens until they expire
+    // Comme la table RevokedToken a été supprimée, nous pourrions implémenter
+    // une autre solution comme Redis pour stocker les tokens révoqués
+    // Pour l'instant, nous allons simplement logger la révocation
     this.logger.log(`Token revoked: ${token.substring(0, 10)}...`);
     return { success: true };
+  }
+
+  async register(email: string, password: string, roles: string[]) {
+    const user = await this.usersService.register(email, password, roles);
+    
+    return this.login(user);
   }
 }

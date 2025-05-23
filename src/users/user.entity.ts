@@ -1,8 +1,8 @@
 export enum UserRole {
-  ADMIN = 'admin',
-  DOCTOR = 'doctor',
-  RADIOLOGIST = 'radiologist',
-  PATIENT = 'patient',
+  ADMINISTRATEUR = 'administrateur',
+  MEDECIN = 'medecin',
+  RADIOLOGUE = 'radiologue',
+  PERSONNEL_ADMINISTRATIF = 'personnel_administratif',
 }
 
 export class User {
