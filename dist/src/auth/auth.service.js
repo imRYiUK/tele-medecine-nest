@@ -69,6 +69,10 @@ let AuthService = AuthService_1 = class AuthService {
         this.logger.log(`Token revoked: ${token.substring(0, 10)}...`);
         return { success: true };
     }
+    async register(email, password, roles) {
+        const user = await this.usersService.register(email, password, roles);
+        return this.login(user);
+    }
 };
 exports.AuthService = AuthService;
 exports.AuthService = AuthService = AuthService_1 = __decorate([

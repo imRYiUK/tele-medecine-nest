@@ -9,4 +9,5 @@ export declare class UsersService {
     validateUser(email: string, password: string): Promise<User | null>;
     logAuthAttempt(userId: number, success: boolean, message?: string): Promise<void>;
     hashPassword(password: string): Promise<string>;
+    register(email: string, password: string, roles: string[]): Promise<User>;
 }

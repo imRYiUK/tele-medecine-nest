@@ -88,6 +88,32 @@ let UsersService = UsersService_1 = class UsersService {
         const salt = await bcrypt.genSalt(10);
         return bcrypt.hash(password, salt);
     }
+    async register(email, password, roles) {
+        const existingUser = await this.findOne(email);
+        if (existingUser) {
+            this.logger.warn(`Registration attempt with existing email: ${email}`);
+            throw new common_1.ConflictException('Email already registered');
+        }
+        const hashedPassword = await this.hashPassword(password);
+        const user = await this.prisma.user.create({
+            data: {
+                email,
+                password: hashedPassword,
+                isActive: true,
+                failedLoginAttempts: 0,
+                roles: {
+                    create: roles.map(role => ({
+                        name: role,
+                    })),
+                },
+            },
+            include: {
+                roles: true,
+            },
+        });
+        this.logger.log(`User registered successfully: ${email}`);
+        return user;
+    }
 };
 exports.UsersService = UsersService;
 exports.UsersService = UsersService = UsersService_1 = __decorate([

@@ -1,5 +1,6 @@
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
+import { RegisterDto } from './dto/register.dto';
 import { Request } from 'express';
 export declare class AuthController {
     private authService;
@@ -7,16 +8,8 @@ export declare class AuthController {
     login(loginDto: LoginDto): Promise<{
         access_token: string;
     }>;
-    authorize(clientId: string, redirectUri: string, responseType: string, scope: string, state: string): {
-        code: string;
-        state: string;
-    };
-    token(grantType: string, code: string, clientId: string, clientSecret: string, redirectUri: string): Promise<{
+    register(registerDto: RegisterDto): Promise<{
         access_token: string;
-    }>;
-    introspect(token: string): Promise<any>;
-    revoke(token: string): Promise<{
-        success: boolean;
     }>;
     getProfile(req: Request): Express.User | undefined;
 }

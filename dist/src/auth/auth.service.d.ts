@@ -16,4 +16,7 @@ export declare class AuthService {
     revokeToken(token: string): Promise<{
         success: boolean;
     }>;
+    register(email: string, password: string, roles: string[]): Promise<{
+        access_token: string;
+    }>;
 }
