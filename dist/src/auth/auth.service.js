@@ -31,14 +31,14 @@ let AuthService = AuthService_1 = class AuthService {
             this.logger.warn(`Failed login attempt for email: ${email}`);
             throw new common_1.UnauthorizedException('Identifiants invalides ou compte verrouillé');
         }
-        this.logger.log(`Successful login for user ID: ${user.id}`);
+        this.logger.log(`Successful login for user ID: ${user.userId}`);
         return user;
     }
     async login(user) {
         const payload = {
-            sub: user.id,
+            sub: user.userId,
             email: user.email,
-            roles: user.roles,
+            role: user.role?.name,
         };
         const accessToken = this.jwtService.sign(payload, {
             secret: this.configService.get('JWT_SECRET'),
@@ -69,8 +69,8 @@ let AuthService = AuthService_1 = class AuthService {
         this.logger.log(`Token revoked: ${token.substring(0, 10)}...`);
         return { success: true };
     }
-    async register(email, password, roles) {
-        const user = await this.usersService.register(email, password, roles);
+    async register(email, password, roleId) {
+        const user = await this.usersService.register(email, password, roleId);
         return this.login(user);
     }
 };

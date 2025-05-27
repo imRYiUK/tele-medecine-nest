@@ -1,17 +1,27 @@
-export declare enum UserRole {
-    ADMINISTRATEUR = "administrateur",
-    MEDECIN = "medecin",
-    RADIOLOGUE = "radiologue",
-    PERSONNEL_ADMINISTRATIF = "personnel_administratif"
-}
-export declare class User {
+export declare class Role {
     id: number;
-    email: string;
-    password: string;
-    roles: UserRole[];
-    isActive: boolean;
-    failedLoginAttempts: number;
-    lastLogin: Date | null;
+    name: string;
+    description?: string;
+    users: User[];
     createdAt: Date;
     updatedAt: Date;
+}
+export declare class User {
+    userId: string;
+    nom: string;
+    prenom: string;
+    username?: string;
+    password?: string;
+    dateNaissance?: Date;
+    genre?: string;
+    telephone?: string;
+    email?: string;
+    assuranceMaladie?: string;
+    groupeSanguin?: string;
+    etablissementID?: string;
+    roleId: number;
+    role: Role;
+    createdAt: Date;
+    updatedAt: Date;
+    isSynced: boolean;
 }

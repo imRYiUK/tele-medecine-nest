@@ -48,48 +48,42 @@ async function main() {
   const adminUser = await prisma.user.upsert({
     where: { email: 'admin@example.com' },
     update: {
-      roles: {
-        connect: [{ id: adminRole.id }],
-      },
+      roleId: adminRole.id,
     },
     create: {
+      nom: 'Admin',
+      prenom: 'User',
       email: 'admin@example.com',
       password: hashedPassword,
-      roles: {
-        connect: [{ id: adminRole.id }],
-      },
+      roleId: adminRole.id,
     },
   });
 
   const radiologistUser = await prisma.user.upsert({
     where: { email: 'radiologist@example.com' },
     update: {
-      roles: {
-        connect: [{ id: radiologistRole.id }],
-      },
+      roleId: radiologistRole.id,
     },
     create: {
+      nom: 'Radiologue',
+      prenom: 'User',
       email: 'radiologist@example.com',
       password: hashedPassword,
-      roles: {
-        connect: [{ id: radiologistRole.id }],
-      },
+      roleId: radiologistRole.id,
     },
   });
 
   const doctorUser = await prisma.user.upsert({
     where: { email: 'doctor@example.com' },
     update: {
-      roles: {
-        connect: [{ id: doctorRole.id }],
-      },
+      roleId: doctorRole.id,
     },
     create: {
+      nom: 'Médecin',
+      prenom: 'User',
       email: 'doctor@example.com',
       password: hashedPassword,
-      roles: {
-        connect: [{ id: doctorRole.id }],
-      },
+      roleId: doctorRole.id,
     },
   });
 
