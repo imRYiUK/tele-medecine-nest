@@ -1,23 +1,33 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.User = exports.UserRole = void 0;
-var UserRole;
-(function (UserRole) {
-    UserRole["ADMINISTRATEUR"] = "administrateur";
-    UserRole["MEDECIN"] = "medecin";
-    UserRole["RADIOLOGUE"] = "radiologue";
-    UserRole["PERSONNEL_ADMINISTRATIF"] = "personnel_administratif";
-})(UserRole || (exports.UserRole = UserRole = {}));
-class User {
+exports.User = exports.Role = void 0;
+class Role {
     id;
-    email;
-    password;
-    roles;
-    isActive;
-    failedLoginAttempts;
-    lastLogin;
+    name;
+    description;
+    users;
     createdAt;
     updatedAt;
+}
+exports.Role = Role;
+class User {
+    userId;
+    nom;
+    prenom;
+    username;
+    password;
+    dateNaissance;
+    genre;
+    telephone;
+    email;
+    assuranceMaladie;
+    groupeSanguin;
+    etablissementID;
+    roleId;
+    role;
+    createdAt;
+    updatedAt;
+    isSynced;
 }
 exports.User = User;
 //# sourceMappingURL=user.entity.js.map

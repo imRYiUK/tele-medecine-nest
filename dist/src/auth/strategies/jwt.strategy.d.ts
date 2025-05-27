@@ -9,9 +9,11 @@ export declare class JwtStrategy extends JwtStrategy_base {
     private usersService;
     constructor(configService: ConfigService, usersService: UsersService);
     validate(payload: any): Promise<{
-        id: number;
-        email: string;
-        roles: import("../../users/user.entity").UserRole[];
+        userId: string;
+        email: string | undefined;
+        role: string;
+        nom: string;
+        prenom: string;
     }>;
 }
 export {};

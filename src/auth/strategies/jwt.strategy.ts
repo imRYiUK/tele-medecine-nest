@@ -27,9 +27,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     
     // Return only the necessary user information
     return {
-      id: user.id,
+      userId: user.userId,
       email: user.email,
-      roles: user.roles,
+      role: user.role?.name,
+      nom: user.nom,
+      prenom: user.prenom
     };
   }
 }

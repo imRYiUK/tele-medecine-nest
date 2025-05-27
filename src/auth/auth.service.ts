@@ -22,15 +22,15 @@ export class AuthService {
       throw new UnauthorizedException('Identifiants invalides ou compte verrouillé');
     }
     
-    this.logger.log(`Successful login for user ID: ${user.id}`);
+    this.logger.log(`Successful login for user ID: ${user.userId}`);
     return user;
   }
 
   async login(user: User) {
     const payload = {
-      sub: user.id,
+      sub: user.userId,
       email: user.email,
-      roles: user.roles,
+      role: user.role?.name, // Accéder au nom du rôle via la relation
     };
 
     const accessToken = this.jwtService.sign(payload, {
@@ -69,8 +69,8 @@ export class AuthService {
     return { success: true };
   }
 
-  async register(email: string, password: string, roles: string[]) {
-    const user = await this.usersService.register(email, password, roles);
+  async register(email: string, password: string, roleId: number) {
+    const user = await this.usersService.register(email, password, roleId);
     
     return this.login(user);
   }

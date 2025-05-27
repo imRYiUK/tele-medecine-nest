@@ -4,9 +4,10 @@ export declare class UsersController {
     private usersService;
     constructor(usersService: UsersService);
     getProfile(req: Request): Promise<{
-        id: number;
-        email: string;
-        roles: import("./user.entity").UserRole[];
-        lastLogin: Date | null;
+        userId: string;
+        nom: string;
+        prenom: string;
+        email: string | undefined;
+        role: string;
     }>;
 }

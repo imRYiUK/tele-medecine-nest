@@ -6,21 +6,41 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
+// Modèles d'authentification existants
+
+// Nouveaux modèles pour la gestion médicale
 model User {
-  id                 Int       @id @default(autoincrement())
-  email              String    @unique
-  password           String
-  roles              Role[]
-  isActive           Boolean   @default(true)
-  failedLoginAttempts Int      @default(0)
-  lastLogin          DateTime?
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
-  authLogs           AuthLog[]
+  userId   String   @id @default(uuid())
+  nom              String
+  prenom           String
+  username         String?  @unique
+  password         String?
+  dateNaissance    DateTime?
+  genre            String?
+  telephone        String?
+  email            String?  @unique
+  assuranceMaladie String?  @unique // Numéro national
+  groupeSanguin    String?
+  etablissementID  String?
+  roleId           Int
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  isSynced         Boolean  @default(false)
+
+  etablissement    Etablissement? @relation(fields: [etablissementID], references: [etablissementID])
+  role             Role @relation(fields: [roleId], references: [id])
+  dossiersMedical  DossierMedical[]
+  consultations    ConsultationMedicale[]
+  examensRealises  ExamenMedical[] @relation("TechnicienExamens")
+  journalActivites JournalActivite[]
+  authLogs         AuthLog[]
+
+  @@index([assuranceMaladie])
+  @@map("utilisateurs")
 }
 
 model Role {
@@ -34,11 +54,197 @@ model Role {
 
 model AuthLog {
   id        Int      @id @default(autoincrement())
-  userId    Int
-  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  user      User     @relation(fields: [userId], references: [userId])
   ipAddress String
   userAgent String?
   success   Boolean
   message   String?
   createdAt DateTime @default(now())
+}
+
+
+model DossierMedical {
+  dossierID     String   @id @default(uuid())
+  patientID     String
+  dateCreation  DateTime @default(now())
+  statut        String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  isSynced      Boolean  @default(false)
+
+  patient       User @relation(fields: [patientID], references: [userId])
+  consultations ConsultationMedicale[]
+  examens       ExamenMedical[]
+
+  @@map("dossiers_medical")
+}
+
+model ConsultationMedicale {
+  consultationID    String   @id @default(uuid())
+  dossierID         String
+  userId     String
+  dateConsultation  DateTime
+  motif             String
+  diagnostic        String?
+  observations      String?
+  traitementPrescrit String?
+  estTelemedicine   Boolean @default(false)
+  sessionTelemedicineID  String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  isSynced          Boolean  @default(false)
+
+  dossier           DossierMedical @relation(fields: [dossierID], references: [dossierID])
+  medecin           User @relation(fields: [userId], references: [userId])
+  ordonnances       Ordonnance[]
+
+  @@map("consultations_medicale")
+}
+
+model ExamenMedical {
+  examenID        String   @id @default(uuid())
+  dossierID       String
+  typeExamenID    String
+  technicienID    String
+  dateExamen      DateTime
+  resultat        String?
+  description     String?
+  estAnalyse      Boolean @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  isSynced        Boolean  @default(false)
+
+  dossier         DossierMedical @relation(fields: [dossierID], references: [dossierID])
+  typeExamen      TypeExamen @relation(fields: [typeExamenID], references: [typeExamenID])
+  technicien      User @relation("TechnicienExamens", fields: [technicienID], references: [userId])
+  imagesMedicales ImageMedicale[]
+
+  @@map("examens_medical")
+}
+
+model TypeExamen {
+  typeExamenID   String   @id @default(uuid())
+  nom            String   @unique
+  description    String?
+  categorie      String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  examens        ExamenMedical[]
+
+  @@map("types_examen")
+}
+
+model ImageMedicale {
+  imageID         String   @id @default(uuid())
+  examenID        String
+  orthancID       String? // ID Orthanc
+  studyUID        String? // DICOM StudyInstanceUID
+  chemin          String
+  type            String
+  datePriseImage  DateTime
+  serieScanID     String?
+  coupeAxeID      String?
+  modalite        String?
+  source          String? // "MANUEL" ou "AUTO"
+  description     String?
+  annotations     Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  isSynced        Boolean  @default(false)
+
+  examen          ExamenMedical @relation(fields: [examenID], references: [examenID])
+
+  @@map("images_medicale")
+}
+
+model Ordonnance {
+  ordonnanceID   String   @id @default(uuid())
+  consultationID String
+  dateCreation   DateTime @default(now())
+  dateExpiration DateTime?
+  estRenouvelable Boolean @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  isSynced       Boolean  @default(false)
+
+  consultation   ConsultationMedicale @relation(fields: [consultationID], references: [consultationID])
+  prescriptions  Prescription[]
+
+  @@map("ordonnances")
+}
+
+model Prescription {
+  prescriptionID  String   @id @default(uuid())
+  ordonnanceID    String
+  medicamentID    String
+  posologie       String
+  duree           String
+  instructions    String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  isSynced        Boolean  @default(false)
+
+  ordonnance      Ordonnance @relation(fields: [ordonnanceID], references: [ordonnanceID])
+  medicament      Medicament @relation(fields: [medicamentID], references: [medicamentID])
+
+  @@map("prescriptions")
+}
+
+model Medicament {
+  medicamentID   String   @id @default(uuid())
+  nom            String
+  dosage         String
+  forme          String
+  description    String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  prescriptions  Prescription[]
+
+  @@map("medicaments")
+}
+
+model JournalActivite {
+  journalID      String   @id @default(uuid())
+  userId  String
+  dateAction     DateTime @default(now())
+  typeAction     String
+  description    String
+  ipAddress      String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  utilisateur    User @relation(fields: [userId], references: [userId])
+
+  @@index([dateAction])
+  @@map("journal_activites")
+}
+
+model Etablissement {
+  etablissementID String   @id @default(uuid())
+  nom             String
+  adresse         String
+  telephone       String
+  email           String?
+  type            String
+  latitude        Float?
+  longitude       Float?
+  region          String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  utilisateurs    User[]
+
+  @@map("etablissements")
+}
+
+enum Enum_role {
+  ADMIN
+  MEDECIN
+  RADIOLOGUE
+  RECEPTIONNISTE
+  TECHNICIEN
+  PATIENT
 }

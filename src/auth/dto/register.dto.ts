@@ -1,5 +1,4 @@
-import { IsEmail, IsNotEmpty, IsString, MinLength, IsEnum, IsArray } from 'class-validator';
-import { UserRole } from '../../users/user.entity';
+import { IsEmail, IsNotEmpty, IsString, MinLength, IsNumber, IsOptional } from 'class-validator';
 
 export class RegisterDto {
   @IsEmail()
@@ -11,7 +10,19 @@ export class RegisterDto {
   @MinLength(8)
   password: string;
 
-  @IsArray()
-  @IsEnum(UserRole, { each: true })
-  roles: UserRole[] = [UserRole.PERSONNEL_ADMINISTRATIF]; // Default role is personnel administratif
+  @IsNumber()
+  @IsNotEmpty()
+  roleId: number;
+
+  @IsString()
+  @IsNotEmpty()
+  nom: string;
+
+  @IsString()
+  @IsNotEmpty()
+  prenom: string;
+
+  @IsString()
+  @IsOptional()
+  telephone?: string;
 }

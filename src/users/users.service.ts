@@ -12,16 +12,16 @@ export class UsersService {
   async findOne(email: string): Promise<User | null> {
     const user = await this.prisma.user.findUnique({
       where: { email },
-      include: { roles: true },
+      include: { role: true },
     });
 
     return user as unknown as User;
   }
 
-  async findById(id: number): Promise<User | null> {
+  async findById(userId: string): Promise<User | null> {
     const user = await this.prisma.user.findUnique({
-      where: { id },
-      include: { roles: true },
+      where: { userId },
+      include: { role: true },
     });
 
     return user as unknown as User;
@@ -35,47 +35,41 @@ export class UsersService {
       return null;
     }
     
-    if (!user.isActive) {
-      this.logger.warn(`Login attempt for inactive/locked account: ${email}`);
-      return null; // Account is locked or inactive
+    // Nous avons supprimé la vérification isActive car ce champ n'existe plus dans le modèle User
+    // Si vous souhaitez ajouter cette fonctionnalité, vous devrez ajouter un champ isActive au modèle User
+    
+    // Vérifier que password existe avant de l'utiliser
+    if (!user.password) {
+      this.logger.warn(`User ${email} has no password set`);
+      return null;
     }
     
     const isPasswordValid = await bcrypt.compare(password, user.password);
     
     if (!isPasswordValid) {
-      // Update failed login attempts
-      await this.prisma.user.update({
-        where: { id: user.id },
-        data: {
-          failedLoginAttempts: { increment: 1 },
-          isActive: user.failedLoginAttempts >= 4 ? false : undefined, // Lock after 5 attempts (current + increment)
-        },
-      });
+      // Note: Les champs failedLoginAttempts et isActive n'existent plus dans le modèle User
+      // Si vous souhaitez suivre les tentatives de connexion échouées, vous devrez ajouter ces champs au modèle User
+      // Pour l'instant, nous nous contentons de journaliser l'événement
 
       // Log the failed attempt
-      await this.logAuthAttempt(user.id, false, 'Invalid password');
+      await this.logAuthAttempt(user.userId, false, 'Invalid password');
       
       this.logger.warn(`Failed login attempt for user: ${email}`);
       return null;
     }
     
-    // Reset failed attempts and update last login
-    await this.prisma.user.update({
-      where: { id: user.id },
-      data: {
-        failedLoginAttempts: 0,
-        lastLogin: new Date(),
-      },
-    });
+    // Note: Les champs failedLoginAttempts et lastLogin n'existent plus dans le modèle User
+    // Si vous souhaitez suivre les connexions réussies, vous devrez ajouter ces champs au modèle User
+    // Pour l'instant, nous nous contentons de journaliser l'événement
 
     // Log the successful attempt
-    await this.logAuthAttempt(user.id, true, 'Login successful');
+    await this.logAuthAttempt(user.userId, true, 'Login successful');
     
     this.logger.log(`Successful login for user: ${email}`);
     return user;
   }
   
-  async logAuthAttempt(userId: number, success: boolean, message?: string) {
+  async logAuthAttempt(userId: string, success: boolean, message?: string) {
     try {
       await this.prisma.authLog.create({
         data: {
@@ -97,7 +91,7 @@ export class UsersService {
     return bcrypt.hash(password, salt);
   }
 
-  async register(email: string, password: string, roles: string[]): Promise<User> {
+  async register(email: string, password: string, roleId: number): Promise<User> {
     // Check if user already exists
     const existingUser = await this.findOne(email);
     if (existingUser) {
@@ -111,18 +105,14 @@ export class UsersService {
     // Create the user
     const user = await this.prisma.user.create({
       data: {
+        nom: 'Nouveau',
+        prenom: 'Utilisateur',
         email,
         password: hashedPassword,
-        isActive: true,
-        failedLoginAttempts: 0,
-        roles: {
-          create: roles.map(role => ({
-            name: role,
-          })),
-        },
+        roleId,
       },
       include: {
-        roles: true,
+        role: true,
       },
     });
 

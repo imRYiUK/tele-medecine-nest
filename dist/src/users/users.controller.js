@@ -25,15 +25,16 @@ let UsersController = class UsersController {
         if (!req.user) {
             throw new common_1.UnauthorizedException('User not found');
         }
-        const user = await this.usersService.findById(req.user['id']);
+        const user = await this.usersService.findById(req.user['userId']);
         if (!user) {
             throw new common_1.UnauthorizedException('User not found');
         }
         return {
-            id: user.id,
+            userId: user.userId,
+            nom: user.nom,
+            prenom: user.prenom,
             email: user.email,
-            roles: user.roles,
-            lastLogin: user.lastLogin,
+            role: user.role?.name,
         };
     }
 };

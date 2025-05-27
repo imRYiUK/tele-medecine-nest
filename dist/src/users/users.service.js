@@ -23,14 +23,14 @@ let UsersService = UsersService_1 = class UsersService {
     async findOne(email) {
         const user = await this.prisma.user.findUnique({
             where: { email },
-            include: { roles: true },
+            include: { role: true },
         });
         return user;
     }
-    async findById(id) {
+    async findById(userId) {
         const user = await this.prisma.user.findUnique({
-            where: { id },
-            include: { roles: true },
+            where: { userId },
+            include: { role: true },
         });
         return user;
     }
@@ -40,31 +40,17 @@ let UsersService = UsersService_1 = class UsersService {
             this.logger.warn(`Login attempt for non-existent user: ${email}`);
             return null;
         }
-        if (!user.isActive) {
-            this.logger.warn(`Login attempt for inactive/locked account: ${email}`);
+        if (!user.password) {
+            this.logger.warn(`User ${email} has no password set`);
             return null;
         }
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
-            await this.prisma.user.update({
-                where: { id: user.id },
-                data: {
-                    failedLoginAttempts: { increment: 1 },
-                    isActive: user.failedLoginAttempts >= 4 ? false : undefined,
-                },
-            });
-            await this.logAuthAttempt(user.id, false, 'Invalid password');
+            await this.logAuthAttempt(user.userId, false, 'Invalid password');
             this.logger.warn(`Failed login attempt for user: ${email}`);
             return null;
         }
-        await this.prisma.user.update({
-            where: { id: user.id },
-            data: {
-                failedLoginAttempts: 0,
-                lastLogin: new Date(),
-            },
-        });
-        await this.logAuthAttempt(user.id, true, 'Login successful');
+        await this.logAuthAttempt(user.userId, true, 'Login successful');
         this.logger.log(`Successful login for user: ${email}`);
         return user;
     }
@@ -88,7 +74,7 @@ let UsersService = UsersService_1 = class UsersService {
         const salt = await bcrypt.genSalt(10);
         return bcrypt.hash(password, salt);
     }
-    async register(email, password, roles) {
+    async register(email, password, roleId) {
         const existingUser = await this.findOne(email);
         if (existingUser) {
             this.logger.warn(`Registration attempt with existing email: ${email}`);
@@ -97,18 +83,14 @@ let UsersService = UsersService_1 = class UsersService {
         const hashedPassword = await this.hashPassword(password);
         const user = await this.prisma.user.create({
             data: {
+                nom: 'Nouveau',
+                prenom: 'Utilisateur',
                 email,
                 password: hashedPassword,
-                isActive: true,
-                failedLoginAttempts: 0,
-                roles: {
-                    create: roles.map(role => ({
-                        name: role,
-                    })),
-                },
+                roleId,
             },
             include: {
-                roles: true,
+                role: true,
             },
         });
         this.logger.log(`User registered successfully: ${email}`);

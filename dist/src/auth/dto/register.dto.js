@@ -11,11 +11,13 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RegisterDto = void 0;
 const class_validator_1 = require("class-validator");
-const user_entity_1 = require("../../users/user.entity");
 class RegisterDto {
     email;
     password;
-    roles = [user_entity_1.UserRole.PERSONNEL_ADMINISTRATIF];
+    roleId;
+    nom;
+    prenom;
+    telephone;
 }
 exports.RegisterDto = RegisterDto;
 __decorate([
@@ -30,8 +32,23 @@ __decorate([
     __metadata("design:type", String)
 ], RegisterDto.prototype, "password", void 0);
 __decorate([
-    (0, class_validator_1.IsArray)(),
-    (0, class_validator_1.IsEnum)(user_entity_1.UserRole, { each: true }),
-    __metadata("design:type", Array)
-], RegisterDto.prototype, "roles", void 0);
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.IsNotEmpty)(),
+    __metadata("design:type", Number)
+], RegisterDto.prototype, "roleId", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsNotEmpty)(),
+    __metadata("design:type", String)
+], RegisterDto.prototype, "nom", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsNotEmpty)(),
+    __metadata("design:type", String)
+], RegisterDto.prototype, "prenom", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], RegisterDto.prototype, "telephone", void 0);
 //# sourceMappingURL=register.dto.js.map

@@ -33,9 +33,11 @@ let JwtStrategy = class JwtStrategy extends (0, passport_1.PassportStrategy)(pas
             throw new common_1.UnauthorizedException('User not found or token invalid');
         }
         return {
-            id: user.id,
+            userId: user.userId,
             email: user.email,
-            roles: user.roles,
+            role: user.role?.name,
+            nom: user.nom,
+            prenom: user.prenom
         };
     }
 };
