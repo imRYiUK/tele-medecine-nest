@@ -4,79 +4,82 @@ const client_1 = require("@prisma/client");
 const bcrypt = require("bcrypt");
 const prisma = new client_1.PrismaClient();
 async function main() {
-    const adminRole = await prisma.role.upsert({
-        where: { name: 'admin' },
-        update: {},
-        create: {
-            name: 'admin',
-            description: 'Administrator with full access',
-        },
-    });
-    const radiologistRole = await prisma.role.upsert({
-        where: { name: 'radiologist' },
-        update: {},
-        create: {
-            name: 'radiologist',
-            description: 'Radiologist with access to medical imaging',
-        },
-    });
-    const doctorRole = await prisma.role.upsert({
-        where: { name: 'doctor' },
-        update: {},
-        create: {
-            name: 'doctor',
-            description: 'Doctor with access to patient records',
-        },
-    });
-    const patientRole = await prisma.role.upsert({
-        where: { name: 'patient' },
-        update: {},
-        create: {
-            name: 'patient',
-            description: 'Patient with limited access',
-        },
-    });
     const hashedPassword = await bcrypt.hash('Password123', 10);
+    const etablissement = await prisma.etablissement.upsert({
+        where: { etablissementID: 'test-etablissement-id' },
+        update: {},
+        create: {
+            etablissementID: 'test-etablissement-id',
+            nom: 'Hôpital Sunu Santé',
+            adresse: 'Avenue Cheikh Anta Diop, Dakar',
+            telephone: '+221338675309',
+            email: 'contact@sunusante.sn',
+            type: 'HOPITAL',
+            region: 'Dakar'
+        },
+    });
     const adminUser = await prisma.user.upsert({
-        where: { email: 'admin@example.com' },
-        update: {
-            roleId: adminRole.id,
-        },
+        where: { email: 'admin@sunusante.sn' },
+        update: {},
         create: {
+            userId: 'admin-user-id',
             nom: 'Admin',
-            prenom: 'User',
-            email: 'admin@example.com',
+            prenom: 'Système',
+            email: 'admin@sunusante.sn',
+            username: 'admin',
             password: hashedPassword,
-            roleId: adminRole.id,
+            telephone: '+221700000000',
+            etablissementID: etablissement.etablissementID,
+            roleId: 1,
         },
     });
-    const radiologistUser = await prisma.user.upsert({
-        where: { email: 'radiologist@example.com' },
-        update: {
-            roleId: radiologistRole.id,
-        },
+    const radiologueUser = await prisma.user.upsert({
+        where: { email: 'radiologue@sunusante.sn' },
+        update: {},
         create: {
-            nom: 'Radiologue',
-            prenom: 'User',
-            email: 'radiologist@example.com',
+            userId: 'radiologue-user-id',
+            nom: 'Diop',
+            prenom: 'Fatou',
+            email: 'radiologue@sunusante.sn',
+            username: 'fdiop',
             password: hashedPassword,
-            roleId: radiologistRole.id,
+            telephone: '+221777777777',
+            etablissementID: etablissement.etablissementID,
+            roleId: 3,
         },
     });
-    const doctorUser = await prisma.user.upsert({
-        where: { email: 'doctor@example.com' },
-        update: {
-            roleId: doctorRole.id,
-        },
+    const medecinUser = await prisma.user.upsert({
+        where: { email: 'medecin@sunusante.sn' },
+        update: {},
         create: {
-            nom: 'Médecin',
-            prenom: 'User',
-            email: 'doctor@example.com',
+            userId: 'medecin-user-id',
+            nom: 'Sow',
+            prenom: 'Amadou',
+            email: 'medecin@sunusante.sn',
+            username: 'asow',
             password: hashedPassword,
-            roleId: doctorRole.id,
+            telephone: '+221788888888',
+            etablissementID: etablissement.etablissementID,
+            roleId: 2,
         },
     });
-    console.log({ adminUser, radiologistUser, doctorUser });
+    const technicienUser = await prisma.user.upsert({
+        where: { email: 'technicien@sunusante.sn' },
+        update: {},
+        create: {
+            userId: 'technicien-user-id',
+            nom: 'Ndiaye',
+            prenom: 'Moussa',
+            email: 'technicien@sunusante.sn',
+            username: 'mndiaye',
+            password: hashedPassword,
+            telephone: '+221799999999',
+            etablissementID: etablissement.etablissementID,
+            roleId: 5,
+        },
+    });
+    console.log('Utilisateurs créés avec succès:');
+    console.log({ adminUser, radiologueUser, medecinUser, technicienUser });
 }
 main()
     .catch((e) => {

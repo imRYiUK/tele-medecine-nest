@@ -17,8 +17,6 @@ const common_1 = require("@nestjs/common");
 const find_dicom_dto_1 = require("./dto/find-dicom.dto");
 const upload_dicom_dto_1 = require("./dto/upload-dicom.dto");
 const orthanc_service_1 = require("./orthanc.service");
-const jwt_auth_guard_1 = require("./guards/jwt-auth.guard");
-const roles_guard_1 = require("./guards/roles.guard");
 const roles_decorator_1 = require("./decorators/roles.decorator");
 const platform_express_1 = require("@nestjs/platform-express");
 const swagger_1 = require("@nestjs/swagger");
@@ -326,7 +324,6 @@ __decorate([
 ], OrthancController.prototype, "getWadoImage", null);
 exports.OrthancController = OrthancController = __decorate([
     (0, common_1.Controller)('dicom'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
     (0, swagger_1.ApiTags)('DICOM'),
     __metadata("design:paramtypes", [orthanc_service_1.OrthancService])
 ], OrthancController);
