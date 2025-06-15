@@ -5,7 +5,8 @@ export enum UserRole {
   ADMIN = 'ADMIN',
   MEDECIN = 'MEDECIN',
   SECRETAIRE = 'SECRETAIRE',
-  INFIRMIER = 'INFIRMIER'
+  TECHNICIEN = 'TECHNICIEN',
+  RADIOLOGUE = 'RADIOLOGUE',
 }
 
 export class RegisterDto {
