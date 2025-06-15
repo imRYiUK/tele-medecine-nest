@@ -15,15 +15,19 @@ const common_1 = require("@nestjs/common");
 const jwt_1 = require("@nestjs/jwt");
 const users_service_1 = require("../users/users.service");
 const config_1 = require("@nestjs/config");
+const prisma_service_1 = require("../prisma/prisma.service");
+const bcrypt = require("bcrypt");
 let AuthService = AuthService_1 = class AuthService {
     usersService;
     jwtService;
     configService;
+    prisma;
     logger = new common_1.Logger(AuthService_1.name);
-    constructor(usersService, jwtService, configService) {
+    constructor(usersService, jwtService, configService, prisma) {
         this.usersService = usersService;
         this.jwtService = jwtService;
         this.configService = configService;
+        this.prisma = prisma;
     }
     async validateUser(email, password) {
         const user = await this.usersService.validateUser(email, password);
@@ -69,9 +73,56 @@ let AuthService = AuthService_1 = class AuthService {
         this.logger.log(`Token revoked: ${token.substring(0, 10)}...`);
         return { success: true };
     }
-    async register(email, password, roleId) {
-        const user = await this.usersService.register(email, password, roleId);
-        return this.login(user);
+    async register(registerDto) {
+        try {
+            const existingUsername = await this.prisma.utilisateur.findUnique({
+                where: { username: registerDto.username },
+            });
+            if (existingUsername) {
+                throw new common_1.ConflictException('Ce nom d\'utilisateur est déjà utilisé');
+            }
+            const existingEmail = await this.prisma.utilisateur.findUnique({
+                where: { email: registerDto.email },
+            });
+            if (existingEmail) {
+                throw new common_1.ConflictException('Cet email est déjà utilisé');
+            }
+            const hashedPassword = await bcrypt.hash(registerDto.password, 10);
+            const user = await this.prisma.utilisateur.create({
+                data: {
+                    nom: registerDto.nom,
+                    prenom: registerDto.prenom,
+                    username: registerDto.username,
+                    password: hashedPassword,
+                    email: registerDto.email,
+                    telephone: registerDto.telephone,
+                    role: registerDto.role,
+                    etablissementID: registerDto.etablissementID,
+                    estActif: registerDto.estActif,
+                },
+                select: {
+                    utilisateurID: true,
+                    nom: true,
+                    prenom: true,
+                    username: true,
+                    email: true,
+                    telephone: true,
+                    role: true,
+                    etablissementID: true,
+                    estActif: true,
+                },
+            });
+            return {
+                message: 'Utilisateur créé avec succès',
+                user,
+            };
+        }
+        catch (error) {
+            if (error instanceof common_1.ConflictException) {
+                throw error;
+            }
+            throw new common_1.BadRequestException('Erreur lors de la création de l\'utilisateur');
+        }
     }
 };
 exports.AuthService = AuthService;
@@ -79,6 +130,7 @@ exports.AuthService = AuthService = AuthService_1 = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [users_service_1.UsersService,
         jwt_1.JwtService,
-        config_1.ConfigService])
+        config_1.ConfigService,
+        prisma_service_1.PrismaService])
 ], AuthService);
 //# sourceMappingURL=auth.service.js.map

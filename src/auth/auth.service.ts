@@ -1,8 +1,11 @@
-import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException, ConflictException, BadRequestException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
 import { User } from '../users/user.entity';
 import { ConfigService } from '@nestjs/config';
+import { PrismaService } from '../prisma/prisma.service';
+import { RegisterDto } from './dto/register.dto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
@@ -12,6 +15,7 @@ export class AuthService {
     private usersService: UsersService,
     private jwtService: JwtService,
     private configService: ConfigService,
+    private prisma: PrismaService,
   ) {}
 
   async validateUser(email: string, password: string): Promise<User> {
@@ -69,9 +73,64 @@ export class AuthService {
     return { success: true };
   }
 
-  async register(email: string, password: string, roleId: number) {
-    const user = await this.usersService.register(email, password, roleId);
-    
-    return this.login(user);
+  async register(registerDto: RegisterDto) {
+    try {
+      // Check if username already exists
+      const existingUsername = await this.prisma.utilisateur.findUnique({
+        where: { username: registerDto.username },
+      });
+
+      if (existingUsername) {
+        throw new ConflictException('Ce nom d\'utilisateur est déjà utilisé');
+      }
+
+      // Check if email already exists
+      const existingEmail = await this.prisma.utilisateur.findUnique({
+        where: { email: registerDto.email },
+      });
+
+      if (existingEmail) {
+        throw new ConflictException('Cet email est déjà utilisé');
+      }
+
+      // Hash the password
+      const hashedPassword = await bcrypt.hash(registerDto.password, 10);
+
+      // Create the user
+      const user = await this.prisma.utilisateur.create({
+        data: {
+          nom: registerDto.nom,
+          prenom: registerDto.prenom,
+          username: registerDto.username,
+          password: hashedPassword,
+          email: registerDto.email,
+          telephone: registerDto.telephone,
+          role: registerDto.role,
+          etablissementID: registerDto.etablissementID,
+          estActif: registerDto.estActif,
+        },
+        select: {
+          utilisateurID: true,
+          nom: true,
+          prenom: true,
+          username: true,
+          email: true,
+          telephone: true,
+          role: true,
+          etablissementID: true,
+          estActif: true,
+        },
+      });
+
+      return {
+        message: 'Utilisateur créé avec succès',
+        user,
+      };
+    } catch (error) {
+      if (error instanceof ConflictException) {
+        throw error;
+      }
+      throw new BadRequestException('Erreur lors de la création de l\'utilisateur');
+    }
   }
 }

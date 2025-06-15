@@ -6,6 +6,13 @@ export declare class Role {
     createdAt: Date;
     updatedAt: Date;
 }
+export declare const enum UserRole {
+    ADMINISTRATEUR = "ADMIN",
+    MEDECIN = "MEDECIN",
+    PERSONNEL_ADMINISTRATIF = "RECEPTIONNISTE",
+    RADIOLOGUE = "RADIOLOGUE",
+    TECHNICIEN = "TECHNICIEN"
+}
 export declare class User {
     userId: string;
     nom: string;

@@ -1,8 +1,17 @@
+export declare enum UserRole {
+    ADMIN = "ADMIN",
+    MEDECIN = "MEDECIN",
+    SECRETAIRE = "SECRETAIRE",
+    INFIRMIER = "INFIRMIER"
+}
 export declare class RegisterDto {
-    email: string;
-    password: string;
-    roleId: number;
     nom: string;
     prenom: string;
-    telephone?: string;
+    username: string;
+    password: string;
+    email: string;
+    telephone: string;
+    role: UserRole;
+    etablissementID?: string;
+    estActif?: boolean;
 }

@@ -310,7 +310,6 @@ __decorate([
 ], OrthancController.prototype, "findDicom", null);
 __decorate([
     (0, common_1.Get)('wado/:id'),
-    (0, roles_decorator_1.Roles)('RADIOLOGUE', 'MEDECIN'),
     (0, swagger_1.ApiOperation)({ summary: 'Récupérer une image DICOM via WADO-GET' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Image récupérée avec succès' }),
     (0, swagger_1.ApiResponse)({ status: 404, description: 'Image non trouvée' }),

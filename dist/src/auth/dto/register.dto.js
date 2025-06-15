@@ -9,46 +9,80 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.RegisterDto = void 0;
+exports.RegisterDto = exports.UserRole = void 0;
 const class_validator_1 = require("class-validator");
+const swagger_1 = require("@nestjs/swagger");
+var UserRole;
+(function (UserRole) {
+    UserRole["ADMIN"] = "ADMIN";
+    UserRole["MEDECIN"] = "MEDECIN";
+    UserRole["SECRETAIRE"] = "SECRETAIRE";
+    UserRole["INFIRMIER"] = "INFIRMIER";
+})(UserRole || (exports.UserRole = UserRole = {}));
 class RegisterDto {
-    email;
-    password;
-    roleId;
     nom;
     prenom;
+    username;
+    password;
+    email;
     telephone;
+    role;
+    etablissementID;
+    estActif = true;
 }
 exports.RegisterDto = RegisterDto;
 __decorate([
-    (0, class_validator_1.IsEmail)(),
-    (0, class_validator_1.IsNotEmpty)(),
-    __metadata("design:type", String)
-], RegisterDto.prototype, "email", void 0);
-__decorate([
-    (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsNotEmpty)(),
-    (0, class_validator_1.MinLength)(8),
-    __metadata("design:type", String)
-], RegisterDto.prototype, "password", void 0);
-__decorate([
-    (0, class_validator_1.IsNumber)(),
-    (0, class_validator_1.IsNotEmpty)(),
-    __metadata("design:type", Number)
-], RegisterDto.prototype, "roleId", void 0);
-__decorate([
+    (0, swagger_1.ApiProperty)({ description: 'Nom de l\'utilisateur' }),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsNotEmpty)(),
     __metadata("design:type", String)
 ], RegisterDto.prototype, "nom", void 0);
 __decorate([
+    (0, swagger_1.ApiProperty)({ description: 'Prénom de l\'utilisateur' }),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsNotEmpty)(),
     __metadata("design:type", String)
 ], RegisterDto.prototype, "prenom", void 0);
 __decorate([
+    (0, swagger_1.ApiProperty)({ description: 'Nom d\'utilisateur unique' }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsNotEmpty)(),
+    __metadata("design:type", String)
+], RegisterDto.prototype, "username", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: 'Mot de passe' }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsNotEmpty)(),
+    __metadata("design:type", String)
+], RegisterDto.prototype, "password", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: 'Email de l\'utilisateur' }),
+    (0, class_validator_1.IsEmail)(),
+    (0, class_validator_1.IsNotEmpty)(),
+    __metadata("design:type", String)
+], RegisterDto.prototype, "email", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: 'Numéro de téléphone' }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsNotEmpty)(),
+    __metadata("design:type", String)
+], RegisterDto.prototype, "telephone", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: 'Rôle de l\'utilisateur', enum: UserRole }),
+    (0, class_validator_1.IsEnum)(UserRole),
+    (0, class_validator_1.IsNotEmpty)(),
+    __metadata("design:type", String)
+], RegisterDto.prototype, "role", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: 'ID de l\'établissement', required: false }),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
-], RegisterDto.prototype, "telephone", void 0);
+], RegisterDto.prototype, "etablissementID", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: 'État d\'activation du compte', default: true }),
+    (0, class_validator_1.IsBoolean)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Boolean)
+], RegisterDto.prototype, "estActif", void 0);
 //# sourceMappingURL=register.dto.js.map

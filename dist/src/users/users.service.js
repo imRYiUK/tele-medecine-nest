@@ -20,17 +20,15 @@ let UsersService = UsersService_1 = class UsersService {
     constructor(prisma) {
         this.prisma = prisma;
     }
-    async findOne(email) {
-        const user = await this.prisma.user.findUnique({
-            where: { email },
-            include: { role: true },
+    async findOne(utilisateurID) {
+        const user = await this.prisma.utilisateur.findUnique({
+            where: { utilisateurID },
         });
         return user;
     }
     async findById(userId) {
-        const user = await this.prisma.user.findUnique({
-            where: { userId },
-            include: { role: true },
+        const user = await this.prisma.utilisateur.findUnique({
+            where: { utilisateurID: userId },
         });
         return user;
     }
@@ -45,55 +43,7 @@ let UsersService = UsersService_1 = class UsersService {
             return null;
         }
         const isPasswordValid = await bcrypt.compare(password, user.password);
-        if (!isPasswordValid) {
-            await this.logAuthAttempt(user.userId, false, 'Invalid password');
-            this.logger.warn(`Failed login attempt for user: ${email}`);
-            return null;
-        }
-        await this.logAuthAttempt(user.userId, true, 'Login successful');
         this.logger.log(`Successful login for user: ${email}`);
-        return user;
-    }
-    async logAuthAttempt(userId, success, message) {
-        try {
-            await this.prisma.authLog.create({
-                data: {
-                    userId,
-                    success,
-                    message,
-                    ipAddress: '127.0.0.1',
-                    userAgent: 'API Client',
-                },
-            });
-        }
-        catch (error) {
-            this.logger.error(`Failed to log auth attempt: ${error.message}`);
-        }
-    }
-    async hashPassword(password) {
-        const salt = await bcrypt.genSalt(10);
-        return bcrypt.hash(password, salt);
-    }
-    async register(email, password, roleId) {
-        const existingUser = await this.findOne(email);
-        if (existingUser) {
-            this.logger.warn(`Registration attempt with existing email: ${email}`);
-            throw new common_1.ConflictException('Email already registered');
-        }
-        const hashedPassword = await this.hashPassword(password);
-        const user = await this.prisma.user.create({
-            data: {
-                nom: 'Nouveau',
-                prenom: 'Utilisateur',
-                email,
-                password: hashedPassword,
-                roleId,
-            },
-            include: {
-                role: true,
-            },
-        });
-        this.logger.log(`User registered successfully: ${email}`);
         return user;
     }
 };

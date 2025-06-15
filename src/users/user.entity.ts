@@ -7,6 +7,14 @@ export class Role {
   updatedAt: Date;
 }
 
+export const enum UserRole {
+  ADMINISTRATEUR= 'ADMIN',
+  MEDECIN = 'MEDECIN',
+  PERSONNEL_ADMINISTRATIF = 'RECEPTIONNISTE',
+  RADIOLOGUE = 'RADIOLOGUE',
+  TECHNICIEN = 'TECHNICIEN'
+}
+
 export class User {
   userId: string;
   nom: string;

@@ -3,155 +3,204 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
-model User {
-  utilisateurID          String                 @id
-  nom                    String
-  prenom                 String
-  username               String                 @unique
-  password               String
-  dateNaissance          DateTime?
-  genre                  String?
-  telephone              String?
-  email                  String?                @unique
-  assuranceMaladie       String?
-  groupeSanguin          String?
-  etablissementID        String?
-  role                   Enum_role
-  createdAt              DateTime               @default(now())
-  updatedAt              DateTime               @updatedAt
-  consultations_medicale ConsultationMedicale[]
-  dossiersMedical        DossierMedical[]
-  examensRealises        ExamenMedical[]        @relation("TechnicienExamens")
-  journal_activites      JournalActivite[]
-  refresh_tokens         refresh_tokens[]
-  etablissement          Etablissement?         @relation(fields: [etablissementID], references: [etablissementID])
+model Patient {
+  patientID        String   @id @default(uuid())
+  nom              String
+  prenom           String
+  dateNaissance    DateTime
+  genre            String
+  adresse          String
+  telephone        String
+  email            String?
+  assuranceMaladie String
+  groupeSanguin    String
+  createdBy        String
+  updatedAt        DateTime
+  createdAt        DateTime
+
+  // Relations
+  dossierMedical DossierMedical?
+  consultations  ConsultationMedicale[]
+  examens        ExamenMedical[]
+  creator        Utilisateur            @relation(fields: [createdBy], references: [utilisateurID])
+
+  @@map("patients")
+}
+
+model DossierMedical {
+  dossierID    String   @id @default(uuid())
+  patientID    String   @unique
+  dateCreation DateTime @default(now())
+  etatDossier  String
+  createdAt    DateTime
+  createdBy    String
+
+  // Relations
+  patient       Patient                @relation(fields: [patientID], references: [patientID])
+  creator       Utilisateur            @relation(fields: [createdBy], references: [utilisateurID])
+  consultations ConsultationMedicale[]
+  examens       ExamenMedical[]
+
+  @@map("dossiers_medicaux")
+}
+
+model ConsultationMedicale {
+  consultationID     String   @id @default(uuid())
+  dossierID          String
+  patientID          String
+  medecinID          String
+  dateConsultation   DateTime
+  motif              String
+  diagnostics        String
+  observations       String
+  traitementPrescrit String
+  estTelemedicine    Boolean  @default(false)
+  lienVisio          String?
+  updatedAt          DateTime
+  createdAt          DateTime
+
+  // Relations
+  dossier     DossierMedical  @relation(fields: [dossierID], references: [dossierID])
+  patient     Patient         @relation(fields: [patientID], references: [patientID])
+  medecin     Utilisateur     @relation(fields: [medecinID], references: [utilisateurID])
+  examens     ExamenMedical[]
+  ordonnances Ordonnance[]
+
+  @@map("consultations_medicales")
+}
+
+model ExamenMedical {
+  examenID       String   @id @default(uuid())
+  dossierID      String
+  patientID      String
+  typeExamenID   String
+  demandeParID   String
+  dateExamen     DateTime
+  description    String
+  resultat       String?
+  estAnalyse     Boolean  @default(false)
+  consultationID String?
+
+  // Relations
+  dossier      DossierMedical        @relation(fields: [dossierID], references: [dossierID])
+  patient      Patient               @relation(fields: [patientID], references: [patientID])
+  typeExamen   TypeExamen            @relation(fields: [typeExamenID], references: [typeExamenID])
+  demandePar   Utilisateur           @relation(fields: [demandeParID], references: [utilisateurID])
+  consultation ConsultationMedicale? @relation(fields: [consultationID], references: [consultationID])
+  images       ImageMedicale[]
+
+  @@map("examens_medicaux")
+}
+
+model TypeExamen {
+  typeExamenID String @id @default(uuid())
+  nomType      String
+  description  String
+  categorie    String
+
+  // Relations
+  examens ExamenMedical[]
+
+  @@map("types_examens")
+}
+
+model ImageMedicale {
+  imageID           String   @id @default(uuid())
+  examenID          String
+  studyInstanceUID  String
+  seriesInstanceUID String
+  sopInstanceUID    String
+  dateAcquisition   DateTime
+  modalite          String
+  description       String
+
+  // Relations
+  examen ExamenMedical @relation(fields: [examenID], references: [examenID])
+
+  @@map("images_medicales")
+}
+
+model Utilisateur {
+  utilisateurID   String  @id @default(uuid())
+  nom             String
+  prenom          String
+  username        String  @unique
+  password        String
+  email           String  @unique
+  telephone       String
+  role            String
+  etablissementID String?
+  estActif        Boolean @default(true)
+
+  // Relations
+  etablissement         Etablissement?         @relation(fields: [etablissementID], references: [etablissementID])
+  consultations         ConsultationMedicale[]
+  examensOrdonnes       ExamenMedical[]
+  activites             JournalActivite[]
+  DossierMedicalCreated DossierMedical[]
+  Patient               Patient[]
 
   @@map("utilisateurs")
 }
 
-model DossierMedical {
-  dossierID     String                 @id @default(uuid())
-  patientID     String
-  dateCreation  DateTime               @default(now())
-  statut        String
-  createdAt     DateTime               @default(now())
-  updatedAt     DateTime               @updatedAt
-  consultations ConsultationMedicale[]
-  patient       User                   @relation(fields: [patientID], references: [utilisateurID])
-  examens       ExamenMedical[]
+model Etablissement {
+  etablissementID String @id @default(uuid())
+  nom             String
+  adresse         String
+  telephone       String
+  email           String
+  type            String
+  latitude        Float
+  longitude       Float
+  region          String
 
-  @@map("dossiers_medical")
-}
+  // Relations
+  utilisateurs Utilisateur[]
 
-model ConsultationMedicale {
-  consultationID     String         @id @default(uuid())
-  dossierID          String
-  utilisateurID      String
-  dateConsultation   DateTime
-  motif              String
-  diagnostic         String?
-  observations       String?
-  traitementPrescrit String?
-  estTelemedicine    Boolean        @default(false)
-  lieuVisio          String?
-  createdAt          DateTime       @default(now())
-  updatedAt          DateTime       @updatedAt
-  dossier            DossierMedical @relation(fields: [dossierID], references: [dossierID])
-  utilisateurs       User           @relation(fields: [utilisateurID], references: [utilisateurID])
-  ordonnances        Ordonnance[]
-
-  @@map("consultations_medicale")
-}
-
-model ExamenMedical {
-  examenID        String          @id @default(uuid())
-  dossierID       String
-  typeExamenID    String
-  technicienID    String
-  dateExamen      DateTime
-  resultat        String?
-  description     String?
-  estAnalyse      Boolean         @default(false)
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
-  dossier         DossierMedical  @relation(fields: [dossierID], references: [dossierID])
-  technicien      User            @relation("TechnicienExamens", fields: [technicienID], references: [utilisateurID])
-  typeExamen      TypeExamen      @relation(fields: [typeExamenID], references: [typeExamenID])
-  imagesMedicales ImageMedicale[]
-
-  @@map("examens_medical")
-}
-
-model TypeExamen {
-  typeExamenID String          @id @default(uuid())
-  nom          String          @unique
-  description  String?
-  categorie    String
-  createdAt    DateTime        @default(now())
-  updatedAt    DateTime        @updatedAt
-  examens      ExamenMedical[]
-
-  @@map("types_examen")
-}
-
-model ImageMedicale {
-  imageID        String        @id @default(uuid())
-  examenID       String
-  chemin         String
-  type           String
-  datePriseImage DateTime
-  serieScanID    String?
-  coupeAxeID     String?
-  modalite       String?
-  description    String?
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-  examen         ExamenMedical @relation(fields: [examenID], references: [examenID])
-
-  @@map("images_medicale")
-}
-
-model Ordonnance {
-  ordonnanceID    String               @id @default(uuid())
-  consultationID  String
-  dateCreation    DateTime             @default(now())
-  dateExpiration  DateTime?
-  estRenouvelable Boolean              @default(false)
-  createdAt       DateTime             @default(now())
-  updatedAt       DateTime             @updatedAt
-  consultation    ConsultationMedicale @relation(fields: [consultationID], references: [consultationID])
-  prescriptions   Prescription[]
-
-  @@map("ordonnances")
+  @@map("etablissements")
 }
 
 model Prescription {
-  prescriptionID String     @id @default(uuid())
+  prescriptionID String @id @default(uuid())
   ordonnanceID   String
   medicamentID   String
   posologie      String
   duree          String
-  instructions   String?
-  createdAt      DateTime   @default(now())
-  updatedAt      DateTime   @updatedAt
-  medicament     Medicament @relation(fields: [medicamentID], references: [medicamentID])
-  ordonnance     Ordonnance @relation(fields: [ordonnanceID], references: [ordonnanceID])
+  instructions   String
+
+  // Relations
+  ordonnance Ordonnance @relation(fields: [ordonnanceID], references: [ordonnanceID])
+  medicament Medicament @relation(fields: [medicamentID], references: [medicamentID])
 
   @@map("prescriptions")
 }
 
+model Ordonnance {
+  ordonnanceID    String   @id @default(uuid())
+  consultationID  String
+  dateEmission    DateTime @default(now())
+  dateExpiration  DateTime
+  estRenouvelable Boolean  @default(false)
+
+  // Relations
+  consultation  ConsultationMedicale @relation(fields: [consultationID], references: [consultationID])
+  prescriptions Prescription[]
+
+  @@map("ordonnances")
+}
+
 model Medicament {
-  medicamentID  String         @id @default(uuid())
-  nom           String
-  dosage        String
-  forme         String
-  description   String?
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  medicamentID String  @id @default(uuid())
+  nom          String
+  dosage       String
+  forme        String
+  description  String?
+
+  // Relations
   prescriptions Prescription[]
 
   @@map("medicaments")
@@ -163,44 +212,10 @@ model JournalActivite {
   dateAction    DateTime @default(now())
   typeAction    String
   description   String
-  ipAddress     String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  utilisateurs  User     @relation(fields: [utilisateurID], references: [utilisateurID])
+  ipAdresse     String?
+
+  // Relations
+  utilisateur Utilisateur @relation(fields: [utilisateurID], references: [utilisateurID])
 
   @@map("journal_activites")
-}
-
-model Etablissement {
-  etablissementID String   @id @default(uuid())
-  nom             String
-  adresse         String
-  telephone       String
-  email           String?
-  type            String
-  latitude        Float?
-  longitude       Float?
-  region          String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  utilisateurs    User[]
-
-  @@map("etablissements")
-}
-
-model refresh_tokens {
-  id            String   @id
-  token         String   @unique
-  utilisateurID String
-  expiresAt     DateTime
-  createdAt     DateTime @default(now())
-  utilisateurs  User     @relation(fields: [utilisateurID], references: [utilisateurID], onDelete: Cascade)
-}
-
-enum Enum_role {
-  ADMIN
-  MEDECIN
-  INFIRMIER
-  RECEPTIONNISTE
-  TECHNICIEN
 }
