@@ -12,50 +12,88 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.JournalService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
+const client_1 = require("@prisma/client");
 let JournalService = class JournalService {
     prisma;
     constructor(prisma) {
         this.prisma = prisma;
     }
-    async findAll() {
-        return this.prisma.journalActivite.findMany({
+    async getUserEstablishment(utilisateurID) {
+        const user = await this.prisma.utilisateur.findUnique({
+            where: { utilisateurID },
+            select: { etablissementID: true }
+        });
+        return user?.etablissementID;
+    }
+    async findAll(requesterId, requesterRole) {
+        const baseQuery = {
             include: {
                 utilisateur: {
                     select: {
                         nom: true,
                         prenom: true,
                         email: true,
-                        role: true
+                        role: true,
+                        etablissementID: true
                     }
                 }
             },
             orderBy: {
-                dateAction: 'desc'
+                dateAction: client_1.Prisma.SortOrder.desc
             }
-        });
-    }
-    async findByUser(utilisateurID) {
+        };
+        if (requesterRole === "SUPER_ADMIN") {
+            return this.prisma.journalActivite.findMany(baseQuery);
+        }
+        const requesterEstablishment = await this.getUserEstablishment(requesterId);
+        if (!requesterEstablishment) {
+            throw new common_1.UnauthorizedException('User has no associated establishment');
+        }
         return this.prisma.journalActivite.findMany({
+            ...baseQuery,
             where: {
-                utilisateurID
-            },
+                utilisateur: {
+                    etablissementID: requesterEstablishment
+                }
+            }
+        });
+    }
+    async findByUser(utilisateurID, requesterId, requesterRole) {
+        const baseQuery = {
+            where: { utilisateurID },
             include: {
                 utilisateur: {
                     select: {
                         nom: true,
                         prenom: true,
                         email: true,
-                        role: true
+                        role: true,
+                        etablissementID: true
                     }
                 }
             },
             orderBy: {
-                dateAction: 'desc'
+                dateAction: client_1.Prisma.SortOrder.desc
             }
+        };
+        if (requesterRole === "SUPER_ADMIN") {
+            return this.prisma.journalActivite.findMany(baseQuery);
+        }
+        const requesterEstablishment = await this.getUserEstablishment(requesterId);
+        if (!requesterEstablishment) {
+            throw new common_1.UnauthorizedException('User has no associated establishment');
+        }
+        const targetUser = await this.prisma.utilisateur.findUnique({
+            where: { utilisateurID },
+            select: { etablissementID: true }
         });
+        if (targetUser?.etablissementID !== requesterEstablishment) {
+            throw new common_1.UnauthorizedException('Cannot access logs from users outside your establishment');
+        }
+        return this.prisma.journalActivite.findMany(baseQuery);
     }
-    async findByDateRange(startDate, endDate) {
-        return this.prisma.journalActivite.findMany({
+    async findByDateRange(startDate, endDate, requesterId, requesterRole) {
+        const baseQuery = {
             where: {
                 dateAction: {
                     gte: startDate,
@@ -68,32 +106,64 @@ let JournalService = class JournalService {
                         nom: true,
                         prenom: true,
                         email: true,
-                        role: true
+                        role: true,
+                        etablissementID: true
                     }
                 }
             },
             orderBy: {
-                dateAction: 'desc'
+                dateAction: client_1.Prisma.SortOrder.desc
+            }
+        };
+        if (requesterRole === "SUPER_ADMIN") {
+            return this.prisma.journalActivite.findMany(baseQuery);
+        }
+        const requesterEstablishment = await this.getUserEstablishment(requesterId);
+        if (!requesterEstablishment) {
+            throw new common_1.UnauthorizedException('User has no associated establishment');
+        }
+        return this.prisma.journalActivite.findMany({
+            ...baseQuery,
+            where: {
+                ...baseQuery.where,
+                utilisateur: {
+                    etablissementID: requesterEstablishment
+                }
             }
         });
     }
-    async findByTypeAction(typeAction) {
-        return this.prisma.journalActivite.findMany({
-            where: {
-                typeAction
-            },
+    async findByTypeAction(typeAction, requesterId, requesterRole) {
+        const baseQuery = {
+            where: { typeAction },
             include: {
                 utilisateur: {
                     select: {
                         nom: true,
                         prenom: true,
                         email: true,
-                        role: true
+                        role: true,
+                        etablissementID: true
                     }
                 }
             },
             orderBy: {
-                dateAction: 'desc'
+                dateAction: client_1.Prisma.SortOrder.desc
+            }
+        };
+        if (requesterRole === "SUPER_ADMIN") {
+            return this.prisma.journalActivite.findMany(baseQuery);
+        }
+        const requesterEstablishment = await this.getUserEstablishment(requesterId);
+        if (!requesterEstablishment) {
+            throw new common_1.UnauthorizedException('User has no associated establishment');
+        }
+        return this.prisma.journalActivite.findMany({
+            ...baseQuery,
+            where: {
+                ...baseQuery.where,
+                utilisateur: {
+                    etablissementID: requesterEstablishment
+                }
             }
         });
     }

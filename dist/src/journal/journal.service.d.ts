@@ -2,8 +2,10 @@ import { PrismaService } from '../prisma/prisma.service';
 export declare class JournalService {
     private prisma;
     constructor(prisma: PrismaService);
-    findAll(): Promise<({
+    private getUserEstablishment;
+    findAll(requesterId: string, requesterRole: string): Promise<({
         utilisateur: {
+            etablissementID: string | null;
             nom: string;
             email: string;
             prenom: string;
@@ -17,8 +19,9 @@ export declare class JournalService {
         typeAction: string;
         ipAdresse: string | null;
     })[]>;
-    findByUser(utilisateurID: string): Promise<({
+    findByUser(utilisateurID: string, requesterId: string, requesterRole: string): Promise<({
         utilisateur: {
+            etablissementID: string | null;
             nom: string;
             email: string;
             prenom: string;
@@ -32,8 +35,9 @@ export declare class JournalService {
         typeAction: string;
         ipAdresse: string | null;
     })[]>;
-    findByDateRange(startDate: Date, endDate: Date): Promise<({
+    findByDateRange(startDate: Date, endDate: Date, requesterId: string, requesterRole: string): Promise<({
         utilisateur: {
+            etablissementID: string | null;
             nom: string;
             email: string;
             prenom: string;
@@ -47,8 +51,9 @@ export declare class JournalService {
         typeAction: string;
         ipAdresse: string | null;
     })[]>;
-    findByTypeAction(typeAction: string): Promise<({
+    findByTypeAction(typeAction: string, requesterId: string, requesterRole: string): Promise<({
         utilisateur: {
+            etablissementID: string | null;
             nom: string;
             email: string;
             prenom: string;

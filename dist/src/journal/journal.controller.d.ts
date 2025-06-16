@@ -2,8 +2,9 @@ import { JournalService } from './journal.service';
 export declare class JournalController {
     private readonly journalService;
     constructor(journalService: JournalService);
-    findAll(): Promise<({
+    findAll(req: any): Promise<({
         utilisateur: {
+            etablissementID: string | null;
             nom: string;
             email: string;
             prenom: string;
@@ -17,8 +18,9 @@ export declare class JournalController {
         typeAction: string;
         ipAdresse: string | null;
     })[]>;
-    findByUser(utilisateurID: string): Promise<({
+    findByUser(utilisateurID: string, req: any): Promise<({
         utilisateur: {
+            etablissementID: string | null;
             nom: string;
             email: string;
             prenom: string;
@@ -32,8 +34,9 @@ export declare class JournalController {
         typeAction: string;
         ipAdresse: string | null;
     })[]>;
-    findByDateRange(startDate: string, endDate: string): Promise<({
+    findByDateRange(startDate: string, endDate: string, req: any): Promise<({
         utilisateur: {
+            etablissementID: string | null;
             nom: string;
             email: string;
             prenom: string;
@@ -47,8 +50,9 @@ export declare class JournalController {
         typeAction: string;
         ipAdresse: string | null;
     })[]>;
-    findByTypeAction(typeAction: string): Promise<({
+    findByTypeAction(typeAction: string, req: any): Promise<({
         utilisateur: {
+            etablissementID: string | null;
             nom: string;
             email: string;
             prenom: string;
