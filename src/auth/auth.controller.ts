@@ -21,19 +21,13 @@ export class AuthController {
     return this.authService.login(user);
   }
 
-  @Post('register')
-  @ApiOperation({ summary: 'Register a new user' })
-  @ApiResponse({ status: 201, description: 'User successfully registered' })
-  @ApiResponse({ status: 400, description: 'Bad request' })
-  @ApiResponse({ status: 409, description: 'Username or email already exists' })
-  @HttpCode(HttpStatus.CREATED)
-  async register(@Body() registerDto: RegisterDto) {
-    return this.authService.register(registerDto);
-  }
-
-  @Get('profile')
-  @UseGuards(AuthGuard('jwt'))
-  getProfile(@Req() req: Request) {
-    return req.user;
-  }
+  // @Post('register')
+  // @ApiOperation({ summary: 'Register a new user' })
+  // @ApiResponse({ status: 201, description: 'User successfully registered' })
+  // @ApiResponse({ status: 400, description: 'Bad request' })
+  // @ApiResponse({ status: 409, description: 'Username or email already exists' })
+  // @HttpCode(HttpStatus.CREATED)
+  // async register(@Body() registerDto: RegisterDto) {
+  //   return this.authService.register(registerDto);
+  // }
 }

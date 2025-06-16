@@ -39,6 +39,11 @@ export class UserDto {
   @ApiProperty({ description: 'Whether the user account is active' })
   @IsBoolean()
   estActif: boolean;
+
+  @ApiProperty({ description: 'User password', writeOnly: true })
+  @IsString()
+  @MinLength(6)
+  password?: string;
 }
 
 export class CreateUserDto {
@@ -119,4 +124,10 @@ export class UpdateUserDto {
   @IsOptional()
   @IsBoolean()
   estActif?: boolean;
+
+  @ApiProperty({ description: 'User password', required: false, writeOnly: true })
+  @IsOptional()
+  @IsString()
+  @MinLength(6)
+  password?: string;
 }

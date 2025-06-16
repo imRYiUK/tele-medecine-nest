@@ -17,9 +17,11 @@ const common_1 = require("@nestjs/common");
 const find_dicom_dto_1 = require("./dto/find-dicom.dto");
 const upload_dicom_dto_1 = require("./dto/upload-dicom.dto");
 const orthanc_service_1 = require("./orthanc.service");
-const roles_decorator_1 = require("./decorators/roles.decorator");
+const roles_guard_1 = require("../common/guards/roles.guard");
+const roles_decorator_1 = require("../common/decorators/roles.decorator");
 const platform_express_1 = require("@nestjs/platform-express");
 const swagger_1 = require("@nestjs/swagger");
+const jwt_auth_guard_1 = require("../common/guards/jwt-auth.guard");
 let OrthancController = class OrthancController {
     orthancService;
     constructor(orthancService) {
@@ -198,7 +200,7 @@ let OrthancController = class OrthancController {
 exports.OrthancController = OrthancController;
 __decorate([
     (0, common_1.Get)('studies'),
-    (0, roles_decorator_1.Roles)('RADIOLOGUE', 'MEDECIN'),
+    (0, roles_decorator_1.Roles)("RADIOLOGUE", "MEDECIN"),
     (0, swagger_1.ApiOperation)({ summary: 'Récupérer toutes les études DICOM' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Liste des études récupérée avec succès' }),
     (0, swagger_1.ApiResponse)({ status: 500, description: 'Erreur serveur' }),
@@ -208,7 +210,7 @@ __decorate([
 ], OrthancController.prototype, "getStudies", null);
 __decorate([
     (0, common_1.Get)('studies/:id'),
-    (0, roles_decorator_1.Roles)('RADIOLOGUE', 'MEDECIN'),
+    (0, roles_decorator_1.Roles)("RADIOLOGUE", "MEDECIN"),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -216,7 +218,7 @@ __decorate([
 ], OrthancController.prototype, "getStudyDetails", null);
 __decorate([
     (0, common_1.Get)('studies/:id/series'),
-    (0, roles_decorator_1.Roles)('RADIOLOGUE', 'MEDECIN'),
+    (0, roles_decorator_1.Roles)("RADIOLOGUE", "MEDECIN"),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -224,7 +226,7 @@ __decorate([
 ], OrthancController.prototype, "getSeries", null);
 __decorate([
     (0, common_1.Get)('series/:id'),
-    (0, roles_decorator_1.Roles)('RADIOLOGUE', 'MEDECIN'),
+    (0, roles_decorator_1.Roles)("RADIOLOGUE", "MEDECIN"),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -232,7 +234,7 @@ __decorate([
 ], OrthancController.prototype, "getSeriesDetails", null);
 __decorate([
     (0, common_1.Get)('series/:id/instances'),
-    (0, roles_decorator_1.Roles)('RADIOLOGUE', 'MEDECIN'),
+    (0, roles_decorator_1.Roles)("RADIOLOGUE", "MEDECIN"),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -240,7 +242,7 @@ __decorate([
 ], OrthancController.prototype, "getInstances", null);
 __decorate([
     (0, common_1.Get)('instances/:id'),
-    (0, roles_decorator_1.Roles)('RADIOLOGUE', 'MEDECIN'),
+    (0, roles_decorator_1.Roles)("RADIOLOGUE", "MEDECIN"),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -248,7 +250,7 @@ __decorate([
 ], OrthancController.prototype, "getInstanceDetails", null);
 __decorate([
     (0, common_1.Get)('instances/:id/file'),
-    (0, roles_decorator_1.Roles)('RADIOLOGUE', 'MEDECIN'),
+    (0, roles_decorator_1.Roles)("RADIOLOGUE", "MEDECIN"),
     (0, common_1.Header)('Content-Type', 'application/dicom'),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Res)()),
@@ -258,7 +260,7 @@ __decorate([
 ], OrthancController.prototype, "getDicomFile", null);
 __decorate([
     (0, common_1.Get)('instances/:id/preview'),
-    (0, roles_decorator_1.Roles)('RADIOLOGUE', 'MEDECIN'),
+    (0, roles_decorator_1.Roles)("RADIOLOGUE", "MEDECIN"),
     (0, common_1.Header)('Content-Type', 'image/jpeg'),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Query)('quality')),
@@ -323,6 +325,7 @@ __decorate([
 ], OrthancController.prototype, "getWadoImage", null);
 exports.OrthancController = OrthancController = __decorate([
     (0, common_1.Controller)('dicom'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
     (0, swagger_1.ApiTags)('DICOM'),
     __metadata("design:paramtypes", [orthanc_service_1.OrthancService])
 ], OrthancController);

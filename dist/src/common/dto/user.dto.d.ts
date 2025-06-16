@@ -8,6 +8,7 @@ export declare class UserDto {
     role: string;
     etablissementID?: string | null;
     estActif: boolean;
+    password?: string;
 }
 export declare class CreateUserDto {
     nom: string;
@@ -28,4 +29,5 @@ export declare class UpdateUserDto {
     role?: string;
     etablissementID?: string;
     estActif?: boolean;
+    password?: string;
 }

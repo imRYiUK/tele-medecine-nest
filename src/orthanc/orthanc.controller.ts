@@ -1,23 +1,30 @@
-import { Controller, Get, Param, UseGuards, Res, Query, HttpStatus, Header, Post, Body, UploadedFile, UseInterceptors, HttpException } from '@nestjs/common';
+import {
+  Controller, Get,
+  Param, UseGuards, Res,
+  Query, HttpStatus, Header,
+  Post, Body, UploadedFile,
+  UseInterceptors, HttpException
+} from '@nestjs/common';
 import { FindDicomDto } from './dto/find-dicom.dto';
 import { UploadDicomDto } from './dto/upload-dicom.dto';
 import { OrthancService } from './orthanc.service';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { RolesGuard } from './guards/roles.guard';
-import { Roles } from './decorators/roles.decorator';
+import { RolesGuard } from '../common/guards/roles.guard';
+import { Roles } from '../common/decorators/roles.decorator';
 import { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiOperation, ApiResponse, ApiConsumes, ApiBody } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { UserRole } from '../common/constants/roles';
 
 @Controller('dicom')
 // Temporairement désactivé pour les tests
-// @UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @ApiTags('DICOM')
 export class OrthancController {
   constructor(private readonly orthancService: OrthancService) {}
 
   @Get('studies')
-  @Roles('RADIOLOGUE', 'MEDECIN')
+  @Roles(UserRole.RADIOLOGUE, UserRole.MEDECIN)
   @ApiOperation({ summary: 'Récupérer toutes les études DICOM' })
   @ApiResponse({ status: 200, description: 'Liste des études récupérée avec succès' })
   @ApiResponse({ status: 500, description: 'Erreur serveur' })
@@ -35,7 +42,7 @@ export class OrthancController {
   }
 
   @Get('studies/:id')
-  @Roles('RADIOLOGUE', 'MEDECIN')
+  @Roles(UserRole.RADIOLOGUE, UserRole.MEDECIN)
   async getStudyDetails(@Param('id') studyId: string) {
     try {
       const study = await this.orthancService.getStudyDetails(studyId);
@@ -50,7 +57,7 @@ export class OrthancController {
   }
 
   @Get('studies/:id/series')
-  @Roles('RADIOLOGUE', 'MEDECIN')
+  @Roles(UserRole.RADIOLOGUE, UserRole.MEDECIN)
   async getSeries(@Param('id') studyId: string) {
     try {
       const series = await this.orthancService.getSeries(studyId);
@@ -65,7 +72,7 @@ export class OrthancController {
   }
 
   @Get('series/:id')
-  @Roles('RADIOLOGUE', 'MEDECIN')
+  @Roles(UserRole.RADIOLOGUE, UserRole.MEDECIN)
   async getSeriesDetails(@Param('id') seriesId: string) {
     try {
       const series = await this.orthancService.getSeriesDetails(seriesId);
@@ -80,7 +87,7 @@ export class OrthancController {
   }
 
   @Get('series/:id/instances')
-  @Roles('RADIOLOGUE', 'MEDECIN')
+  @Roles(UserRole.RADIOLOGUE, UserRole.MEDECIN)
   async getInstances(@Param('id') seriesId: string) {
     try {
       const instances = await this.orthancService.getInstances(seriesId);
@@ -95,7 +102,7 @@ export class OrthancController {
   }
 
   @Get('instances/:id')
-  @Roles('RADIOLOGUE', 'MEDECIN')
+  @Roles(UserRole.RADIOLOGUE, UserRole.MEDECIN)
   async getInstanceDetails(@Param('id') instanceId: string) {
     try {
       const instance = await this.orthancService.getInstanceDetails(instanceId);
@@ -110,7 +117,7 @@ export class OrthancController {
   }
 
   @Get('instances/:id/file')
-  @Roles('RADIOLOGUE', 'MEDECIN')
+  @Roles(UserRole.RADIOLOGUE, UserRole.MEDECIN)
   @Header('Content-Type', 'application/dicom')
   async getDicomFile(@Param('id') instanceId: string, @Res() res: Response) {
     try {
@@ -126,7 +133,7 @@ export class OrthancController {
   }
 
   @Get('instances/:id/preview')
-  @Roles('RADIOLOGUE', 'MEDECIN')
+  @Roles(UserRole.RADIOLOGUE, UserRole.MEDECIN)
   @Header('Content-Type', 'image/jpeg')
   async getInstancePreview(
     @Param('id') instanceId: string,

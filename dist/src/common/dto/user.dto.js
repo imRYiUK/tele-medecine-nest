@@ -22,6 +22,7 @@ class UserDto {
     role;
     etablissementID;
     estActif;
+    password;
 }
 exports.UserDto = UserDto;
 __decorate([
@@ -71,6 +72,12 @@ __decorate([
     (0, class_validator_1.IsBoolean)(),
     __metadata("design:type", Boolean)
 ], UserDto.prototype, "estActif", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: 'User password', writeOnly: true }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.MinLength)(6),
+    __metadata("design:type", String)
+], UserDto.prototype, "password", void 0);
 class CreateUserDto {
     nom;
     prenom;
@@ -134,6 +141,7 @@ class UpdateUserDto {
     role;
     etablissementID;
     estActif;
+    password;
 }
 exports.UpdateUserDto = UpdateUserDto;
 __decorate([
@@ -185,4 +193,11 @@ __decorate([
     (0, class_validator_1.IsBoolean)(),
     __metadata("design:type", Boolean)
 ], UpdateUserDto.prototype, "estActif", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: 'User password', required: false, writeOnly: true }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.MinLength)(6),
+    __metadata("design:type", String)
+], UpdateUserDto.prototype, "password", void 0);
 //# sourceMappingURL=user.dto.js.map
