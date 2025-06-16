@@ -32,21 +32,59 @@ let UsersController = class UsersController {
         }
         return req.user['utilisateurID'];
     }
+    getUserRole(req) {
+        if (!req.user || !req.user['role']) {
+            throw new common_1.UnauthorizedException('Rôle utilisateur non défini');
+        }
+        return req.user['role'];
+    }
+    validateRoleHierarchy(requesterRole, targetRole) {
+        if (requesterRole === "SUPER_ADMIN") {
+            return true;
+        }
+        if (requesterRole === "ADMIN" && targetRole !== "SUPER_ADMIN") {
+            return true;
+        }
+        return false;
+    }
     async create(createUserDto, req) {
+        const requesterRole = this.getUserRole(req);
+        if (!this.validateRoleHierarchy(requesterRole, createUserDto.role)) {
+            throw new common_1.ForbiddenException('Vous n\'avez pas les permissions nécessaires pour créer cet utilisateur');
+        }
         const adminId = this.getUserId(req);
         return this.usersService.create(createUserDto, adminId);
     }
-    async findAll() {
-        return this.usersService.findAll();
+    async findAll(req) {
+        const requesterRole = this.getUserRole(req);
+        return this.usersService.findAll(requesterRole);
     }
-    async findOne(id) {
-        return this.usersService.findOne(id);
+    async findOne(id, req) {
+        const requesterRole = this.getUserRole(req);
+        const user = await this.usersService.findOne(id);
+        if (!this.validateRoleHierarchy(requesterRole, user.role)) {
+            throw new common_1.ForbiddenException('Vous n\'avez pas les permissions nécessaires pour consulter cet utilisateur');
+        }
+        return user;
     }
     async update(id, updateUserDto, req) {
+        const requesterRole = this.getUserRole(req);
+        const user = await this.usersService.findOne(id);
+        if (!this.validateRoleHierarchy(requesterRole, user.role)) {
+            throw new common_1.ForbiddenException('Vous n\'avez pas les permissions nécessaires pour modifier cet utilisateur');
+        }
+        if (updateUserDto.role && !this.validateRoleHierarchy(requesterRole, updateUserDto.role)) {
+            throw new common_1.ForbiddenException('Vous n\'avez pas les permissions nécessaires pour attribuer ce rôle');
+        }
         const adminId = this.getUserId(req);
         return this.usersService.update(id, updateUserDto, adminId);
     }
     async remove(id, req) {
+        const requesterRole = this.getUserRole(req);
+        const user = await this.usersService.findOne(id);
+        if (!this.validateRoleHierarchy(requesterRole, user.role)) {
+            throw new common_1.ForbiddenException('Vous n\'avez pas les permissions nécessaires pour supprimer cet utilisateur');
+        }
         const adminId = this.getUserId(req);
         return this.usersService.remove(id, adminId);
     }
@@ -62,7 +100,7 @@ let UsersController = class UsersController {
 exports.UsersController = UsersController;
 __decorate([
     (0, common_1.Post)(),
-    (0, roles_decorator_1.Roles)("ADMIN"),
+    (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMIN"),
     (0, log_activity_decorator_1.LogActivity)({
         typeAction: 'CREATION_UTILISATEUR',
         description: (result) => `Création d'un nouvel utilisateur: ${result.email}`,
@@ -79,20 +117,21 @@ __decorate([
 ], UsersController.prototype, "create", null);
 __decorate([
     (0, common_1.Get)(),
-    (0, roles_decorator_1.Roles)("ADMIN"),
+    (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMIN"),
     (0, log_activity_decorator_1.LogActivity)({
         typeAction: 'CONSULTATION_UTILISATEURS',
         description: 'Consultation de la liste des utilisateurs',
     }),
     (0, swagger_1.ApiOperation)({ summary: 'Get all users' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Returns all users', type: [user_dto_1.UserDto] }),
+    __param(0, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], UsersController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)(':id'),
-    (0, roles_decorator_1.Roles)("ADMIN"),
+    (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMIN"),
     (0, log_activity_decorator_1.LogActivity)({
         typeAction: 'CONSULTATION_UTILISATEUR',
         description: (result) => `Consultation de l'utilisateur: ${result.email}`,
@@ -101,13 +140,14 @@ __decorate([
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Returns the user', type: user_dto_1.UserDto }),
     (0, swagger_1.ApiResponse)({ status: 404, description: 'User not found' }),
     __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", Promise)
 ], UsersController.prototype, "findOne", null);
 __decorate([
     (0, common_1.Put)(':id'),
-    (0, roles_decorator_1.Roles)("ADMIN"),
+    (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMIN"),
     (0, log_activity_decorator_1.LogActivity)({
         typeAction: 'MODIFICATION_UTILISATEUR',
         description: (result) => `Modification de l'utilisateur: ${result.email}`,
@@ -125,7 +165,7 @@ __decorate([
 ], UsersController.prototype, "update", null);
 __decorate([
     (0, common_1.Delete)(':id'),
-    (0, roles_decorator_1.Roles)("ADMIN"),
+    (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMIN"),
     (0, log_activity_decorator_1.LogActivity)({
         typeAction: 'SUPPRESSION_UTILISATEUR',
         description: (result) => `Suppression de l'utilisateur: ${result.email}`,
@@ -141,7 +181,7 @@ __decorate([
 ], UsersController.prototype, "remove", null);
 __decorate([
     (0, common_1.Get)('profile/me'),
-    (0, roles_decorator_1.Roles)("ADMIN", "RADIOLOGUE", "MEDECIN", "RECEPTIONNISTE", "TECHNICIEN"),
+    (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMIN", "RADIOLOGUE", "MEDECIN", "RECEPTIONNISTE", "TECHNICIEN"),
     (0, log_activity_decorator_1.LogActivity)({
         typeAction: 'CONSULTATION_PROFIL',
         description: 'Consultation du profil utilisateur',
@@ -163,7 +203,7 @@ __decorate([
 ], UsersController.prototype, "getProfile", null);
 __decorate([
     (0, common_1.Put)('profile/me'),
-    (0, roles_decorator_1.Roles)("ADMIN", "RADIOLOGUE", "MEDECIN", "RECEPTIONNISTE", "TECHNICIEN"),
+    (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMIN", "RADIOLOGUE", "MEDECIN", "RECEPTIONNISTE", "TECHNICIEN"),
     (0, log_activity_decorator_1.LogActivity)({
         typeAction: 'MODIFICATION_PROFIL',
         description: 'Modification du profil utilisateur',

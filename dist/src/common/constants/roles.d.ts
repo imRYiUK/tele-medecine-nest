@@ -1,4 +1,5 @@
 export declare const enum UserRole {
+    SUPER_ADMIN = "SUPER_ADMIN",
     ADMINISTRATEUR = "ADMIN",
     MEDECIN = "MEDECIN",
     PERSONNEL_ADMINISTRATIF = "RECEPTIONNISTE",

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, Req, UnauthorizedException } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, Req, UnauthorizedException, ForbiddenException } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { Request } from 'express';
 import { CreateUserDto, UpdateUserDto, UserDto } from '../common/dto/user.dto';
@@ -22,8 +22,25 @@ export class UsersController {
     return req.user['utilisateurID'];
   }
 
+  private getUserRole(req: Request): string {
+    if (!req.user || !req.user['role']) {
+      throw new UnauthorizedException('Rôle utilisateur non défini');
+    }
+    return req.user['role'];
+  }
+
+  private validateRoleHierarchy(requesterRole: string, targetRole: string) {
+    if (requesterRole === UserRole.SUPER_ADMIN) {
+      return true; // SUPER_ADMIN can manage all roles
+    }
+    if (requesterRole === UserRole.ADMINISTRATEUR && targetRole !== UserRole.SUPER_ADMIN) {
+      return true; // ADMIN can manage all roles except SUPER_ADMIN
+    }
+    return false;
+  }
+
   @Post()
-  @Roles(UserRole.ADMINISTRATEUR)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMINISTRATEUR)
   @LogActivity({
     typeAction: 'CREATION_UTILISATEUR',
     description: (result) => `Création d'un nouvel utilisateur: ${result.email}`,
@@ -33,24 +50,29 @@ export class UsersController {
   @ApiResponse({ status: 400, description: 'Invalid input' })
   @ApiResponse({ status: 409, description: 'Username or email already exists' })
   async create(@Body() createUserDto: CreateUserDto, @Req() req: Request) {
+    const requesterRole = this.getUserRole(req);
+    if (!this.validateRoleHierarchy(requesterRole, createUserDto.role)) {
+      throw new ForbiddenException('Vous n\'avez pas les permissions nécessaires pour créer cet utilisateur');
+    }
     const adminId = this.getUserId(req);
     return this.usersService.create(createUserDto, adminId);
   }
 
   @Get()
-  @Roles(UserRole.ADMINISTRATEUR)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMINISTRATEUR)
   @LogActivity({
     typeAction: 'CONSULTATION_UTILISATEURS',
     description: 'Consultation de la liste des utilisateurs',
   })
   @ApiOperation({ summary: 'Get all users' })
   @ApiResponse({ status: 200, description: 'Returns all users', type: [UserDto] })
-  async findAll() {
-    return this.usersService.findAll();
+  async findAll(@Req() req: Request) {
+    const requesterRole = this.getUserRole(req);
+    return this.usersService.findAll(requesterRole);
   }
 
   @Get(':id')
-  @Roles(UserRole.ADMINISTRATEUR)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMINISTRATEUR)
   @LogActivity({
     typeAction: 'CONSULTATION_UTILISATEUR',
     description: (result) => `Consultation de l'utilisateur: ${result.email}`,
@@ -58,12 +80,17 @@ export class UsersController {
   @ApiOperation({ summary: 'Get a user by ID' })
   @ApiResponse({ status: 200, description: 'Returns the user', type: UserDto })
   @ApiResponse({ status: 404, description: 'User not found' })
-  async findOne(@Param('id') id: string) {
-    return this.usersService.findOne(id);
+  async findOne(@Param('id') id: string, @Req() req: Request) {
+    const requesterRole = this.getUserRole(req);
+    const user = await this.usersService.findOne(id);
+    if (!this.validateRoleHierarchy(requesterRole, user.role)) {
+      throw new ForbiddenException('Vous n\'avez pas les permissions nécessaires pour consulter cet utilisateur');
+    }
+    return user;
   }
 
   @Put(':id')
-  @Roles(UserRole.ADMINISTRATEUR)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMINISTRATEUR)
   @LogActivity({
     typeAction: 'MODIFICATION_UTILISATEUR',
     description: (result) => `Modification de l'utilisateur: ${result.email}`,
@@ -77,12 +104,20 @@ export class UsersController {
     @Body() updateUserDto: UpdateUserDto,
     @Req() req: Request,
   ) {
+    const requesterRole = this.getUserRole(req);
+    const user = await this.usersService.findOne(id);
+    if (!this.validateRoleHierarchy(requesterRole, user.role)) {
+      throw new ForbiddenException('Vous n\'avez pas les permissions nécessaires pour modifier cet utilisateur');
+    }
+    if (updateUserDto.role && !this.validateRoleHierarchy(requesterRole, updateUserDto.role)) {
+      throw new ForbiddenException('Vous n\'avez pas les permissions nécessaires pour attribuer ce rôle');
+    }
     const adminId = this.getUserId(req);
     return this.usersService.update(id, updateUserDto, adminId);
   }
 
   @Delete(':id')
-  @Roles(UserRole.ADMINISTRATEUR)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMINISTRATEUR)
   @LogActivity({
     typeAction: 'SUPPRESSION_UTILISATEUR',
     description: (result) => `Suppression de l'utilisateur: ${result.email}`,
@@ -91,12 +126,17 @@ export class UsersController {
   @ApiResponse({ status: 200, description: 'User deleted successfully' })
   @ApiResponse({ status: 404, description: 'User not found' })
   async remove(@Param('id') id: string, @Req() req: Request) {
+    const requesterRole = this.getUserRole(req);
+    const user = await this.usersService.findOne(id);
+    if (!this.validateRoleHierarchy(requesterRole, user.role)) {
+      throw new ForbiddenException('Vous n\'avez pas les permissions nécessaires pour supprimer cet utilisateur');
+    }
     const adminId = this.getUserId(req);
     return this.usersService.remove(id, adminId);
   }
 
   @Get('profile/me')
-  @Roles(UserRole.ADMINISTRATEUR, UserRole.RADIOLOGUE, UserRole.MEDECIN, UserRole.PERSONNEL_ADMINISTRATIF, UserRole.TECHNICIEN)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMINISTRATEUR, UserRole.RADIOLOGUE, UserRole.MEDECIN, UserRole.PERSONNEL_ADMINISTRATIF, UserRole.TECHNICIEN)
   @LogActivity({
     typeAction: 'CONSULTATION_PROFIL',
     description: 'Consultation du profil utilisateur',
@@ -117,7 +157,7 @@ export class UsersController {
   }
 
   @Put('profile/me')
-  @Roles(UserRole.ADMINISTRATEUR, UserRole.RADIOLOGUE, UserRole.MEDECIN, UserRole.PERSONNEL_ADMINISTRATIF, UserRole.TECHNICIEN)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMINISTRATEUR, UserRole.RADIOLOGUE, UserRole.MEDECIN, UserRole.PERSONNEL_ADMINISTRATIF, UserRole.TECHNICIEN)
   @LogActivity({
     typeAction: 'MODIFICATION_PROFIL',
     description: 'Modification du profil utilisateur',

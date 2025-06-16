@@ -18,6 +18,15 @@ let UsersService = class UsersService {
     constructor(prisma) {
         this.prisma = prisma;
     }
+    validateRoleHierarchy(requesterRole, targetRole) {
+        if (requesterRole === "SUPER_ADMIN") {
+            return true;
+        }
+        if (requesterRole === "ADMIN" && targetRole !== "SUPER_ADMIN") {
+            return true;
+        }
+        return false;
+    }
     async create(createUserDto, adminId) {
         const { password, ...userData } = createUserDto;
         const existingUser = await this.prisma.utilisateur.findFirst({
@@ -41,7 +50,7 @@ let UsersService = class UsersService {
         const { password: _, ...result } = user;
         return result;
     }
-    async findAll() {
+    async findAll(requesterRole) {
         const users = await this.prisma.utilisateur.findMany({
             select: {
                 utilisateurID: true,
@@ -60,6 +69,9 @@ let UsersService = class UsersService {
                 },
             },
         });
+        if (requesterRole) {
+            return users.filter(user => this.validateRoleHierarchy(requesterRole, user.role));
+        }
         return users;
     }
     async findOne(utilisateurID) {

@@ -10,8 +10,8 @@ export declare class JournalService {
             role: string;
         };
     } & {
-        utilisateurID: string;
         description: string;
+        utilisateurID: string;
         journalID: string;
         dateAction: Date;
         typeAction: string;
@@ -25,8 +25,8 @@ export declare class JournalService {
             role: string;
         };
     } & {
-        utilisateurID: string;
         description: string;
+        utilisateurID: string;
         journalID: string;
         dateAction: Date;
         typeAction: string;
@@ -40,8 +40,8 @@ export declare class JournalService {
             role: string;
         };
     } & {
-        utilisateurID: string;
         description: string;
+        utilisateurID: string;
         journalID: string;
         dateAction: Date;
         typeAction: string;
@@ -55,8 +55,8 @@ export declare class JournalService {
             role: string;
         };
     } & {
-        utilisateurID: string;
         description: string;
+        utilisateurID: string;
         journalID: string;
         dateAction: Date;
         typeAction: string;

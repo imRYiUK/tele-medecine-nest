@@ -19,11 +19,11 @@ export declare class AuthService {
             nom: string;
             telephone: string;
             email: string;
+            estActif: boolean;
             utilisateurID: string;
             prenom: string;
             username: string;
             role: string;
-            estActif: boolean;
         };
         token: string;
     }>;
@@ -36,11 +36,11 @@ export declare class AuthService {
             nom: string;
             telephone: string;
             email: string;
+            estActif: boolean;
             utilisateurID: string;
             prenom: string;
             username: string;
             role: string;
-            estActif: boolean;
         };
         token: string;
     }>;

@@ -117,7 +117,6 @@ export class UpdateUserDto {
 
   @ApiProperty({ description: 'ID of the establishment the user belongs to', required: false })
   @IsOptional()
-  @IsUUID()
   etablissementID?: string;
 
   @ApiProperty({ description: 'Whether the user account is active', required: false })

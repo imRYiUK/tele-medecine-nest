@@ -7,6 +7,7 @@ import { UsersModule } from './users/users.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { OrthancModule } from './orthanc/orthanc.module';
 import { CommonModule } from './common/common.module';
+import { EtablissementsModule } from './etablissements/etablissements.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { CommonModule } from './common/common.module';
     UsersModule,
     OrthancModule,
     CommonModule,
+    EtablissementsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

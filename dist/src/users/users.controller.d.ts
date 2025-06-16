@@ -5,9 +5,11 @@ export declare class UsersController {
     private usersService;
     constructor(usersService: UsersService);
     private getUserId;
+    private getUserRole;
+    private validateRoleHierarchy;
     create(createUserDto: CreateUserDto, req: Request): Promise<UserDto>;
-    findAll(): Promise<UserDto[]>;
-    findOne(id: string): Promise<UserDto>;
+    findAll(req: Request): Promise<UserDto[]>;
+    findOne(id: string, req: Request): Promise<UserDto>;
     update(id: string, updateUserDto: UpdateUserDto, req: Request): Promise<{
         etablissement: {
             etablissementID: string;
@@ -16,11 +18,11 @@ export declare class UsersController {
         nom: string;
         telephone: string;
         email: string;
+        estActif: boolean;
         utilisateurID: string;
         prenom: string;
         username: string;
         role: string;
-        estActif: boolean;
     }>;
     remove(id: string, req: Request): Promise<void>;
     getProfile(req: Request): Promise<UserDto>;
@@ -32,10 +34,10 @@ export declare class UsersController {
         nom: string;
         telephone: string;
         email: string;
+        estActif: boolean;
         utilisateurID: string;
         prenom: string;
         username: string;
         role: string;
-        estActif: boolean;
     }>;
 }

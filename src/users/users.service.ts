@@ -2,10 +2,21 @@ import { Injectable, NotFoundException, ConflictException, UnauthorizedException
 import { PrismaService } from '../prisma/prisma.service';
 import { UserDto, CreateUserDto, UpdateUserDto } from '../common/dto/user.dto';
 import * as bcrypt from 'bcrypt';
+import { UserRole } from '../common/constants/roles';
 
 @Injectable()
 export class UsersService {
   constructor(private prisma: PrismaService) {}
+
+  private validateRoleHierarchy(requesterRole: string, targetRole: string): boolean {
+    if (requesterRole === UserRole.SUPER_ADMIN) {
+      return true; // SUPER_ADMIN can manage all roles
+    }
+    if (requesterRole === UserRole.ADMINISTRATEUR && targetRole !== UserRole.SUPER_ADMIN) {
+      return true; // ADMIN can manage all roles except SUPER_ADMIN
+    }
+    return false;
+  }
 
   async create(createUserDto: CreateUserDto, adminId: string): Promise<UserDto> {
     const { password, ...userData } = createUserDto;
@@ -38,7 +49,7 @@ export class UsersService {
     return result;
   }
 
-  async findAll(): Promise<UserDto[]> {
+  async findAll(requesterRole?: string): Promise<UserDto[]> {
     const users = await this.prisma.utilisateur.findMany({
       select: {
         utilisateurID: true,
@@ -57,6 +68,12 @@ export class UsersService {
         },
       },
     });
+
+    // If requesterRole is provided, filter users based on role hierarchy
+    if (requesterRole) {
+      return users.filter(user => this.validateRoleHierarchy(requesterRole, user.role));
+    }
+
     return users;
   }
 
