@@ -5,7 +5,6 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { UserDto } from '../common/dto/user.dto';
 import { JournalActivityService } from '../journal/journal-activity.service';
-import { JwtPayload } from '../common/interfaces/jwt-payload.interface';
 export declare class AuthService {
     private jwtService;
     private configService;
@@ -15,27 +14,34 @@ export declare class AuthService {
     constructor(jwtService: JwtService, configService: ConfigService, prisma: PrismaService, journalActivityService: JournalActivityService);
     validateUser(email: string, pass: string): Promise<UserDto | null>;
     login(loginDto: LoginDto): Promise<{
-        access_token: string;
         user: {
-            utilisateurID: string;
-            email: string;
+            etablissementID: string | null;
             nom: string;
+            telephone: string;
+            email: string;
+            utilisateurID: string;
             prenom: string;
+            username: string;
             role: string;
+            estActif: boolean;
         };
+        token: string;
     }>;
     revokeToken(token: string): Promise<{
         success: boolean;
     }>;
     register(registerDto: RegisterDto): Promise<{
-        access_token: string;
         user: {
-            utilisateurID: string;
-            email: string;
+            etablissementID: string | null;
             nom: string;
+            telephone: string;
+            email: string;
+            utilisateurID: string;
             prenom: string;
+            username: string;
             role: string;
+            estActif: boolean;
         };
+        token: string;
     }>;
-    validateToken(token: string): Promise<JwtPayload>;
 }

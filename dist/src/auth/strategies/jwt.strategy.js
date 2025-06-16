@@ -32,20 +32,16 @@ let JwtStrategy = JwtStrategy_1 = class JwtStrategy extends (0, passport_1.Passp
         });
         this.configService = configService;
         this.prisma = prisma;
-        this.logger.debug('JWT Strategy initialized with secret key');
     }
     async validate(payload) {
         try {
-            this.logger.debug('JWT Strategy validate called with payload:', JSON.stringify(payload, null, 2));
             if (!payload.sub) {
                 this.logger.error('JWT payload missing sub claim');
                 throw new common_1.UnauthorizedException('Invalid token structure');
             }
-            this.logger.debug(`Looking up user with ID: ${payload.sub}`);
             const user = await this.prisma.utilisateur.findUnique({
                 where: { utilisateurID: payload.sub },
             });
-            this.logger.debug('Database query result:', user ? 'User found' : 'User not found');
             if (!user) {
                 this.logger.warn(`User not found for ID: ${payload.sub}`);
                 throw new common_1.UnauthorizedException('User not found');
@@ -54,7 +50,7 @@ let JwtStrategy = JwtStrategy_1 = class JwtStrategy extends (0, passport_1.Passp
                 this.logger.warn(`Inactive user attempted to authenticate: ${user.email}`);
                 throw new common_1.UnauthorizedException('Account is inactive');
             }
-            const userInfo = {
+            return {
                 utilisateurID: user.utilisateurID,
                 email: user.email,
                 role: user.role,
@@ -62,8 +58,6 @@ let JwtStrategy = JwtStrategy_1 = class JwtStrategy extends (0, passport_1.Passp
                 prenom: user.prenom,
                 estActif: user.estActif
             };
-            this.logger.debug('JWT Strategy returning user info:', JSON.stringify(userInfo, null, 2));
-            return userInfo;
         }
         catch (error) {
             this.logger.error(`JWT validation error: ${error.message}`);

@@ -18,7 +18,8 @@ export class AuthService {
     private configService: ConfigService,
     private prisma: PrismaService,
     private journalActivityService: JournalActivityService,
-  ) {}
+  ) {
+  }
 
   async validateUser(email: string, pass: string): Promise<UserDto | null> {
     // const user = await this.usersService.validateUser(email, password);
@@ -43,55 +44,56 @@ export class AuthService {
   }
 
   async login(loginDto: LoginDto) {
-    try {
-      const user = await this.prisma.utilisateur.findUnique({
-        where: { email: loginDto.email },
-      });
+    const { email, password } = loginDto;
 
-      if (!user) {
-        this.logger.warn(`Login attempt failed: User not found for email ${loginDto.email}`);
-        throw new UnauthorizedException('Invalid credentials');
-      }
+    // Rechercher l'utilisateur
+    const user = await this.prisma.utilisateur.findFirst({
+      where: {
+        OR: [
+          { email },
+          { email: email },
+        ],
+      },
+    });
 
-      const isPasswordValid = await bcrypt.compare(loginDto.password, user.password);
-      if (!isPasswordValid) {
-        this.logger.warn(`Login attempt failed: Invalid password for user ${user.email}`);
-        throw new UnauthorizedException('Invalid credentials');
-      }
-
-      if (!user.estActif) {
-        this.logger.warn(`Login attempt failed: Inactive account ${user.email}`);
-        throw new UnauthorizedException('Account is inactive');
-      }
-
-      const payload: JwtPayload = {
-        sub: user.utilisateurID,
-        email: user.email,
-        role: user.role,
-      };
-
-      const token = this.jwtService.sign(payload);
-      
-      await this.journalActivityService.logActivity({
-        utilisateurID: user.utilisateurID,
-        typeAction: 'CONNEXION',
-        description: `Connexion réussie: ${user.nom} ${user.prenom} (${user.email})`,
-      });
-
-      return {
-        access_token: token,
-        user: {
-          utilisateurID: user.utilisateurID,
-          email: user.email,
-          nom: user.nom,
-          prenom: user.prenom,
-          role: user.role,
-        },
-      };
-    } catch (error) {
-      this.logger.error(`Login error: ${error.message}`);
-      throw error;
+    if (!user) {
+      throw new UnauthorizedException('Identifiants invalides');
     }
+
+    // Vérifier le mot de passe
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Identifiants invalides');
+    }
+
+    // Vérifier si l'utilisateur est actif
+    if (!user.estActif) {
+      throw new UnauthorizedException('Compte désactivé');
+    }
+
+    // Générer le token JWT
+    const payload = {
+      sub: user.utilisateurID,
+      email: user.email,
+      role: user.role
+    };
+
+    const token = this.jwtService.sign(payload);
+
+    // Ne pas renvoyer le mot de passe
+    const { password: _, ...result } = user;
+
+    await this.journalActivityService.logActivity({
+      utilisateurID: user.utilisateurID,
+      typeAction: 'CONNEXION',
+      description: `Connexion réussie: ${user.nom} ${user.prenom} (${user.email})`,
+    });
+
+    return {
+      user: result,
+      token,
+    };
   }
 
   async revokeToken(token: string) {
@@ -103,67 +105,54 @@ export class AuthService {
   }
 
   async register(registerDto: RegisterDto) {
-    try {
-      const existingUser = await this.prisma.utilisateur.findUnique({
-        where: { email: registerDto.email },
-      });
+    const { password, ...userData } = registerDto;
 
-      if (existingUser) {
-        this.logger.warn(`Registration failed: Email already exists ${registerDto.email}`);
-        throw new UnauthorizedException('Email already exists');
-      }
+    // Vérifier si l'utilisateur existe déjà
+    const existingUser = await this.prisma.utilisateur.findFirst({
+      where: {
+        OR: [
+          { email: userData.email },
+          { username: userData.username },
+        ],
+      },
+    });
 
-      const hashedPassword = await bcrypt.hash(registerDto.password, 10);
-
-      const user = await this.prisma.utilisateur.create({
-        data: {
-          email: registerDto.email,
-          password: hashedPassword,
-          nom: registerDto.nom,
-          prenom: registerDto.prenom,
-          telephone: registerDto.telephone,
-          role: registerDto.role,
-          username: registerDto.email,
-        },
-      });
-
-      const payload: JwtPayload = {
-        sub: user.utilisateurID,
-        email: user.email,
-        role: user.role,
-      };
-
-      const token = this.jwtService.sign(payload);
-
-      await this.journalActivityService.logActivity({
-        utilisateurID: user.utilisateurID,
-        typeAction: 'INSCRIPTION',
-        description: `Nouvelle inscription: ${user.nom} ${user.prenom} (${user.email})`,
-      });
-
-      return {
-        access_token: token,
-        user: {
-          utilisateurID: user.utilisateurID,
-          email: user.email,
-          nom: user.nom,
-          prenom: user.prenom,
-          role: user.role,
-        },
-      };
-    } catch (error) {
-      this.logger.error(`Registration error: ${error.message}`);
-      throw error;
+    if (existingUser) {
+      throw new ConflictException('Un utilisateur avec cet email ou ce nom d\'utilisateur existe déjà');
     }
-  }
 
-  async validateToken(token: string): Promise<JwtPayload> {
-    try {
-      return await this.jwtService.verifyAsync<JwtPayload>(token);
-    } catch (error) {
-      this.logger.error(`Token validation error: ${error.message}`);
-      throw new UnauthorizedException('Invalid token');
-    }
+    // Hasher le mot de passe
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Créer l'utilisateur
+    const user = await this.prisma.utilisateur.create({
+      data: {
+        ...userData,
+        password: hashedPassword,
+      },
+    });
+
+    // Générer le token JWT
+    const payload = {
+      sub: user.utilisateurID,
+      email: user.email,
+      role: user.role
+    };
+
+    const token = this.jwtService.sign(payload);
+
+    // Ne pas renvoyer le mot de passe
+    const { password: _, ...result } = user;
+
+    await this.journalActivityService.logActivity({
+      utilisateurID: user.utilisateurID,
+      typeAction: 'INSCRIPTION',
+      description: `Nouvelle inscription: ${user.nom} ${user.prenom} (${user.email})`,
+    });
+
+    return {
+      user: result,
+      token,
+    };
   }
 }
-

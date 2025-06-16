@@ -20,6 +20,7 @@ const roles_guard_1 = require("../common/guards/roles.guard");
 const roles_decorator_1 = require("../common/decorators/roles.decorator");
 const jwt_auth_guard_1 = require("../common/guards/jwt-auth.guard");
 const swagger_1 = require("@nestjs/swagger");
+const log_activity_decorator_1 = require("../common/decorators/log-activity.decorator");
 let UsersController = class UsersController {
     usersService;
     constructor(usersService) {
@@ -62,6 +63,10 @@ exports.UsersController = UsersController;
 __decorate([
     (0, common_1.Post)(),
     (0, roles_decorator_1.Roles)("ADMIN"),
+    (0, log_activity_decorator_1.LogActivity)({
+        typeAction: 'CREATION_UTILISATEUR',
+        description: (result) => `Création d'un nouvel utilisateur: ${result.email}`,
+    }),
     (0, swagger_1.ApiOperation)({ summary: 'Create a new user' }),
     (0, swagger_1.ApiResponse)({ status: 201, description: 'User created successfully', type: user_dto_1.UserDto }),
     (0, swagger_1.ApiResponse)({ status: 400, description: 'Invalid input' }),
@@ -75,6 +80,10 @@ __decorate([
 __decorate([
     (0, common_1.Get)(),
     (0, roles_decorator_1.Roles)("ADMIN"),
+    (0, log_activity_decorator_1.LogActivity)({
+        typeAction: 'CONSULTATION_UTILISATEURS',
+        description: 'Consultation de la liste des utilisateurs',
+    }),
     (0, swagger_1.ApiOperation)({ summary: 'Get all users' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Returns all users', type: [user_dto_1.UserDto] }),
     __metadata("design:type", Function),
@@ -84,6 +93,10 @@ __decorate([
 __decorate([
     (0, common_1.Get)(':id'),
     (0, roles_decorator_1.Roles)("ADMIN"),
+    (0, log_activity_decorator_1.LogActivity)({
+        typeAction: 'CONSULTATION_UTILISATEUR',
+        description: (result) => `Consultation de l'utilisateur: ${result.email}`,
+    }),
     (0, swagger_1.ApiOperation)({ summary: 'Get a user by ID' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Returns the user', type: user_dto_1.UserDto }),
     (0, swagger_1.ApiResponse)({ status: 404, description: 'User not found' }),
@@ -95,6 +108,10 @@ __decorate([
 __decorate([
     (0, common_1.Put)(':id'),
     (0, roles_decorator_1.Roles)("ADMIN"),
+    (0, log_activity_decorator_1.LogActivity)({
+        typeAction: 'MODIFICATION_UTILISATEUR',
+        description: (result) => `Modification de l'utilisateur: ${result.email}`,
+    }),
     (0, swagger_1.ApiOperation)({ summary: 'Update a user' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'User updated successfully', type: user_dto_1.UserDto }),
     (0, swagger_1.ApiResponse)({ status: 404, description: 'User not found' }),
@@ -109,6 +126,10 @@ __decorate([
 __decorate([
     (0, common_1.Delete)(':id'),
     (0, roles_decorator_1.Roles)("ADMIN"),
+    (0, log_activity_decorator_1.LogActivity)({
+        typeAction: 'SUPPRESSION_UTILISATEUR',
+        description: (result) => `Suppression de l'utilisateur: ${result.email}`,
+    }),
     (0, swagger_1.ApiOperation)({ summary: 'Delete a user' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'User deleted successfully' }),
     (0, swagger_1.ApiResponse)({ status: 404, description: 'User not found' }),
@@ -121,6 +142,10 @@ __decorate([
 __decorate([
     (0, common_1.Get)('profile/me'),
     (0, roles_decorator_1.Roles)("ADMIN", "RADIOLOGUE", "MEDECIN", "RECEPTIONNISTE", "TECHNICIEN"),
+    (0, log_activity_decorator_1.LogActivity)({
+        typeAction: 'CONSULTATION_PROFIL',
+        description: 'Consultation du profil utilisateur',
+    }),
     (0, swagger_1.ApiOperation)({ summary: 'Get current user profile' }),
     (0, swagger_1.ApiResponse)({
         status: 200,
@@ -139,6 +164,10 @@ __decorate([
 __decorate([
     (0, common_1.Put)('profile/me'),
     (0, roles_decorator_1.Roles)("ADMIN", "RADIOLOGUE", "MEDECIN", "RECEPTIONNISTE", "TECHNICIEN"),
+    (0, log_activity_decorator_1.LogActivity)({
+        typeAction: 'MODIFICATION_PROFIL',
+        description: 'Modification du profil utilisateur',
+    }),
     (0, swagger_1.ApiOperation)({ summary: 'Update current user profile' }),
     (0, swagger_1.ApiResponse)({
         status: 200,

@@ -13,105 +13,120 @@ exports.UsersService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
 const bcrypt = require("bcrypt");
-const journal_activity_service_1 = require("../journal/journal-activity.service");
 let UsersService = class UsersService {
     prisma;
-    journalActivityService;
-    constructor(prisma, journalActivityService) {
+    constructor(prisma) {
         this.prisma = prisma;
-        this.journalActivityService = journalActivityService;
     }
     async create(createUserDto, adminId) {
+        const { password, ...userData } = createUserDto;
         const existingUser = await this.prisma.utilisateur.findFirst({
             where: {
                 OR: [
-                    { username: createUserDto.username },
-                    { email: createUserDto.email }
+                    { username: userData.username },
+                    { email: userData.email }
                 ]
             }
         });
         if (existingUser) {
             throw new common_1.ConflictException('Username or email already exists');
         }
-        const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+        const hashedPassword = await bcrypt.hash(password, 10);
         const user = await this.prisma.utilisateur.create({
             data: {
-                ...createUserDto,
+                ...userData,
                 password: hashedPassword,
             },
         });
-        await this.journalActivityService.logActivity({
-            utilisateurID: adminId,
-            typeAction: 'CREATION_UTILISATEUR',
-            description: `Création d'un nouvel utilisateur: ${user.nom} ${user.prenom} (${user.username})`,
-        });
-        const { password, ...result } = user;
+        const { password: _, ...result } = user;
         return result;
     }
     async findAll() {
-        const users = await this.prisma.utilisateur.findMany();
-        return users.map(user => {
-            const { password, ...result } = user;
-            return result;
+        const users = await this.prisma.utilisateur.findMany({
+            select: {
+                utilisateurID: true,
+                nom: true,
+                prenom: true,
+                email: true,
+                username: true,
+                telephone: true,
+                role: true,
+                estActif: true,
+                etablissement: {
+                    select: {
+                        etablissementID: true,
+                        nom: true,
+                    },
+                },
+            },
         });
+        return users;
     }
     async findOne(utilisateurID) {
         const user = await this.prisma.utilisateur.findUnique({
             where: { utilisateurID },
+            select: {
+                utilisateurID: true,
+                nom: true,
+                prenom: true,
+                email: true,
+                username: true,
+                telephone: true,
+                role: true,
+                estActif: true,
+                etablissement: {
+                    select: {
+                        etablissementID: true,
+                        nom: true,
+                    },
+                },
+            },
         });
         if (!user) {
             throw new common_1.NotFoundException(`User with ID ${utilisateurID} not found`);
         }
-        const { password, ...result } = user;
-        return result;
+        return user;
     }
     async findById(userId) {
         return this.findOne(userId);
     }
-    async update(utilisateurID, updateUserDto, adminId) {
-        const existingUser = await this.findOne(utilisateurID);
-        if (updateUserDto.username || updateUserDto.email) {
-            const conflictingUser = await this.prisma.utilisateur.findFirst({
-                where: {
-                    AND: [
-                        { utilisateurID: { not: utilisateurID } },
-                        {
-                            OR: [
-                                { username: updateUserDto.username },
-                                { email: updateUserDto.email }
-                            ]
-                        }
-                    ]
-                }
-            });
-            if (conflictingUser) {
-                throw new common_1.ConflictException('Username or email already exists');
-            }
-        }
-        if (updateUserDto.password) {
-            updateUserDto.password = await bcrypt.hash(updateUserDto.password, 10);
+    async update(id, updateUserDto, adminId) {
+        const { password, ...updateData } = updateUserDto;
+        const existingUser = await this.prisma.utilisateur.findUnique({
+            where: { utilisateurID: id },
+        });
+        if (!existingUser) {
+            throw new common_1.NotFoundException(`Utilisateur avec l'ID ${id} non trouvé`);
         }
         const updatedUser = await this.prisma.utilisateur.update({
-            where: { utilisateurID },
-            data: updateUserDto,
+            where: { utilisateurID: id },
+            data: {
+                ...updateData,
+                ...(password && { password: await bcrypt.hash(password, 10) }),
+            },
+            select: {
+                utilisateurID: true,
+                nom: true,
+                prenom: true,
+                email: true,
+                username: true,
+                telephone: true,
+                role: true,
+                estActif: true,
+                etablissement: {
+                    select: {
+                        etablissementID: true,
+                        nom: true,
+                    },
+                },
+            },
         });
-        await this.journalActivityService.logActivity({
-            utilisateurID: adminId,
-            typeAction: 'MODIFICATION_UTILISATEUR',
-            description: `Modification des informations de l'utilisateur: ${updatedUser.nom} ${updatedUser.prenom} (${updatedUser.username})`,
-        });
-        const { password, ...result } = updatedUser;
-        return result;
+        return updatedUser;
     }
     async remove(utilisateurID, adminId) {
         const user = await this.findOne(utilisateurID);
         await this.prisma.utilisateur.delete({
             where: { utilisateurID },
-        });
-        await this.journalActivityService.logActivity({
-            utilisateurID: adminId,
-            typeAction: 'SUPPRESSION_UTILISATEUR',
-            description: `Suppression de l'utilisateur: ${user.nom} ${user.prenom} (${user.username})`,
         });
     }
     async getProfile(userId) {
@@ -125,12 +140,35 @@ let UsersService = class UsersService {
         };
     }
     async updateProfile(userId, updateUserDto) {
-        const { role, estActif, ...safeUpdateData } = updateUserDto;
-        const updatedUser = await this.update(userId, safeUpdateData, userId);
-        await this.journalActivityService.logActivity({
-            utilisateurID: userId,
-            typeAction: 'MODIFICATION_PROFIL',
-            description: `Modification du profil utilisateur`,
+        const { password, ...updateData } = updateUserDto;
+        const existingUser = await this.prisma.utilisateur.findUnique({
+            where: { utilisateurID: userId },
+        });
+        if (!existingUser) {
+            throw new common_1.NotFoundException('Profil utilisateur non trouvé');
+        }
+        const updatedUser = await this.prisma.utilisateur.update({
+            where: { utilisateurID: userId },
+            data: {
+                ...updateData,
+                ...(password && { password: await bcrypt.hash(password, 10) }),
+            },
+            select: {
+                utilisateurID: true,
+                nom: true,
+                prenom: true,
+                email: true,
+                username: true,
+                telephone: true,
+                role: true,
+                estActif: true,
+                etablissement: {
+                    select: {
+                        etablissementID: true,
+                        nom: true,
+                    },
+                },
+            },
         });
         return updatedUser;
     }
@@ -138,7 +176,6 @@ let UsersService = class UsersService {
 exports.UsersService = UsersService;
 exports.UsersService = UsersService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
-        journal_activity_service_1.JournalActivityService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
 ], UsersService);
 //# sourceMappingURL=users.service.js.map

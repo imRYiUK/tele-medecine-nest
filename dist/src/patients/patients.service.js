@@ -12,105 +12,48 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.PatientsService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
-const journal_activity_service_1 = require("../journal/journal-activity.service");
 let PatientsService = class PatientsService {
     prisma;
-    journalActivityService;
-    constructor(prisma, journalActivityService) {
+    constructor(prisma) {
         this.prisma = prisma;
-        this.journalActivityService = journalActivityService;
     }
     async create(createPatientDto, userId) {
         const { dossierMedical, ...patientData } = createPatientDto;
-        const patient = await this.prisma.patient.create({
+        return this.prisma.patient.create({
             data: {
                 ...patientData,
                 createdBy: userId,
-                updatedAt: new Date(),
                 createdAt: new Date(),
+                updatedAt: new Date(),
+                dossierMedical: dossierMedical ? {
+                    create: {
+                        ...dossierMedical,
+                        createdBy: userId,
+                        createdAt: new Date(),
+                    }
+                } : undefined
+            },
+            include: {
+                dossierMedical: true,
             },
         });
-        if (dossierMedical) {
-            await this.prisma.dossierMedical.create({
-                data: {
-                    patientID: patient.patientID,
-                    createdBy: userId,
-                    etatDossier: dossierMedical.etatDossier,
-                    createdAt: new Date(),
-                },
-            });
-        }
-        await this.journalActivityService.logActivity({
-            utilisateurID: userId.toString(),
-            typeAction: 'CREATION_PATIENT',
-            description: `Création d'un nouveau patient: ${patient.nom} ${patient.prenom}`,
-        });
-        return patient;
     }
-    async findAll(params) {
-        const { search, page = 1, limit = 10 } = params;
-        const skip = (page - 1) * limit;
-        const where = search
-            ? {
-                OR: [
-                    { nom: { contains: search } },
-                    { prenom: { contains: search } },
-                    { email: { contains: search } },
-                    { telephone: { contains: search } },
-                ],
-            }
-            : {};
-        const [patients, total] = await Promise.all([
-            this.prisma.patient.findMany({
-                where,
-                skip,
-                take: limit,
-                orderBy: { updatedAt: 'desc' },
-                include: {
-                    creator: {
-                        select: {
-                            utilisateurID: true,
-                            email: true,
-                        },
-                    },
-                    _count: {
-                        select: { consultations: true },
-                    },
-                },
-            }),
-            this.prisma.patient.count({ where }),
-        ]);
-        return {
-            data: patients,
-            meta: {
-                total,
-                page,
-                limit,
-                totalPages: Math.ceil(total / limit),
+    async findAll() {
+        return this.prisma.patient.findMany({
+            include: {
+                dossierMedical: true,
+                consultations: true,
+                examens: true,
             },
-        };
+        });
     }
     async findOne(patientID) {
         const patient = await this.prisma.patient.findUnique({
             where: { patientID },
             include: {
-                creator: {
-                    select: {
-                        utilisateurID: true,
-                        email: true,
-                    },
-                },
-                consultations: {
-                    orderBy: { createdAt: 'desc' },
-                    include: {
-                        medecin: {
-                            select: {
-                                utilisateurID: true,
-                                email: true,
-                            },
-                        },
-                    },
-                },
+                dossierMedical: true,
+                consultations: true,
+                examens: true,
             },
         });
         if (!patient) {
@@ -118,44 +61,53 @@ let PatientsService = class PatientsService {
         }
         return patient;
     }
-    async update(patientID, updatePatientDto, userId) {
-        await this.findOne(patientID);
-        const data = { ...updatePatientDto };
-        if (updatePatientDto.dateNaissance) {
-            data.dateNaissance = new Date(updatePatientDto.dateNaissance);
-        }
-        const patient = await this.prisma.patient.update({
+    async update(patientID, updatePatientDto) {
+        const { dossierMedical, ...patientData } = updatePatientDto;
+        return this.prisma.patient.update({
             where: { patientID },
-            data,
+            data: {
+                ...patientData,
+                updatedAt: new Date(),
+            },
+            include: {
+                dossierMedical: true,
+            },
         });
-        await this.journalActivityService.logActivity({
-            utilisateurID: userId.toString(),
-            typeAction: 'MODIFICATION_PATIENT',
-            description: `Modification des informations du patient: ${patient.nom} ${patient.prenom}`,
-        });
-        return patient;
     }
     async remove(patientID) {
-        await this.findOne(patientID);
-        return this.prisma.patient.delete({
+        await this.prisma.patient.delete({
             where: { patientID },
         });
     }
-    async createMedicalRecord(createMedicalRecordDto, userId) {
-        const { patientId, etatDossier } = createMedicalRecordDto;
-        await this.findOne(patientId);
+    async createMedicalRecord(patientID, createMedicalRecordDto, userId) {
+        const patient = await this.findOne(patientID);
+        if (patient.dossierMedical) {
+            throw new common_1.ConflictException('Un dossier médical existe déjà pour ce patient');
+        }
         const dossierMedical = await this.prisma.dossierMedical.create({
             data: {
-                patientID: patientId,
+                patientID,
+                etatDossier: createMedicalRecordDto.etatDossier,
                 createdBy: userId,
-                etatDossier,
                 createdAt: new Date(),
             },
         });
-        await this.journalActivityService.logActivity({
-            utilisateurID: userId.toString(),
-            typeAction: 'CREATION_DOSSIER',
-            description: `Création d'un nouveau dossier médical pour le patient ID: ${patientId}`,
+        return dossierMedical;
+    }
+    async getMedicalRecord(patientID) {
+        const patient = await this.findOne(patientID);
+        return patient.dossierMedical;
+    }
+    async updateMedicalRecord(patientID, updateMedicalRecordDto) {
+        const patient = await this.findOne(patientID);
+        if (!patient.dossierMedical) {
+            throw new common_1.NotFoundException('Aucun dossier médical trouvé pour ce patient');
+        }
+        const dossierMedical = await this.prisma.dossierMedical.update({
+            where: { patientID },
+            data: {
+                etatDossier: updateMedicalRecordDto.etatDossier,
+            },
         });
         return dossierMedical;
     }
@@ -163,7 +115,6 @@ let PatientsService = class PatientsService {
 exports.PatientsService = PatientsService;
 exports.PatientsService = PatientsService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
-        journal_activity_service_1.JournalActivityService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
 ], PatientsService);
 //# sourceMappingURL=patients.service.js.map

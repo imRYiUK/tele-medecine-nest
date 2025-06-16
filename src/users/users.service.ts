@@ -2,22 +2,20 @@ import { Injectable, NotFoundException, ConflictException, UnauthorizedException
 import { PrismaService } from '../prisma/prisma.service';
 import { UserDto, CreateUserDto, UpdateUserDto } from '../common/dto/user.dto';
 import * as bcrypt from 'bcrypt';
-import { JournalActivityService } from '../journal/journal-activity.service';
 
 @Injectable()
 export class UsersService {
-  constructor(
-    private prisma: PrismaService,
-    private journalActivityService: JournalActivityService,
-  ) {}
+  constructor(private prisma: PrismaService) {}
 
   async create(createUserDto: CreateUserDto, adminId: string): Promise<UserDto> {
+    const { password, ...userData } = createUserDto;
+
     // Check if username or email already exists
     const existingUser = await this.prisma.utilisateur.findFirst({
       where: {
         OR: [
-          { username: createUserDto.username },
-          { email: createUserDto.email }
+          { username: userData.username },
+          { email: userData.email }
         ]
       }
     });
@@ -27,95 +25,111 @@ export class UsersService {
     }
 
     // Hash the password
-    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await this.prisma.utilisateur.create({
       data: {
-        ...createUserDto,
+        ...userData,
         password: hashedPassword,
       },
     });
 
-    // Journaliser l'action
-    await this.journalActivityService.logActivity({
-      utilisateurID: adminId,
-      typeAction: 'CREATION_UTILISATEUR',
-      description: `Création d'un nouvel utilisateur: ${user.nom} ${user.prenom} (${user.username})`,
-    });
-
-    const { password, ...result } = user;
+    const { password: _, ...result } = user;
     return result;
   }
 
   async findAll(): Promise<UserDto[]> {
-    const users = await this.prisma.utilisateur.findMany();
-    return users.map(user => {
-      const { password, ...result } = user;
-      return result;
+    const users = await this.prisma.utilisateur.findMany({
+      select: {
+        utilisateurID: true,
+        nom: true,
+        prenom: true,
+        email: true,
+        username: true,
+        telephone: true,
+        role: true,
+        estActif: true,
+        etablissement: {
+          select: {
+            etablissementID: true,
+            nom: true,
+          },
+        },
+      },
     });
+    return users;
   }
 
   async findOne(utilisateurID: string): Promise<UserDto> {
     const user = await this.prisma.utilisateur.findUnique({
       where: { utilisateurID },
+      select: {
+        utilisateurID: true,
+        nom: true,
+        prenom: true,
+        email: true,
+        username: true,
+        telephone: true,
+        role: true,
+        estActif: true,
+        etablissement: {
+          select: {
+            etablissementID: true,
+            nom: true,
+          },
+        },
+      },
     });
     
     if (!user) {
       throw new NotFoundException(`User with ID ${utilisateurID} not found`);
     }
 
-    const { password, ...result } = user;
-    return result;
+    return user;
   }
 
   async findById(userId: string): Promise<UserDto> {
     return this.findOne(userId);
   }
 
-  async update(utilisateurID: string, updateUserDto: UpdateUserDto, adminId: string): Promise<UserDto> {
-    // Check if user exists
-    const existingUser = await this.findOne(utilisateurID);
+  async update(id: string, updateUserDto: UpdateUserDto, adminId: string) {
+    const { password, ...updateData } = updateUserDto;
 
-    // If username or email is being updated, check for conflicts
-    if (updateUserDto.username || updateUserDto.email) {
-      const conflictingUser = await this.prisma.utilisateur.findFirst({
-        where: {
-          AND: [
-            { utilisateurID: { not: utilisateurID } },
-            {
-              OR: [
-                { username: updateUserDto.username },
-                { email: updateUserDto.email }
-              ]
-            }
-          ]
-        }
-      });
+    // Vérifier si l'utilisateur existe
+    const existingUser = await this.prisma.utilisateur.findUnique({
+      where: { utilisateurID: id },
+    });
 
-      if (conflictingUser) {
-        throw new ConflictException('Username or email already exists');
-      }
+    if (!existingUser) {
+      throw new NotFoundException(`Utilisateur avec l'ID ${id} non trouvé`);
     }
 
-    // If password is being updated, hash it
-    if (updateUserDto.password) {
-      updateUserDto.password = await bcrypt.hash(updateUserDto.password, 10);
-    }
-
+    // Mettre à jour l'utilisateur
     const updatedUser = await this.prisma.utilisateur.update({
-      where: { utilisateurID },
-      data: updateUserDto,
+      where: { utilisateurID: id },
+      data: {
+        ...updateData,
+        ...(password && { password: await bcrypt.hash(password, 10) }),
+      },
+      select: {
+        utilisateurID: true,
+        nom: true,
+        prenom: true,
+        email: true,
+        username: true,
+        telephone: true,
+        role: true,
+        estActif: true,
+        etablissement: {
+          select: {
+            etablissementID: true,
+            nom: true,
+          },
+        },
+      },
     });
 
-    // Journaliser l'action
-    await this.journalActivityService.logActivity({
-      utilisateurID: adminId,
-      typeAction: 'MODIFICATION_UTILISATEUR',
-      description: `Modification des informations de l'utilisateur: ${updatedUser.nom} ${updatedUser.prenom} (${updatedUser.username})`,
-    });
-
-    const { password, ...result } = updatedUser;
-    return result;
+    return updatedUser;
   }
 
   async remove(utilisateurID: string, adminId: string): Promise<void> {
@@ -124,13 +138,6 @@ export class UsersService {
 
     await this.prisma.utilisateur.delete({
       where: { utilisateurID },
-    });
-
-    // Journaliser l'action
-    await this.journalActivityService.logActivity({
-      utilisateurID: adminId,
-      typeAction: 'SUPPRESSION_UTILISATEUR',
-      description: `Suppression de l'utilisateur: ${user.nom} ${user.prenom} (${user.username})`,
     });
   }
 
@@ -147,17 +154,41 @@ export class UsersService {
     } as UserDto;
   }
 
-  async updateProfile(userId: string, updateUserDto: UpdateUserDto): Promise<UserDto> {
-    // Prevent users from updating sensitive fields
-    const { role, estActif, ...safeUpdateData } = updateUserDto;
-    
-    const updatedUser = await this.update(userId, safeUpdateData, userId);
+  async updateProfile(userId: string, updateUserDto: UpdateUserDto) {
+    const { password, ...updateData } = updateUserDto;
 
-    // Journaliser l'action
-    await this.journalActivityService.logActivity({
-      utilisateurID: userId,
-      typeAction: 'MODIFICATION_PROFIL',
-      description: `Modification du profil utilisateur`,
+    // Vérifier si l'utilisateur existe
+    const existingUser = await this.prisma.utilisateur.findUnique({
+      where: { utilisateurID: userId },
+    });
+
+    if (!existingUser) {
+      throw new NotFoundException('Profil utilisateur non trouvé');
+    }
+
+    // Mettre à jour le profil
+    const updatedUser = await this.prisma.utilisateur.update({
+      where: { utilisateurID: userId },
+      data: {
+        ...updateData,
+        ...(password && { password: await bcrypt.hash(password, 10) }),
+      },
+      select: {
+        utilisateurID: true,
+        nom: true,
+        prenom: true,
+        email: true,
+        username: true,
+        telephone: true,
+        role: true,
+        estActif: true,
+        etablissement: {
+          select: {
+            etablissementID: true,
+            nom: true,
+          },
+        },
+      },
     });
 
     return updatedUser;

@@ -6,6 +6,7 @@ import { RegisterDto } from './dto/register.dto';
 import { Request } from 'express';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import passport from 'passport';
+import { LogActivity } from '../common/decorators/log-activity.decorator';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -13,6 +14,10 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('login')
+  @LogActivity({
+    typeAction: 'CONNEXION',
+    description: (result) => `Connexion de l'utilisateur: ${result.user.email}`,
+  })
   async login(@Body() loginDto: LoginDto) {
     // const user = await this.authService.validateUser(loginDto.email, loginDto.password);
 
@@ -20,6 +25,15 @@ export class AuthController {
     //   throw new HttpException('Invalid email or password', HttpStatus.BAD_REQUEST);
     // }
     return this.authService.login(loginDto);
+  }
+
+  @Post('register')
+  @LogActivity({
+    typeAction: 'INSCRIPTION',
+    description: (result) => `Inscription d'un nouvel utilisateur: ${result.user.email}`,
+  })
+  async register(@Body() registerDto: RegisterDto) {
+    return this.authService.register(registerDto);
   }
 
   // @Post('register')

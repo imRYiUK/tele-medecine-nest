@@ -6,21 +6,23 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.PatientsModule = void 0;
+exports.CommonModule = void 0;
 const common_1 = require("@nestjs/common");
-const patients_service_1 = require("./patients.service");
-const patients_controller_1 = require("./patients.controller");
-const prisma_module_1 = require("../prisma/prisma.module");
+const core_1 = require("@nestjs/core");
+const log_activity_interceptor_1 = require("./interceptors/log-activity.interceptor");
 const journal_module_1 = require("../journal/journal.module");
-let PatientsModule = class PatientsModule {
+let CommonModule = class CommonModule {
 };
-exports.PatientsModule = PatientsModule;
-exports.PatientsModule = PatientsModule = __decorate([
+exports.CommonModule = CommonModule;
+exports.CommonModule = CommonModule = __decorate([
     (0, common_1.Module)({
-        imports: [prisma_module_1.PrismaModule, journal_module_1.JournalModule],
-        controllers: [patients_controller_1.PatientsController],
-        providers: [patients_service_1.PatientsService],
-        exports: [patients_service_1.PatientsService],
+        imports: [journal_module_1.JournalModule],
+        providers: [
+            {
+                provide: core_1.APP_INTERCEPTOR,
+                useClass: log_activity_interceptor_1.LogActivityInterceptor,
+            },
+        ],
     })
-], PatientsModule);
-//# sourceMappingURL=patients.module.js.map
+], CommonModule);
+//# sourceMappingURL=common.module.js.map

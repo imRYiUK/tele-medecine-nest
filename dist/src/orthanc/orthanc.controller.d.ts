@@ -77,10 +77,13 @@ export declare class OrthancController {
     saveImageMetadata(examenId: string, orthancId: string, studyUid: string, modalite: string): Promise<{
         success: boolean;
         data: {
-            message: string;
-            examenId: string;
-            orthancId: string;
-            studyUid: string;
+            description: string;
+            examenID: string;
+            imageID: string;
+            studyInstanceUID: string;
+            seriesInstanceUID: string;
+            sopInstanceUID: string;
+            dateAcquisition: Date;
             modalite: string;
         };
         message?: undefined;

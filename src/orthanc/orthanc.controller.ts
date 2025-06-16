@@ -16,6 +16,7 @@ import { ApiTags, ApiOperation, ApiResponse, ApiConsumes, ApiBody } from '@nestj
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { UserRole } from '../common/constants/roles';
 import { Request } from 'express';
+import { LogActivity } from '../common/decorators/log-activity.decorator';
 
 @Controller('dicom')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -32,6 +33,10 @@ export class OrthancController {
 
   @Get('studies')
   @Roles(UserRole.RADIOLOGUE, UserRole.MEDECIN)
+  @LogActivity({
+    typeAction: 'CONSULTATION_ETUDES',
+    description: 'Consultation de la liste des études DICOM',
+  })
   @ApiOperation({ summary: 'Récupérer toutes les études DICOM' })
   @ApiResponse({ status: 200, description: 'Liste des études récupérée avec succès' })
   @ApiResponse({ status: 500, description: 'Erreur serveur' })
@@ -51,6 +56,10 @@ export class OrthancController {
 
   @Get('studies/:id')
   @Roles(UserRole.RADIOLOGUE, UserRole.MEDECIN)
+  @LogActivity({
+    typeAction: 'CONSULTATION_ETUDE',
+    description: (result) => `Consultation de l'étude DICOM: ${result.StudyInstanceUID}`,
+  })
   @ApiOperation({ summary: 'Récupérer les détails d\'une étude DICOM' })
   @ApiResponse({ status: 200, description: 'Détails de l\'étude récupérés avec succès' })
   async getStudyDetails(@Param('id') studyId: string, @Req() req: Request) {
@@ -87,6 +96,10 @@ export class OrthancController {
 
   @Get('series/:id')
   @Roles(UserRole.RADIOLOGUE, UserRole.MEDECIN)
+  @LogActivity({
+    typeAction: 'CONSULTATION_SERIE',
+    description: (result) => `Consultation de la série DICOM: ${result.SeriesInstanceUID}`,
+  })
   @ApiOperation({ summary: 'Récupérer les détails d\'une série DICOM' })
   @ApiResponse({ status: 200, description: 'Détails de la série récupérés avec succès' })
   async getSeriesDetails(@Param('id') seriesId: string, @Req() req: Request) {
@@ -123,6 +136,10 @@ export class OrthancController {
 
   @Get('instances/:id')
   @Roles(UserRole.RADIOLOGUE, UserRole.MEDECIN)
+  @LogActivity({
+    typeAction: 'CONSULTATION_INSTANCE',
+    description: (result) => `Consultation de l'instance DICOM: ${result.SOPInstanceUID}`,
+  })
   @ApiOperation({ summary: 'Récupérer les détails d\'une instance DICOM' })
   @ApiResponse({ status: 200, description: 'Détails de l\'instance récupérés avec succès' })
   async getInstanceDetails(@Param('id') instanceId: string, @Req() req: Request) {
@@ -211,6 +228,10 @@ export class OrthancController {
 
   @Post('upload')
   @Roles('RADIOLOGUE', 'MEDECIN')
+  @LogActivity({
+    typeAction: 'UPLOAD_DICOM',
+    description: 'Téléchargement d\'un fichier DICOM',
+  })
   @UseInterceptors(FileInterceptor('file'))
   @ApiOperation({ summary: 'Uploader un fichier DICOM (C-STORE)' })
   @ApiConsumes('multipart/form-data')
