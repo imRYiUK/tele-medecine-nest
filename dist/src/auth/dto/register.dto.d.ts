@@ -1,9 +1,4 @@
-export declare enum UserRole {
-    ADMIN = "ADMIN",
-    MEDECIN = "MEDECIN",
-    SECRETAIRE = "SECRETAIRE",
-    INFIRMIER = "INFIRMIER"
-}
+import { UserRole } from '../../common/constants/roles';
 export declare class RegisterDto {
     nom: string;
     prenom: string;

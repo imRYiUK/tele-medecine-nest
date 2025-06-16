@@ -4,9 +4,6 @@ const core_1 = require("@nestjs/core");
 const app_module_1 = require("./app.module");
 const swagger_1 = require("@nestjs/swagger");
 const common_1 = require("@nestjs/common");
-const client_1 = require("@prisma/client");
-const bcrypt = require("bcrypt");
-const prisma = new client_1.PrismaClient();
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
     app.useGlobalPipes(new common_1.ValidationPipe());
@@ -27,38 +24,6 @@ async function bootstrap() {
         .build();
     const document = swagger_1.SwaggerModule.createDocument(app, config);
     swagger_1.SwaggerModule.setup('api/docs', app, document);
-    const hashedPassword = await bcrypt.hash('Password123', 10);
-    const etablissement = await prisma.etablissement.upsert({
-        where: { etablissementID: 'test-etablissement-id' },
-        update: {},
-        create: {
-            etablissementID: 'test-etablissement-id',
-            nom: 'Hôpital Sunu Santé',
-            adresse: 'Avenue Cheikh Anta Diop, Dakar',
-            telephone: '+221338675309',
-            email: 'contact@sunusante.sn',
-            type: 'HOPITAL',
-            latitude: 14.7167,
-            longitude: -17.4677,
-            region: 'Dakar'
-        },
-    });
-    const adminUser = await prisma.utilisateur.upsert({
-        where: { email: 'admin@sunusante.sn' },
-        update: {},
-        create: {
-            utilisateurID: 'admin-user-id',
-            nom: 'Admin',
-            prenom: 'Système',
-            email: 'admin@sunusante.sn',
-            username: 'admin',
-            password: hashedPassword,
-            telephone: '+221700000000',
-            role: 'ADMIN',
-            etablissementID: etablissement.etablissementID,
-            estActif: true
-        },
-    });
     await app.listen(process.env.PORT ?? 5000);
     console.log(`Application démarrée sur le port ${process.env.PORT ?? 5000}`);
 }

@@ -1,18 +1,16 @@
 import { JwtService } from '@nestjs/jwt';
-import { UsersService } from '../users/users.service';
-import { User } from '../users/user.entity';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import { RegisterDto } from './dto/register.dto';
+import { UserDto } from '../common/dto/user.dto';
 export declare class AuthService {
-    private usersService;
     private jwtService;
     private configService;
     private prisma;
     private readonly logger;
-    constructor(usersService: UsersService, jwtService: JwtService, configService: ConfigService, prisma: PrismaService);
-    validateUser(email: string, password: string): Promise<User>;
-    login(user: User): Promise<{
+    constructor(jwtService: JwtService, configService: ConfigService, prisma: PrismaService);
+    validateUser(email: string, pass: string): Promise<UserDto | null>;
+    login(user: UserDto): Promise<{
         access_token: string;
     }>;
     validateToken(token: string): Promise<any>;
@@ -33,4 +31,5 @@ export declare class AuthService {
             estActif: boolean;
         };
     }>;
+    comparePasswords(passwordIn: string, passwordBD: string): Promise<boolean>;
 }

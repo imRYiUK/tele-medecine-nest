@@ -1,40 +1,48 @@
-import { Injectable, Logger, UnauthorizedException, ConflictException, BadRequestException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { UsersService } from '../users/users.service';
-import { User } from '../users/user.entity';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import { RegisterDto } from './dto/register.dto';
 import * as bcrypt from 'bcrypt';
+import { UserDto } from '../common/dto/user.dto';
 
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
 
   constructor(
-    private usersService: UsersService,
     private jwtService: JwtService,
     private configService: ConfigService,
     private prisma: PrismaService,
   ) {}
 
-  async validateUser(email: string, password: string): Promise<User> {
-    const user = await this.usersService.validateUser(email, password);
-    
+  async validateUser(email: string, pass: string): Promise<UserDto | null> {
+    // const user = await this.usersService.validateUser(email, password);
+
+    const user = await this.prisma.utilisateur.findUnique({
+      where: { email },
+    });
+
     if (!user) {
       this.logger.warn(`Failed login attempt for email: ${email}`);
       throw new UnauthorizedException('Identifiants invalides ou compte verrouillé');
     }
+
+    const isPasswordValid = await this.comparePasswords(pass, user.password);
+
+    if (!isPasswordValid) {
+      return null;
+    }
     
-    this.logger.log(`Successful login for user ID: ${user.userId}`);
+    this.logger.log(`Successful login for user ID: ${user.utilisateurID}`);
     return user;
   }
 
-  async login(user: User) {
+  async login(user: UserDto) {
     const payload = {
-      sub: user.userId,
+      sub: user.utilisateurID,
       email: user.email,
-      role: user.role?.name, // Accéder au nom du rôle via la relation
+      role: user.role, // Accéder au nom du rôle via la relation
     };
 
     const accessToken = this.jwtService.sign(payload, {
@@ -133,4 +141,10 @@ export class AuthService {
       throw new BadRequestException('Erreur lors de la création de l\'utilisateur');
     }
   }
+
+
+  async comparePasswords(passwordIn: string, passwordBD: string): Promise<boolean> {
+    return await bcrypt.compare(passwordIn, passwordBD);
+  }
 }
+

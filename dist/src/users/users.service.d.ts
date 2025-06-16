@@ -1,10 +1,8 @@
-import { User } from './user.entity';
 import { PrismaService } from '../prisma/prisma.service';
+import { UserDto } from '../common/dto/user.dto';
 export declare class UsersService {
     private prisma;
-    private readonly logger;
     constructor(prisma: PrismaService);
-    findOne(utilisateurID: string): Promise<User | null>;
-    findById(userId: string): Promise<User | null>;
-    validateUser(email: string, password: string): Promise<User | null>;
+    findOne(utilisateurID: string): Promise<UserDto | null>;
+    findById(userId: string): Promise<UserDto | null>;
 }

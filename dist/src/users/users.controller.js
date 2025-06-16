@@ -30,11 +30,11 @@ let UsersController = class UsersController {
             throw new common_1.UnauthorizedException('User not found');
         }
         return {
-            userId: user.userId,
+            userId: user.utilisateurID,
             nom: user.nom,
             prenom: user.prenom,
             email: user.email,
-            role: user.role?.name,
+            role: user.role,
         };
     }
 };

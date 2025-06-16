@@ -26,6 +26,9 @@ let AuthController = class AuthController {
     }
     async login(loginDto) {
         const user = await this.authService.validateUser(loginDto.email, loginDto.password);
+        if (!user) {
+            throw new common_1.HttpException('Invalid email or password', common_1.HttpStatus.BAD_REQUEST);
+        }
         return this.authService.login(user);
     }
     async register(registerDto) {

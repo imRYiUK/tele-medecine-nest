@@ -7,7 +7,7 @@ export declare class UsersController {
         userId: string;
         nom: string;
         prenom: string;
-        email: string | undefined;
+        email: string;
         role: string;
     }>;
 }

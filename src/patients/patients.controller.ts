@@ -8,7 +8,7 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { Roles } from '../common/decorators/roles.decorator';
-import { UserRole } from '../users/user.entity';
+import { UserRole } from '../common/constants/roles';
 
 @ApiTags('patients')
 @ApiBearerAuth()

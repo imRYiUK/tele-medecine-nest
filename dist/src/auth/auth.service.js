@@ -13,36 +13,39 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthService = void 0;
 const common_1 = require("@nestjs/common");
 const jwt_1 = require("@nestjs/jwt");
-const users_service_1 = require("../users/users.service");
 const config_1 = require("@nestjs/config");
 const prisma_service_1 = require("../prisma/prisma.service");
 const bcrypt = require("bcrypt");
 let AuthService = AuthService_1 = class AuthService {
-    usersService;
     jwtService;
     configService;
     prisma;
     logger = new common_1.Logger(AuthService_1.name);
-    constructor(usersService, jwtService, configService, prisma) {
-        this.usersService = usersService;
+    constructor(jwtService, configService, prisma) {
         this.jwtService = jwtService;
         this.configService = configService;
         this.prisma = prisma;
     }
-    async validateUser(email, password) {
-        const user = await this.usersService.validateUser(email, password);
+    async validateUser(email, pass) {
+        const user = await this.prisma.utilisateur.findUnique({
+            where: { email },
+        });
         if (!user) {
             this.logger.warn(`Failed login attempt for email: ${email}`);
             throw new common_1.UnauthorizedException('Identifiants invalides ou compte verrouillé');
         }
-        this.logger.log(`Successful login for user ID: ${user.userId}`);
+        const isPasswordValid = await this.comparePasswords(pass, user.password);
+        if (!isPasswordValid) {
+            return null;
+        }
+        this.logger.log(`Successful login for user ID: ${user.utilisateurID}`);
         return user;
     }
     async login(user) {
         const payload = {
-            sub: user.userId,
+            sub: user.utilisateurID,
             email: user.email,
-            role: user.role?.name,
+            role: user.role,
         };
         const accessToken = this.jwtService.sign(payload, {
             secret: this.configService.get('JWT_SECRET'),
@@ -124,12 +127,14 @@ let AuthService = AuthService_1 = class AuthService {
             throw new common_1.BadRequestException('Erreur lors de la création de l\'utilisateur');
         }
     }
+    async comparePasswords(passwordIn, passwordBD) {
+        return await bcrypt.compare(passwordIn, passwordBD);
+    }
 };
 exports.AuthService = AuthService;
 exports.AuthService = AuthService = AuthService_1 = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [users_service_1.UsersService,
-        jwt_1.JwtService,
+    __metadata("design:paramtypes", [jwt_1.JwtService,
         config_1.ConfigService,
         prisma_service_1.PrismaService])
 ], AuthService);
