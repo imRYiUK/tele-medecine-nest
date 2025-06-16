@@ -173,7 +173,8 @@ model Etablissement {
   updatedAt       DateTime          @updatedAt
 
   // Relations
-  utilisateurs Utilisateur[]
+  utilisateurs    Utilisateur[]
+  journalActivites JournalActivite[]
 
   @@map("etablissements")
 }
@@ -221,15 +222,17 @@ model Medicament {
 }
 
 model JournalActivite {
-  journalID     String   @id @default(uuid())
-  utilisateurID String
-  dateAction    DateTime @default(now())
-  typeAction    String
-  description   String
-  ipAdresse     String?
+  journalID       String   @id @default(uuid())
+  utilisateurID   String
+  etablissementID String?
+  dateAction      DateTime @default(now())
+  typeAction      String
+  description     String
+  ipAdresse       String?
 
   // Relations
-  utilisateur Utilisateur @relation(fields: [utilisateurID], references: [utilisateurID])
+  utilisateur   Utilisateur    @relation(fields: [utilisateurID], references: [utilisateurID])
+  etablissement Etablissement? @relation(fields: [etablissementID], references: [etablissementID])
 
   @@map("journal_activites")
 }

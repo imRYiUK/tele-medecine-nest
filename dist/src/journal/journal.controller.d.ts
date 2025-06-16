@@ -11,6 +11,7 @@ export declare class JournalController {
             role: string;
         };
     } & {
+        etablissementID: string | null;
         description: string;
         utilisateurID: string;
         journalID: string;
@@ -27,6 +28,7 @@ export declare class JournalController {
             role: string;
         };
     } & {
+        etablissementID: string | null;
         description: string;
         utilisateurID: string;
         journalID: string;
@@ -43,6 +45,7 @@ export declare class JournalController {
             role: string;
         };
     } & {
+        etablissementID: string | null;
         description: string;
         utilisateurID: string;
         journalID: string;
@@ -59,6 +62,7 @@ export declare class JournalController {
             role: string;
         };
     } & {
+        etablissementID: string | null;
         description: string;
         utilisateurID: string;
         journalID: string;

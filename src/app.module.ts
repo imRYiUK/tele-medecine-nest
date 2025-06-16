@@ -9,6 +9,8 @@ import { OrthancModule } from './orthanc/orthanc.module';
 import { CommonModule } from './common/common.module';
 import { EtablissementsModule } from './etablissements/etablissements.module';
 import { PatientsModule } from './patients/patients.module';
+import { ExamenMedicalModule } from './examen-medical/examen-medical.module';
+import { ConsultationMedicaleModule } from './consultation-medicale/consultation-medicale.module';
 
 @Module({
   imports: [
@@ -22,6 +24,8 @@ import { PatientsModule } from './patients/patients.module';
     CommonModule,
     EtablissementsModule,
     PatientsModule,
+    ExamenMedicalModule,
+    ConsultationMedicaleModule,
   ],
   controllers: [AppController],
   providers: [AppService],

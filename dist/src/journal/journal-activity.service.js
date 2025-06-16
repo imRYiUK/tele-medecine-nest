@@ -19,9 +19,14 @@ let JournalActivityService = class JournalActivityService {
     }
     async logActivity(data) {
         try {
+            const user = await this.prisma.utilisateur.findUnique({
+                where: { utilisateurID: data.utilisateurID },
+                select: { etablissementID: true }
+            });
             await this.prisma.journalActivite.create({
                 data: {
                     utilisateurID: data.utilisateurID,
+                    etablissementID: user?.etablissementID,
                     typeAction: data.typeAction,
                     description: data.description,
                     ipAdresse: data.ipAdresse,

@@ -17,6 +17,8 @@ const prisma_module_1 = require("./prisma/prisma.module");
 const orthanc_module_1 = require("./orthanc/orthanc.module");
 const common_module_1 = require("./common/common.module");
 const etablissements_module_1 = require("./etablissements/etablissements.module");
+const patients_module_1 = require("./patients/patients.module");
+const examen_medical_module_1 = require("./examen-medical/examen-medical.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -32,6 +34,8 @@ exports.AppModule = AppModule = __decorate([
             orthanc_module_1.OrthancModule,
             common_module_1.CommonModule,
             etablissements_module_1.EtablissementsModule,
+            patients_module_1.PatientsModule,
+            examen_medical_module_1.ExamenMedicalModule
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],
