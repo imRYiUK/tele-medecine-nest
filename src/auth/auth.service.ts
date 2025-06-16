@@ -84,12 +84,6 @@ export class AuthService {
     // Ne pas renvoyer le mot de passe
     const { password: _, ...result } = user;
 
-    await this.journalActivityService.logActivity({
-      utilisateurID: user.utilisateurID,
-      typeAction: 'CONNEXION',
-      description: `Connexion réussie: ${user.nom} ${user.prenom} (${user.email})`,
-    });
-
     return {
       user: result,
       token,
@@ -143,12 +137,6 @@ export class AuthService {
 
     // Ne pas renvoyer le mot de passe
     const { password: _, ...result } = user;
-
-    await this.journalActivityService.logActivity({
-      utilisateurID: user.utilisateurID,
-      typeAction: 'INSCRIPTION',
-      description: `Nouvelle inscription: ${user.nom} ${user.prenom} (${user.email})`,
-    });
 
     return {
       user: result,

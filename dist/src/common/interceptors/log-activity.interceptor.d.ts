@@ -5,6 +5,7 @@ import { JournalActivityService } from '../../journal/journal-activity.service';
 export declare class LogActivityInterceptor implements NestInterceptor {
     private reflector;
     private journalActivityService;
+    private readonly logger;
     constructor(reflector: Reflector, journalActivityService: JournalActivityService);
     intercept(context: ExecutionContext, next: CallHandler): Observable<any>;
 }
