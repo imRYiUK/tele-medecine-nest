@@ -27,9 +27,16 @@ let OrthancController = class OrthancController {
     constructor(orthancService) {
         this.orthancService = orthancService;
     }
-    async getStudies() {
+    getUserId(req) {
+        if (!req.user || !req.user['utilisateurID']) {
+            throw new common_1.UnauthorizedException('Utilisateur non authentifié');
+        }
+        return req.user['utilisateurID'];
+    }
+    async getStudies(req) {
         try {
-            const studies = await this.orthancService.getStudies();
+            const userId = this.getUserId(req);
+            const studies = await this.orthancService.getStudies(userId);
             return { success: true, data: studies };
         }
         catch (error) {
@@ -40,9 +47,10 @@ let OrthancController = class OrthancController {
             };
         }
     }
-    async getStudyDetails(studyId) {
+    async getStudyDetails(studyId, req) {
         try {
-            const study = await this.orthancService.getStudyDetails(studyId);
+            const userId = this.getUserId(req);
+            const study = await this.orthancService.getStudyDetails(studyId, userId);
             return { success: true, data: study };
         }
         catch (error) {
@@ -53,9 +61,10 @@ let OrthancController = class OrthancController {
             };
         }
     }
-    async getSeries(studyId) {
+    async getSeries(studyId, req) {
         try {
-            const series = await this.orthancService.getSeries(studyId);
+            const userId = this.getUserId(req);
+            const series = await this.orthancService.getSeries(studyId, userId);
             return { success: true, data: series };
         }
         catch (error) {
@@ -66,9 +75,10 @@ let OrthancController = class OrthancController {
             };
         }
     }
-    async getSeriesDetails(seriesId) {
+    async getSeriesDetails(seriesId, req) {
         try {
-            const series = await this.orthancService.getSeriesDetails(seriesId);
+            const userId = this.getUserId(req);
+            const series = await this.orthancService.getSeriesDetails(seriesId, userId);
             return { success: true, data: series };
         }
         catch (error) {
@@ -79,9 +89,10 @@ let OrthancController = class OrthancController {
             };
         }
     }
-    async getInstances(seriesId) {
+    async getInstances(seriesId, req) {
         try {
-            const instances = await this.orthancService.getInstances(seriesId);
+            const userId = this.getUserId(req);
+            const instances = await this.orthancService.getInstances(seriesId, userId);
             return { success: true, data: instances };
         }
         catch (error) {
@@ -92,9 +103,10 @@ let OrthancController = class OrthancController {
             };
         }
     }
-    async getInstanceDetails(instanceId) {
+    async getInstanceDetails(instanceId, req) {
         try {
-            const instance = await this.orthancService.getInstanceDetails(instanceId);
+            const userId = this.getUserId(req);
+            const instance = await this.orthancService.getInstanceDetails(instanceId, userId);
             return { success: true, data: instance };
         }
         catch (error) {
@@ -105,29 +117,31 @@ let OrthancController = class OrthancController {
             };
         }
     }
-    async getDicomFile(instanceId, res) {
+    async getDicomFile(instanceId, res, req) {
         try {
-            const stream = await this.orthancService.getDicomFile(instanceId);
+            const userId = this.getUserId(req);
+            const stream = await this.orthancService.getDicomFile(instanceId, userId);
             stream.pipe(res);
         }
         catch (error) {
-            res.status(common_1.HttpStatus.INTERNAL_SERVER_ERROR).json({
+            res.status(500).json({
                 success: false,
-                message: 'Erreur lors de la récupération du fichier DICOM',
+                message: 'Erreur lors du téléchargement du fichier DICOM',
                 error: error.message,
             });
         }
     }
-    async getInstancePreview(instanceId, quality, res) {
+    async getInstancePreview(instanceId, quality, res, req) {
         try {
+            const userId = this.getUserId(req);
             const qualityValue = quality ? parseInt(quality, 10) : 90;
-            const imageData = await this.orthancService.getInstancePreview(instanceId, qualityValue);
+            const imageData = await this.orthancService.getInstancePreview(instanceId, userId, qualityValue);
             res.end(imageData);
         }
         catch (error) {
-            res.status(common_1.HttpStatus.INTERNAL_SERVER_ERROR).json({
+            res.status(500).json({
                 success: false,
-                message: 'Erreur lors de la récupération de l\'aperçu de l\'image',
+                message: 'Erreur lors de la récupération de l\'aperçu',
                 error: error.message,
             });
         }
@@ -145,12 +159,13 @@ let OrthancController = class OrthancController {
             };
         }
     }
-    async uploadDicomFile(file) {
+    async uploadDicomFile(file, req) {
         try {
             if (!file) {
                 throw new common_1.HttpException('Aucun fichier fourni', common_1.HttpStatus.BAD_REQUEST);
             }
-            const result = await this.orthancService.uploadDicomFile(file.buffer);
+            const userId = this.getUserId(req);
+            const result = await this.orthancService.uploadDicomFile(file.buffer, userId);
             return { success: true, data: result };
         }
         catch (error) {
@@ -163,9 +178,10 @@ let OrthancController = class OrthancController {
             }, statusCode);
         }
     }
-    async findDicom(findRequest) {
+    async findDicom(findRequest, req) {
         try {
-            const results = await this.orthancService.findDicom(findRequest.Level, findRequest.Query);
+            const userId = this.getUserId(req);
+            const results = await this.orthancService.findDicom(findRequest.Level, findRequest.Query, userId);
             return { success: true, data: results };
         }
         catch (error) {
@@ -178,9 +194,10 @@ let OrthancController = class OrthancController {
             }, statusCode);
         }
     }
-    async getWadoImage(instanceId, contentType, res) {
+    async getWadoImage(instanceId, contentType, res, req) {
         try {
-            const { data, headers } = await this.orthancService.getWadoImage(instanceId, contentType);
+            const userId = this.getUserId(req);
+            const { data, headers } = await this.orthancService.getWadoImage(instanceId, contentType, userId);
             Object.keys(headers).forEach(key => {
                 res.setHeader(key, headers[key]);
             });
@@ -204,69 +221,89 @@ __decorate([
     (0, swagger_1.ApiOperation)({ summary: 'Récupérer toutes les études DICOM' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Liste des études récupérée avec succès' }),
     (0, swagger_1.ApiResponse)({ status: 500, description: 'Erreur serveur' }),
+    __param(0, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], OrthancController.prototype, "getStudies", null);
 __decorate([
     (0, common_1.Get)('studies/:id'),
     (0, roles_decorator_1.Roles)("RADIOLOGUE", "MEDECIN"),
+    (0, swagger_1.ApiOperation)({ summary: 'Récupérer les détails d\'une étude DICOM' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Détails de l\'étude récupérés avec succès' }),
     __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", Promise)
 ], OrthancController.prototype, "getStudyDetails", null);
 __decorate([
     (0, common_1.Get)('studies/:id/series'),
     (0, roles_decorator_1.Roles)("RADIOLOGUE", "MEDECIN"),
+    (0, swagger_1.ApiOperation)({ summary: 'Récupérer les séries d\'une étude DICOM' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Liste des séries récupérée avec succès' }),
     __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", Promise)
 ], OrthancController.prototype, "getSeries", null);
 __decorate([
     (0, common_1.Get)('series/:id'),
     (0, roles_decorator_1.Roles)("RADIOLOGUE", "MEDECIN"),
+    (0, swagger_1.ApiOperation)({ summary: 'Récupérer les détails d\'une série DICOM' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Détails de la série récupérés avec succès' }),
     __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", Promise)
 ], OrthancController.prototype, "getSeriesDetails", null);
 __decorate([
     (0, common_1.Get)('series/:id/instances'),
     (0, roles_decorator_1.Roles)("RADIOLOGUE", "MEDECIN"),
+    (0, swagger_1.ApiOperation)({ summary: 'Récupérer les instances d\'une série DICOM' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Liste des instances récupérée avec succès' }),
     __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", Promise)
 ], OrthancController.prototype, "getInstances", null);
 __decorate([
     (0, common_1.Get)('instances/:id'),
     (0, roles_decorator_1.Roles)("RADIOLOGUE", "MEDECIN"),
+    (0, swagger_1.ApiOperation)({ summary: 'Récupérer les détails d\'une instance DICOM' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Détails de l\'instance récupérés avec succès' }),
     __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", Promise)
 ], OrthancController.prototype, "getInstanceDetails", null);
 __decorate([
     (0, common_1.Get)('instances/:id/file'),
     (0, roles_decorator_1.Roles)("RADIOLOGUE", "MEDECIN"),
-    (0, common_1.Header)('Content-Type', 'application/dicom'),
+    (0, swagger_1.ApiOperation)({ summary: 'Télécharger un fichier DICOM' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Fichier DICOM téléchargé avec succès' }),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Res)()),
+    __param(2, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:paramtypes", [String, Object, Object]),
     __metadata("design:returntype", Promise)
 ], OrthancController.prototype, "getDicomFile", null);
 __decorate([
     (0, common_1.Get)('instances/:id/preview'),
     (0, roles_decorator_1.Roles)("RADIOLOGUE", "MEDECIN"),
-    (0, common_1.Header)('Content-Type', 'image/jpeg'),
+    (0, swagger_1.ApiOperation)({ summary: 'Récupérer l\'aperçu d\'une instance DICOM' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Aperçu de l\'instance récupéré avec succès' }),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Query)('quality')),
     __param(2, (0, common_1.Res)()),
+    __param(3, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, Object]),
+    __metadata("design:paramtypes", [String, String, Object, Object]),
     __metadata("design:returntype", Promise)
 ], OrthancController.prototype, "getInstancePreview", null);
 __decorate([
@@ -294,8 +331,9 @@ __decorate([
     (0, swagger_1.ApiResponse)({ status: 400, description: 'Fichier DICOM invalide' }),
     (0, swagger_1.ApiResponse)({ status: 500, description: 'Erreur serveur' }),
     __param(0, (0, common_1.UploadedFile)()),
+    __param(1, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Promise)
 ], OrthancController.prototype, "uploadDicomFile", null);
 __decorate([
@@ -306,12 +344,14 @@ __decorate([
     (0, swagger_1.ApiResponse)({ status: 400, description: 'Requête invalide' }),
     (0, swagger_1.ApiResponse)({ status: 500, description: 'Erreur serveur' }),
     __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [find_dicom_dto_1.FindDicomDto]),
+    __metadata("design:paramtypes", [find_dicom_dto_1.FindDicomDto, Object]),
     __metadata("design:returntype", Promise)
 ], OrthancController.prototype, "findDicom", null);
 __decorate([
     (0, common_1.Get)('wado/:id'),
+    (0, roles_decorator_1.Roles)('RADIOLOGUE', 'MEDECIN'),
     (0, swagger_1.ApiOperation)({ summary: 'Récupérer une image DICOM via WADO-GET' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Image récupérée avec succès' }),
     (0, swagger_1.ApiResponse)({ status: 404, description: 'Image non trouvée' }),
@@ -319,8 +359,9 @@ __decorate([
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Query)('contentType')),
     __param(2, (0, common_1.Res)()),
+    __param(3, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, Object]),
+    __metadata("design:paramtypes", [String, String, Object, Object]),
     __metadata("design:returntype", Promise)
 ], OrthancController.prototype, "getWadoImage", null);
 exports.OrthancController = OrthancController = __decorate([

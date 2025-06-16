@@ -13,12 +13,15 @@ exports.UsersService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
 const bcrypt = require("bcrypt");
+const journal_activity_service_1 = require("../journal/journal-activity.service");
 let UsersService = class UsersService {
     prisma;
-    constructor(prisma) {
+    journalActivityService;
+    constructor(prisma, journalActivityService) {
         this.prisma = prisma;
+        this.journalActivityService = journalActivityService;
     }
-    async create(createUserDto) {
+    async create(createUserDto, adminId) {
         const existingUser = await this.prisma.utilisateur.findFirst({
             where: {
                 OR: [
@@ -36,6 +39,11 @@ let UsersService = class UsersService {
                 ...createUserDto,
                 password: hashedPassword,
             },
+        });
+        await this.journalActivityService.logActivity({
+            utilisateurID: adminId,
+            typeAction: 'CREATION_UTILISATEUR',
+            description: `Création d'un nouvel utilisateur: ${user.nom} ${user.prenom} (${user.username})`,
         });
         const { password, ...result } = user;
         return result;
@@ -60,10 +68,10 @@ let UsersService = class UsersService {
     async findById(userId) {
         return this.findOne(userId);
     }
-    async update(utilisateurID, updateUserDto) {
-        await this.findOne(utilisateurID);
+    async update(utilisateurID, updateUserDto, adminId) {
+        const existingUser = await this.findOne(utilisateurID);
         if (updateUserDto.username || updateUserDto.email) {
-            const existingUser = await this.prisma.utilisateur.findFirst({
+            const conflictingUser = await this.prisma.utilisateur.findFirst({
                 where: {
                     AND: [
                         { utilisateurID: { not: utilisateurID } },
@@ -76,7 +84,7 @@ let UsersService = class UsersService {
                     ]
                 }
             });
-            if (existingUser) {
+            if (conflictingUser) {
                 throw new common_1.ConflictException('Username or email already exists');
             }
         }
@@ -87,13 +95,23 @@ let UsersService = class UsersService {
             where: { utilisateurID },
             data: updateUserDto,
         });
+        await this.journalActivityService.logActivity({
+            utilisateurID: adminId,
+            typeAction: 'MODIFICATION_UTILISATEUR',
+            description: `Modification des informations de l'utilisateur: ${updatedUser.nom} ${updatedUser.prenom} (${updatedUser.username})`,
+        });
         const { password, ...result } = updatedUser;
         return result;
     }
-    async remove(utilisateurID) {
-        await this.findOne(utilisateurID);
+    async remove(utilisateurID, adminId) {
+        const user = await this.findOne(utilisateurID);
         await this.prisma.utilisateur.delete({
             where: { utilisateurID },
+        });
+        await this.journalActivityService.logActivity({
+            utilisateurID: adminId,
+            typeAction: 'SUPPRESSION_UTILISATEUR',
+            description: `Suppression de l'utilisateur: ${user.nom} ${user.prenom} (${user.username})`,
         });
     }
     async getProfile(userId) {
@@ -108,12 +126,19 @@ let UsersService = class UsersService {
     }
     async updateProfile(userId, updateUserDto) {
         const { role, estActif, ...safeUpdateData } = updateUserDto;
-        return this.update(userId, safeUpdateData);
+        const updatedUser = await this.update(userId, safeUpdateData, userId);
+        await this.journalActivityService.logActivity({
+            utilisateurID: userId,
+            typeAction: 'MODIFICATION_PROFIL',
+            description: `Modification du profil utilisateur`,
+        });
+        return updatedUser;
     }
 };
 exports.UsersService = UsersService;
 exports.UsersService = UsersService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        journal_activity_service_1.JournalActivityService])
 ], UsersService);
 //# sourceMappingURL=users.service.js.map

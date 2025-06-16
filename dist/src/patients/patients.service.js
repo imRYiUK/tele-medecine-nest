@@ -12,16 +12,20 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.PatientsService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
+const journal_activity_service_1 = require("../journal/journal-activity.service");
 let PatientsService = class PatientsService {
     prisma;
-    constructor(prisma) {
+    journalActivityService;
+    constructor(prisma, journalActivityService) {
         this.prisma = prisma;
+        this.journalActivityService = journalActivityService;
     }
     async create(createPatientDto, userId) {
         const { dossierMedical, ...patientData } = createPatientDto;
         const patient = await this.prisma.patient.create({
             data: {
                 ...patientData,
+                createdBy: userId,
                 updatedAt: new Date(),
                 createdAt: new Date(),
             },
@@ -31,11 +35,16 @@ let PatientsService = class PatientsService {
                 data: {
                     patientID: patient.patientID,
                     createdBy: userId,
-                    etatDossier: "en cours",
-                    createdAt: Date.now().toString()
+                    etatDossier: dossierMedical.etatDossier,
+                    createdAt: new Date(),
                 },
             });
         }
+        await this.journalActivityService.logActivity({
+            utilisateurID: userId.toString(),
+            typeAction: 'CREATION_PATIENT',
+            description: `Création d'un nouveau patient: ${patient.nom} ${patient.prenom}`,
+        });
         return patient;
     }
     async findAll(params) {
@@ -46,6 +55,8 @@ let PatientsService = class PatientsService {
                 OR: [
                     { nom: { contains: search } },
                     { prenom: { contains: search } },
+                    { email: { contains: search } },
+                    { telephone: { contains: search } },
                 ],
             }
             : {};
@@ -113,10 +124,16 @@ let PatientsService = class PatientsService {
         if (updatePatientDto.dateNaissance) {
             data.dateNaissance = new Date(updatePatientDto.dateNaissance);
         }
-        return this.prisma.patient.update({
+        const patient = await this.prisma.patient.update({
             where: { patientID },
             data,
         });
+        await this.journalActivityService.logActivity({
+            utilisateurID: userId.toString(),
+            typeAction: 'MODIFICATION_PATIENT',
+            description: `Modification des informations du patient: ${patient.nom} ${patient.prenom}`,
+        });
+        return patient;
     }
     async remove(patientID) {
         await this.findOne(patientID);
@@ -127,19 +144,26 @@ let PatientsService = class PatientsService {
     async createMedicalRecord(createMedicalRecordDto, userId) {
         const { patientId, etatDossier } = createMedicalRecordDto;
         await this.findOne(patientId);
-        return this.prisma.dossierMedical.create({
+        const dossierMedical = await this.prisma.dossierMedical.create({
             data: {
                 patientID: patientId,
                 createdBy: userId,
                 etatDossier,
-                createdAt: Date.now().toString()
+                createdAt: new Date(),
             },
         });
+        await this.journalActivityService.logActivity({
+            utilisateurID: userId.toString(),
+            typeAction: 'CREATION_DOSSIER',
+            description: `Création d'un nouveau dossier médical pour le patient ID: ${patientId}`,
+        });
+        return dossierMedical;
     }
 };
 exports.PatientsService = PatientsService;
 exports.PatientsService = PatientsService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        journal_activity_service_1.JournalActivityService])
 ], PatientsService);
 //# sourceMappingURL=patients.service.js.map

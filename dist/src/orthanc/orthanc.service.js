@@ -14,69 +14,112 @@ const common_1 = require("@nestjs/common");
 const axios_1 = require("@nestjs/axios");
 const rxjs_1 = require("rxjs");
 const config_1 = require("@nestjs/config");
+const journal_activity_service_1 = require("../journal/journal-activity.service");
 let OrthancService = class OrthancService {
     httpService;
     configService;
+    journalActivityService;
     baseUrl;
     auth;
-    constructor(httpService, configService) {
+    constructor(httpService, configService, journalActivityService) {
         this.httpService = httpService;
         this.configService = configService;
+        this.journalActivityService = journalActivityService;
         this.baseUrl = this.configService.get('ORTHANC_URL') || 'http://localhost:8042';
         this.auth = {
             username: this.configService.get('ORTHANC_USERNAME') || 'orthanc',
             password: this.configService.get('ORTHANC_PASSWORD') || 'orthanc',
         };
     }
-    async getStudies() {
+    async getStudies(userId) {
         const response = await (0, rxjs_1.firstValueFrom)(this.httpService.get(`${this.baseUrl}/studies`, {
             auth: this.auth,
         }));
+        await this.journalActivityService.logActivity({
+            utilisateurID: userId,
+            typeAction: 'CONSULTATION_ETUDES',
+            description: 'Consultation de la liste des études DICOM',
+        });
         return response.data;
     }
-    async getStudyDetails(studyId) {
+    async getStudyDetails(studyId, userId) {
         const response = await (0, rxjs_1.firstValueFrom)(this.httpService.get(`${this.baseUrl}/studies/${studyId}`, {
             auth: this.auth,
         }));
+        await this.journalActivityService.logActivity({
+            utilisateurID: userId,
+            typeAction: 'CONSULTATION_ETUDE',
+            description: `Consultation des détails de l'étude DICOM: ${studyId}`,
+        });
         return response.data;
     }
-    async getSeries(studyId) {
+    async getSeries(studyId, userId) {
         const response = await (0, rxjs_1.firstValueFrom)(this.httpService.get(`${this.baseUrl}/studies/${studyId}/series`, {
             auth: this.auth,
         }));
+        await this.journalActivityService.logActivity({
+            utilisateurID: userId,
+            typeAction: 'CONSULTATION_SERIES',
+            description: `Consultation des séries de l'étude DICOM: ${studyId}`,
+        });
         return response.data;
     }
-    async getSeriesDetails(seriesId) {
+    async getSeriesDetails(seriesId, userId) {
         const response = await (0, rxjs_1.firstValueFrom)(this.httpService.get(`${this.baseUrl}/series/${seriesId}`, {
             auth: this.auth,
         }));
+        await this.journalActivityService.logActivity({
+            utilisateurID: userId,
+            typeAction: 'CONSULTATION_SERIE',
+            description: `Consultation des détails de la série DICOM: ${seriesId}`,
+        });
         return response.data;
     }
-    async getInstances(seriesId) {
+    async getInstances(seriesId, userId) {
         const response = await (0, rxjs_1.firstValueFrom)(this.httpService.get(`${this.baseUrl}/series/${seriesId}/instances`, {
             auth: this.auth,
         }));
+        await this.journalActivityService.logActivity({
+            utilisateurID: userId,
+            typeAction: 'CONSULTATION_INSTANCES',
+            description: `Consultation des instances de la série DICOM: ${seriesId}`,
+        });
         return response.data;
     }
-    async getInstanceDetails(instanceId) {
+    async getInstanceDetails(instanceId, userId) {
         const response = await (0, rxjs_1.firstValueFrom)(this.httpService.get(`${this.baseUrl}/instances/${instanceId}`, {
             auth: this.auth,
         }));
+        await this.journalActivityService.logActivity({
+            utilisateurID: userId,
+            typeAction: 'CONSULTATION_INSTANCE',
+            description: `Consultation des détails de l'instance DICOM: ${instanceId}`,
+        });
         return response.data;
     }
-    async getDicomFile(instanceId) {
+    async getDicomFile(instanceId, userId) {
         const response = await (0, rxjs_1.firstValueFrom)(this.httpService.get(`${this.baseUrl}/instances/${instanceId}/file`, {
             auth: this.auth,
             responseType: 'stream',
         }));
+        await this.journalActivityService.logActivity({
+            utilisateurID: userId,
+            typeAction: 'TELECHARGEMENT_DICOM',
+            description: `Téléchargement du fichier DICOM: ${instanceId}`,
+        });
         return response.data;
     }
-    async getInstancePreview(instanceId, quality = 90) {
+    async getInstancePreview(instanceId, userId, quality = 90) {
         const response = await (0, rxjs_1.firstValueFrom)(this.httpService.get(`${this.baseUrl}/instances/${instanceId}/preview`, {
             auth: this.auth,
             params: { quality },
             responseType: 'arraybuffer',
         }));
+        await this.journalActivityService.logActivity({
+            utilisateurID: userId,
+            typeAction: 'CONSULTATION_APERCU',
+            description: `Consultation de l'aperçu de l'instance DICOM: ${instanceId}`,
+        });
         return response.data;
     }
     async saveImageMetadata(examenId, orthancId, studyUid, modalite) {
@@ -88,27 +131,21 @@ let OrthancService = class OrthancService {
             modalite,
         };
     }
-    async uploadDicomFile(fileBuffer) {
-        try {
-            const response = await (0, rxjs_1.firstValueFrom)(this.httpService.post(`${this.baseUrl}/instances`, fileBuffer, {
-                auth: this.auth,
-                headers: {
-                    'Content-Type': 'application/dicom',
-                },
-            }));
-            return response.data;
-        }
-        catch (error) {
-            if (error.response?.status === 400) {
-                throw new common_1.HttpException({
-                    message: 'Fichier DICOM invalide',
-                    details: error.response.data,
-                }, common_1.HttpStatus.BAD_REQUEST);
-            }
-            throw error;
-        }
+    async uploadDicomFile(fileBuffer, userId) {
+        const response = await (0, rxjs_1.firstValueFrom)(this.httpService.post(`${this.baseUrl}/instances`, fileBuffer, {
+            auth: this.auth,
+            headers: {
+                'Content-Type': 'application/dicom',
+            },
+        }));
+        await this.journalActivityService.logActivity({
+            utilisateurID: userId,
+            typeAction: 'UPLOAD_DICOM',
+            description: `Upload d'un nouveau fichier DICOM`,
+        });
+        return response.data;
     }
-    async findDicom(level, query) {
+    async findDicom(level, query, userId) {
         const validLevels = ['Patient', 'Study', 'Series', 'Instance'];
         if (!validLevels.includes(level)) {
             throw new common_1.HttpException(`Niveau de recherche invalide. Valeurs acceptées: ${validLevels.join(', ')}`, common_1.HttpStatus.BAD_REQUEST);
@@ -119,11 +156,16 @@ let OrthancService = class OrthancService {
         }, {
             auth: this.auth,
         }));
+        await this.journalActivityService.logActivity({
+            utilisateurID: userId,
+            typeAction: 'RECHERCHE_DICOM',
+            description: `Recherche DICOM au niveau: ${level}`,
+        });
         return response.data;
     }
-    async getWadoImage(instanceId, contentType = 'image/jpeg') {
+    async getWadoImage(instanceId, contentType = 'image/jpeg', userId) {
         try {
-            await this.getInstanceDetails(instanceId);
+            await this.getInstanceDetails(instanceId, userId);
         }
         catch (error) {
             if (error.response?.status === 404) {
@@ -163,6 +205,7 @@ exports.OrthancService = OrthancService;
 exports.OrthancService = OrthancService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [axios_1.HttpService,
-        config_1.ConfigService])
+        config_1.ConfigService,
+        journal_activity_service_1.JournalActivityService])
 ], OrthancService);
 //# sourceMappingURL=orthanc.service.js.map

@@ -1,10 +1,12 @@
 import { FindDicomDto } from './dto/find-dicom.dto';
 import { OrthancService } from './orthanc.service';
 import { Response } from 'express';
+import { Request } from 'express';
 export declare class OrthancController {
     private readonly orthancService;
     constructor(orthancService: OrthancService);
-    getStudies(): Promise<{
+    private getUserId;
+    getStudies(req: Request): Promise<{
         success: boolean;
         data: any;
         message?: undefined;
@@ -15,7 +17,7 @@ export declare class OrthancController {
         error: any;
         data?: undefined;
     }>;
-    getStudyDetails(studyId: string): Promise<{
+    getStudyDetails(studyId: string, req: Request): Promise<{
         success: boolean;
         data: any;
         message?: undefined;
@@ -26,7 +28,7 @@ export declare class OrthancController {
         error: any;
         data?: undefined;
     }>;
-    getSeries(studyId: string): Promise<{
+    getSeries(studyId: string, req: Request): Promise<{
         success: boolean;
         data: any;
         message?: undefined;
@@ -37,7 +39,7 @@ export declare class OrthancController {
         error: any;
         data?: undefined;
     }>;
-    getSeriesDetails(seriesId: string): Promise<{
+    getSeriesDetails(seriesId: string, req: Request): Promise<{
         success: boolean;
         data: any;
         message?: undefined;
@@ -48,7 +50,7 @@ export declare class OrthancController {
         error: any;
         data?: undefined;
     }>;
-    getInstances(seriesId: string): Promise<{
+    getInstances(seriesId: string, req: Request): Promise<{
         success: boolean;
         data: any;
         message?: undefined;
@@ -59,7 +61,7 @@ export declare class OrthancController {
         error: any;
         data?: undefined;
     }>;
-    getInstanceDetails(instanceId: string): Promise<{
+    getInstanceDetails(instanceId: string, req: Request): Promise<{
         success: boolean;
         data: any;
         message?: undefined;
@@ -70,8 +72,8 @@ export declare class OrthancController {
         error: any;
         data?: undefined;
     }>;
-    getDicomFile(instanceId: string, res: Response): Promise<void>;
-    getInstancePreview(instanceId: string, quality: string, res: Response): Promise<void>;
+    getDicomFile(instanceId: string, res: Response, req: Request): Promise<void>;
+    getInstancePreview(instanceId: string, quality: string, res: Response, req: Request): Promise<void>;
     saveImageMetadata(examenId: string, orthancId: string, studyUid: string, modalite: string): Promise<{
         success: boolean;
         data: {
@@ -89,13 +91,13 @@ export declare class OrthancController {
         error: any;
         data?: undefined;
     }>;
-    uploadDicomFile(file: Express.Multer.File): Promise<{
+    uploadDicomFile(file: Express.Multer.File, req: Request): Promise<{
         success: boolean;
         data: any;
     }>;
-    findDicom(findRequest: FindDicomDto): Promise<{
+    findDicom(findRequest: FindDicomDto, req: Request): Promise<{
         success: boolean;
         data: any;
     }>;
-    getWadoImage(instanceId: string, contentType: string, res: Response): Promise<void>;
+    getWadoImage(instanceId: string, contentType: string, res: Response, req: Request): Promise<void>;
 }

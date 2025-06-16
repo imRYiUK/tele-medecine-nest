@@ -2,34 +2,40 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import { RegisterDto } from './dto/register.dto';
+import { LoginDto } from './dto/login.dto';
 import { UserDto } from '../common/dto/user.dto';
+import { JournalActivityService } from '../journal/journal-activity.service';
+import { JwtPayload } from '../common/interfaces/jwt-payload.interface';
 export declare class AuthService {
     private jwtService;
     private configService;
     private prisma;
+    private journalActivityService;
     private readonly logger;
-    constructor(jwtService: JwtService, configService: ConfigService, prisma: PrismaService);
+    constructor(jwtService: JwtService, configService: ConfigService, prisma: PrismaService, journalActivityService: JournalActivityService);
     validateUser(email: string, pass: string): Promise<UserDto | null>;
-    login(user: UserDto): Promise<{
+    login(loginDto: LoginDto): Promise<{
         access_token: string;
+        user: {
+            utilisateurID: string;
+            email: string;
+            nom: string;
+            prenom: string;
+            role: string;
+        };
     }>;
-    validateToken(token: string): Promise<any>;
     revokeToken(token: string): Promise<{
         success: boolean;
     }>;
     register(registerDto: RegisterDto): Promise<{
-        message: string;
+        access_token: string;
         user: {
-            etablissementID: string | null;
-            nom: string;
-            telephone: string;
-            email: string;
             utilisateurID: string;
+            email: string;
+            nom: string;
             prenom: string;
-            username: string;
             role: string;
-            estActif: boolean;
         };
     }>;
-    comparePasswords(passwordIn: string, passwordBD: string): Promise<boolean>;
+    validateToken(token: string): Promise<JwtPayload>;
 }

@@ -29,25 +29,40 @@ let JwtAuthGuard = JwtAuthGuard_1 = class JwtAuthGuard extends (0, passport_1.Au
                 context.getClass(),
             ]);
             if (isPublic) {
+                this.logger.debug('Public route, skipping authentication');
                 return true;
             }
+            this.logger.debug('Protected route, proceeding with JWT validation');
             return super.canActivate(context);
         }
         catch (error) {
-            this.logger.error(`Error in JwtAuthGuard: ${error.message}`);
+            this.logger.error(`Authentication error: ${error.message}`);
             throw new common_1.UnauthorizedException('Authentication failed');
         }
     }
     handleRequest(err, user, info) {
+        this.logger.debug('JWT Guard handleRequest called with:', {
+            error: err ? err.message : 'no error',
+            user: user ? 'user present' : 'no user',
+            info: info ? JSON.stringify(info) : 'no info'
+        });
         if (err) {
-            this.logger.error(`JWT Authentication error: ${err.message}`);
+            this.logger.error(`JWT validation error: ${err.message}`);
             throw new common_1.UnauthorizedException('Authentication failed');
         }
         if (!user) {
-            this.logger.warn('No user found in JWT token');
+            this.logger.warn('No user found in JWT token. Info:', info);
             throw new common_1.UnauthorizedException('Invalid or expired token');
         }
-        this.logger.debug(`User authenticated: ${user.email}`);
+        if (!user.utilisateurID) {
+            this.logger.error('Invalid user object structure:', JSON.stringify(user, null, 2));
+            throw new common_1.UnauthorizedException('Invalid user object structure');
+        }
+        this.logger.debug('User authenticated successfully:', {
+            utilisateurID: user.utilisateurID,
+            email: user.email,
+            role: user.role
+        });
         return user;
     }
 };

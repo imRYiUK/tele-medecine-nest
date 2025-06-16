@@ -3,6 +3,7 @@ import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { ConfigService } from '@nestjs/config';
 import { AxiosResponse } from 'axios';
+import { JournalActivityService } from '../journal/journal-activity.service';
 
 @Injectable()
 export class OrthancService {
@@ -12,6 +13,7 @@ export class OrthancService {
   constructor(
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
+    private readonly journalActivityService: JournalActivityService,
   ) {
     this.baseUrl = this.configService.get<string>('ORTHANC_URL') || 'http://localhost:8042';
     this.auth = {
@@ -20,71 +22,120 @@ export class OrthancService {
     };
   }
 
-  async getStudies() {
+  async getStudies(userId: string) {
     const response = await firstValueFrom<AxiosResponse>(
       this.httpService.get(`${this.baseUrl}/studies`, {
         auth: this.auth,
       })
     );
+
+    await this.journalActivityService.logActivity({
+      utilisateurID: userId,
+      typeAction: 'CONSULTATION_ETUDES',
+      description: 'Consultation de la liste des études DICOM',
+    });
+
     return response.data;
   }
 
-  async getStudyDetails(studyId: string) {
+  async getStudyDetails(studyId: string, userId: string) {
     const response = await firstValueFrom<AxiosResponse>(
       this.httpService.get(`${this.baseUrl}/studies/${studyId}`, {
         auth: this.auth,
       })
     );
+
+    await this.journalActivityService.logActivity({
+      utilisateurID: userId,
+      typeAction: 'CONSULTATION_ETUDE',
+      description: `Consultation des détails de l'étude DICOM: ${studyId}`,
+    });
+
     return response.data;
   }
 
-  async getSeries(studyId: string) {
+  async getSeries(studyId: string, userId: string) {
     const response = await firstValueFrom<AxiosResponse>(
       this.httpService.get(`${this.baseUrl}/studies/${studyId}/series`, {
         auth: this.auth,
       })
     );
+
+    await this.journalActivityService.logActivity({
+      utilisateurID: userId,
+      typeAction: 'CONSULTATION_SERIES',
+      description: `Consultation des séries de l'étude DICOM: ${studyId}`,
+    });
+
     return response.data;
   }
 
-  async getSeriesDetails(seriesId: string) {
+  async getSeriesDetails(seriesId: string, userId: string) {
     const response = await firstValueFrom<AxiosResponse>(
       this.httpService.get(`${this.baseUrl}/series/${seriesId}`, {
         auth: this.auth,
       })
     );
+
+    await this.journalActivityService.logActivity({
+      utilisateurID: userId,
+      typeAction: 'CONSULTATION_SERIE',
+      description: `Consultation des détails de la série DICOM: ${seriesId}`,
+    });
+
     return response.data;
   }
 
-  async getInstances(seriesId: string) {
+  async getInstances(seriesId: string, userId: string) {
     const response = await firstValueFrom<AxiosResponse>(
       this.httpService.get(`${this.baseUrl}/series/${seriesId}/instances`, {
         auth: this.auth,
       })
     );
+
+    await this.journalActivityService.logActivity({
+      utilisateurID: userId,
+      typeAction: 'CONSULTATION_INSTANCES',
+      description: `Consultation des instances de la série DICOM: ${seriesId}`,
+    });
+
     return response.data;
   }
 
-  async getInstanceDetails(instanceId: string) {
+  async getInstanceDetails(instanceId: string, userId: string) {
     const response = await firstValueFrom<AxiosResponse>(
       this.httpService.get(`${this.baseUrl}/instances/${instanceId}`, {
         auth: this.auth,
       })
     );
+
+    await this.journalActivityService.logActivity({
+      utilisateurID: userId,
+      typeAction: 'CONSULTATION_INSTANCE',
+      description: `Consultation des détails de l'instance DICOM: ${instanceId}`,
+    });
+
     return response.data;
   }
 
-  async getDicomFile(instanceId: string) {
+  async getDicomFile(instanceId: string, userId: string) {
     const response = await firstValueFrom<AxiosResponse>(
       this.httpService.get(`${this.baseUrl}/instances/${instanceId}/file`, {
         auth: this.auth,
         responseType: 'stream',
       })
     );
-    return response.data; // stream
+
+    await this.journalActivityService.logActivity({
+      utilisateurID: userId,
+      typeAction: 'TELECHARGEMENT_DICOM',
+      description: `Téléchargement du fichier DICOM: ${instanceId}`,
+    });
+
+    return response.data;
   }
 
-  async getInstancePreview(instanceId: string, quality: number = 90) {
+  async getInstancePreview(instanceId: string, userId: string, quality: number = 90) {
     const response = await firstValueFrom<AxiosResponse>(
       this.httpService.get(`${this.baseUrl}/instances/${instanceId}/preview`, {
         auth: this.auth,
@@ -92,6 +143,13 @@ export class OrthancService {
         responseType: 'arraybuffer',
       })
     );
+
+    await this.journalActivityService.logActivity({
+      utilisateurID: userId,
+      typeAction: 'CONSULTATION_APERCU',
+      description: `Consultation de l'aperçu de l'instance DICOM: ${instanceId}`,
+    });
+
     return response.data;
   }
 
@@ -117,57 +175,63 @@ export class OrthancService {
   /**
    * Upload un fichier DICOM vers Orthanc (C-STORE)
    * @param fileBuffer Buffer contenant le fichier DICOM
+   * @param userId
    * @returns Réponse d'Orthanc avec les informations sur le fichier uploadé
    */
-  async uploadDicomFile(fileBuffer: Buffer) {
-    try {
-      const response = await firstValueFrom<AxiosResponse>(
-        this.httpService.post(`${this.baseUrl}/instances`, fileBuffer, {
-          auth: this.auth,
-          headers: {
-            'Content-Type': 'application/dicom',
-          },
-        })
-      );
-      return response.data;
-    } catch (error) {
-      // Vérifier si c'est une erreur de validation DICOM
-      if (error.response?.status === 400) {
-        throw new HttpException(
-          {
-            message: 'Fichier DICOM invalide',
-            details: error.response.data,
-          },
-          HttpStatus.BAD_REQUEST
-        );
-      }
-      throw error;
-    }
+  async uploadDicomFile(fileBuffer: Buffer, userId: string) {
+    const response = await firstValueFrom<AxiosResponse>(
+      this.httpService.post(`${this.baseUrl}/instances`, fileBuffer, {
+        auth: this.auth,
+        headers: {
+          'Content-Type': 'application/dicom',
+        },
+      })
+    );
+
+    await this.journalActivityService.logActivity({
+      utilisateurID: userId,
+      typeAction: 'UPLOAD_DICOM',
+      description: `Upload d'un nouveau fichier DICOM`,
+    });
+
+    return response.data;
   }
 
   /**
    * Recherche DICOM (C-FIND)
    * @param level Niveau de recherche (Patient, Study, Series, Instance)
    * @param query Critères de recherche
+   * @param userId
    * @returns Résultats de la recherche
    */
-  async findDicom(level: string, query: Record<string, any>) {
+  async findDicom(level: string, query: Record<string, any>, userId: string) {
     const validLevels = ['Patient', 'Study', 'Series', 'Instance'];
     if (!validLevels.includes(level)) {
       throw new HttpException(
         `Niveau de recherche invalide. Valeurs acceptées: ${validLevels.join(', ')}`,
-        HttpStatus.BAD_REQUEST
+        HttpStatus.BAD_REQUEST,
       );
     }
 
     const response = await firstValueFrom<AxiosResponse>(
-      this.httpService.post(`${this.baseUrl}/tools/find`, {
-        Level: level,
-        Query: query,
-      }, {
-        auth: this.auth,
-      })
+      this.httpService.post(
+        `${this.baseUrl}/tools/find`,
+        {
+          Level: level,
+          Query: query,
+        },
+        {
+          auth: this.auth,
+        },
+      ),
     );
+
+    await this.journalActivityService.logActivity({
+      utilisateurID: userId,
+      typeAction: 'RECHERCHE_DICOM',
+      description: `Recherche DICOM au niveau: ${level}`,
+    });
+
     return response.data;
   }
 
@@ -175,12 +239,13 @@ export class OrthancService {
    * Récupère une image DICOM via WADO-GET
    * @param instanceId ID de l'instance
    * @param contentType Type de contenu demandé (image/jpeg, image/png, etc.)
+   * @param userId
    * @returns Données de l'image et en-têtes
    */
-  async getWadoImage(instanceId: string, contentType: string = 'image/jpeg') {
+  async getWadoImage(instanceId: string, contentType: string = 'image/jpeg', userId: string) {
     // Vérifier si l'instance existe
     try {
-      await this.getInstanceDetails(instanceId);
+      await this.getInstanceDetails(instanceId, userId);
     } catch (error) {
       if (error.response?.status === 404) {
         throw new HttpException('Instance non trouvée', HttpStatus.NOT_FOUND);

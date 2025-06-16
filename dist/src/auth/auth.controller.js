@@ -23,11 +23,7 @@ let AuthController = class AuthController {
         this.authService = authService;
     }
     async login(loginDto) {
-        const user = await this.authService.validateUser(loginDto.email, loginDto.password);
-        if (!user) {
-            throw new common_1.HttpException('Invalid email or password', common_1.HttpStatus.BAD_REQUEST);
-        }
-        return this.authService.login(user);
+        return this.authService.login(loginDto);
     }
 };
 exports.AuthController = AuthController;

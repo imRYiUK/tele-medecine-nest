@@ -14,40 +14,68 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
+  private getUserId(req: Request): string {
+    if (!req.user || !req.user['utilisateurID']) {
+      throw new UnauthorizedException('Utilisateur non authentifié');
+    }
+    return req.user['utilisateurID'];
+  }
+
   @Post()
   @Roles(UserRole.ADMINISTRATEUR)
-  async create(@Body() createUserDto: CreateUserDto): Promise<UserDto> {
-    return this.usersService.create(createUserDto);
+  @ApiOperation({ summary: 'Create a new user' })
+  @ApiResponse({ status: 201, description: 'User created successfully', type: UserDto })
+  @ApiResponse({ status: 400, description: 'Invalid input' })
+  @ApiResponse({ status: 409, description: 'Username or email already exists' })
+  async create(@Body() createUserDto: CreateUserDto, @Req() req: Request) {
+    const adminId = this.getUserId(req);
+    return this.usersService.create(createUserDto, adminId);
   }
 
   @Get()
   @Roles(UserRole.ADMINISTRATEUR)
-  async findAll(): Promise<UserDto[]> {
+  @ApiOperation({ summary: 'Get all users' })
+  @ApiResponse({ status: 200, description: 'Returns all users', type: [UserDto] })
+  async findAll() {
     return this.usersService.findAll();
   }
 
   @Get(':id')
   @Roles(UserRole.ADMINISTRATEUR)
-  async findOne(@Param('id') id: string): Promise<UserDto> {
+  @ApiOperation({ summary: 'Get a user by ID' })
+  @ApiResponse({ status: 200, description: 'Returns the user', type: UserDto })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  async findOne(@Param('id') id: string) {
     return this.usersService.findOne(id);
   }
 
   @Put(':id')
   @Roles(UserRole.ADMINISTRATEUR)
+  @ApiOperation({ summary: 'Update a user' })
+  @ApiResponse({ status: 200, description: 'User updated successfully', type: UserDto })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  @ApiResponse({ status: 409, description: 'Username or email already exists' })
   async update(
     @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
-  ): Promise<UserDto> {
-    return this.usersService.update(id, updateUserDto);
+    @Req() req: Request,
+  ) {
+    const adminId = this.getUserId(req);
+    return this.usersService.update(id, updateUserDto, adminId);
   }
 
   @Delete(':id')
   @Roles(UserRole.ADMINISTRATEUR)
-  async remove(@Param('id') id: string): Promise<void> {
-    return this.usersService.remove(id);
+  @ApiOperation({ summary: 'Delete a user' })
+  @ApiResponse({ status: 200, description: 'User deleted successfully' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  async remove(@Param('id') id: string, @Req() req: Request) {
+    const adminId = this.getUserId(req);
+    return this.usersService.remove(id, adminId);
   }
 
   @Get('profile/me')
+  @Roles(UserRole.ADMINISTRATEUR, UserRole.RADIOLOGUE, UserRole.MEDECIN, UserRole.PERSONNEL_ADMINISTRATIF, UserRole.TECHNICIEN)
   @ApiOperation({ summary: 'Get current user profile' })
   @ApiResponse({ 
     status: 200, 
@@ -59,13 +87,12 @@ export class UsersController {
     description: 'Unauthorized - User not found or token invalid' 
   })
   async getProfile(@Req() req: Request) {
-    if (!req.user) {
-      throw new UnauthorizedException('User not found');
-    }
-    return this.usersService.getProfile(req.user['userId']);
+    const userId = this.getUserId(req);
+    return this.usersService.getProfile(userId);
   }
 
   @Put('profile/me')
+  @Roles(UserRole.ADMINISTRATEUR, UserRole.RADIOLOGUE, UserRole.MEDECIN, UserRole.PERSONNEL_ADMINISTRATIF, UserRole.TECHNICIEN)
   @ApiOperation({ summary: 'Update current user profile' })
   @ApiResponse({ 
     status: 200, 
@@ -76,13 +103,8 @@ export class UsersController {
     status: 401, 
     description: 'Unauthorized - User not found or token invalid' 
   })
-  async updateProfile(
-    @Req() req: Request,
-    @Body() updateUserDto: UpdateUserDto
-  ) {
-    if (!req.user) {
-      throw new UnauthorizedException('User not found');
-    }
-    return this.usersService.updateProfile(req.user['userId'], updateUserDto);
+  async updateProfile(@Req() req: Request, @Body() updateUserDto: UpdateUserDto) {
+    const userId = this.getUserId(req);
+    return this.usersService.updateProfile(userId, updateUserDto);
   }
 }

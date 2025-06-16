@@ -16,15 +16,18 @@ const jwt_1 = require("@nestjs/jwt");
 const config_1 = require("@nestjs/config");
 const prisma_service_1 = require("../prisma/prisma.service");
 const bcrypt = require("bcrypt");
+const journal_activity_service_1 = require("../journal/journal-activity.service");
 let AuthService = AuthService_1 = class AuthService {
     jwtService;
     configService;
     prisma;
+    journalActivityService;
     logger = new common_1.Logger(AuthService_1.name);
-    constructor(jwtService, configService, prisma) {
+    constructor(jwtService, configService, prisma, journalActivityService) {
         this.jwtService = jwtService;
         this.configService = configService;
         this.prisma = prisma;
+        this.journalActivityService = journalActivityService;
     }
     async validateUser(email, pass) {
         const user = await this.prisma.utilisateur.findUnique({
@@ -34,42 +37,57 @@ let AuthService = AuthService_1 = class AuthService {
             this.logger.warn(`Failed login attempt for email: ${email}`);
             throw new common_1.UnauthorizedException('Identifiants invalides ou compte verrouillé');
         }
-        const isPasswordValid = await this.comparePasswords(pass, user.password);
+        const isPasswordValid = await bcrypt.compare(pass, user.password);
         if (!isPasswordValid) {
             return null;
         }
         this.logger.log(`Successful login for user ID: ${user.utilisateurID}`);
         return user;
     }
-    async login(user) {
-        const payload = {
-            sub: user.utilisateurID,
-            email: user.email,
-            role: user.role,
-        };
-        const accessToken = this.jwtService.sign(payload, {
-            secret: this.configService.get('JWT_SECRET'),
-            expiresIn: '24h',
-        });
-        return {
-            access_token: accessToken,
-        };
-    }
-    async validateToken(token) {
+    async login(loginDto) {
         try {
-            const payload = this.jwtService.verify(token, {
-                secret: this.configService.get('JWT_SECRET'),
+            const user = await this.prisma.utilisateur.findUnique({
+                where: { email: loginDto.email },
+            });
+            if (!user) {
+                this.logger.warn(`Login attempt failed: User not found for email ${loginDto.email}`);
+                throw new common_1.UnauthorizedException('Invalid credentials');
+            }
+            const isPasswordValid = await bcrypt.compare(loginDto.password, user.password);
+            if (!isPasswordValid) {
+                this.logger.warn(`Login attempt failed: Invalid password for user ${user.email}`);
+                throw new common_1.UnauthorizedException('Invalid credentials');
+            }
+            if (!user.estActif) {
+                this.logger.warn(`Login attempt failed: Inactive account ${user.email}`);
+                throw new common_1.UnauthorizedException('Account is inactive');
+            }
+            const payload = {
+                sub: user.utilisateurID,
+                email: user.email,
+                role: user.role,
+            };
+            this.logger.debug('Generating JWT token with payload:', JSON.stringify(payload, null, 2));
+            const token = this.jwtService.sign(payload);
+            await this.journalActivityService.logActivity({
+                utilisateurID: user.utilisateurID,
+                typeAction: 'CONNEXION',
+                description: `Connexion réussie: ${user.nom} ${user.prenom} (${user.email})`,
             });
             return {
-                active: true,
-                ...payload,
+                access_token: token,
+                user: {
+                    utilisateurID: user.utilisateurID,
+                    email: user.email,
+                    nom: user.nom,
+                    prenom: user.prenom,
+                    role: user.role,
+                },
             };
         }
         catch (error) {
-            return {
-                active: false,
-                error: error.message,
-            };
+            this.logger.error(`Login error: ${error.message}`);
+            throw error;
         }
     }
     async revokeToken(token) {
@@ -78,57 +96,63 @@ let AuthService = AuthService_1 = class AuthService {
     }
     async register(registerDto) {
         try {
-            const existingUsername = await this.prisma.utilisateur.findUnique({
-                where: { username: registerDto.username },
-            });
-            if (existingUsername) {
-                throw new common_1.ConflictException('Ce nom d\'utilisateur est déjà utilisé');
-            }
-            const existingEmail = await this.prisma.utilisateur.findUnique({
+            const existingUser = await this.prisma.utilisateur.findUnique({
                 where: { email: registerDto.email },
             });
-            if (existingEmail) {
-                throw new common_1.ConflictException('Cet email est déjà utilisé');
+            if (existingUser) {
+                this.logger.warn(`Registration failed: Email already exists ${registerDto.email}`);
+                throw new common_1.UnauthorizedException('Email already exists');
             }
             const hashedPassword = await bcrypt.hash(registerDto.password, 10);
             const user = await this.prisma.utilisateur.create({
                 data: {
+                    email: registerDto.email,
+                    password: hashedPassword,
                     nom: registerDto.nom,
                     prenom: registerDto.prenom,
-                    username: registerDto.username,
-                    password: hashedPassword,
-                    email: registerDto.email,
                     telephone: registerDto.telephone,
                     role: registerDto.role,
-                    etablissementID: registerDto.etablissementID,
-                    estActif: registerDto.estActif,
-                },
-                select: {
-                    utilisateurID: true,
-                    nom: true,
-                    prenom: true,
-                    username: true,
-                    email: true,
-                    telephone: true,
-                    role: true,
-                    etablissementID: true,
-                    estActif: true,
+                    username: registerDto.email,
                 },
             });
+            const payload = {
+                sub: user.utilisateurID,
+                email: user.email,
+                role: user.role,
+            };
+            this.logger.debug('Generating JWT token for new user:', JSON.stringify(payload, null, 2));
+            const token = this.jwtService.sign(payload);
+            await this.journalActivityService.logActivity({
+                utilisateurID: user.utilisateurID,
+                typeAction: 'INSCRIPTION',
+                description: `Nouvelle inscription: ${user.nom} ${user.prenom} (${user.email})`,
+            });
             return {
-                message: 'Utilisateur créé avec succès',
-                user,
+                access_token: token,
+                user: {
+                    utilisateurID: user.utilisateurID,
+                    email: user.email,
+                    nom: user.nom,
+                    prenom: user.prenom,
+                    role: user.role,
+                },
             };
         }
         catch (error) {
-            if (error instanceof common_1.ConflictException) {
-                throw error;
-            }
-            throw new common_1.BadRequestException('Erreur lors de la création de l\'utilisateur');
+            this.logger.error(`Registration error: ${error.message}`);
+            throw error;
         }
     }
-    async comparePasswords(passwordIn, passwordBD) {
-        return await bcrypt.compare(passwordIn, passwordBD);
+    async validateToken(token) {
+        try {
+            const payload = await this.jwtService.verifyAsync(token);
+            this.logger.debug('Token validated successfully:', JSON.stringify(payload, null, 2));
+            return payload;
+        }
+        catch (error) {
+            this.logger.error(`Token validation error: ${error.message}`);
+            throw new common_1.UnauthorizedException('Invalid token');
+        }
     }
 };
 exports.AuthService = AuthService;
@@ -136,6 +160,7 @@ exports.AuthService = AuthService = AuthService_1 = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [jwt_1.JwtService,
         config_1.ConfigService,
-        prisma_service_1.PrismaService])
+        prisma_service_1.PrismaService,
+        journal_activity_service_1.JournalActivityService])
 ], AuthService);
 //# sourceMappingURL=auth.service.js.map

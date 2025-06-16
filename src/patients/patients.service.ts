@@ -4,10 +4,14 @@ import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
 import { FindPatientsDto } from './dto/find-patients.dto';
 import { CreateMedicalRecordDto } from './dto/create-medical-record.dto';
+import { JournalActivityService } from '../journal/journal-activity.service';
 
 @Injectable()
 export class PatientsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private journalActivityService: JournalActivityService,
+  ) {}
 
   async create(createPatientDto: CreatePatientDto, userId: string) {
     const { dossierMedical, ...patientData } = createPatientDto;
@@ -16,6 +20,7 @@ export class PatientsService {
     const patient = await this.prisma.patient.create({
       data: {
         ...patientData,
+        createdBy: userId,
         updatedAt: new Date(),
         createdAt: new Date(),
       },
@@ -27,11 +32,18 @@ export class PatientsService {
         data: {
           patientID: patient.patientID,
           createdBy: userId,
-          etatDossier: "en cours",
-          createdAt: Date.now().toString()
+          etatDossier: dossierMedical.etatDossier,
+          createdAt: new Date(),
         },
       });
     }
+
+    // Journaliser l'action
+    await this.journalActivityService.logActivity({
+      utilisateurID: userId.toString(),
+      typeAction: 'CREATION_PATIENT',
+      description: `Création d'un nouveau patient: ${patient.nom} ${patient.prenom}`,
+    });
 
     return patient;
   }
@@ -46,6 +58,8 @@ export class PatientsService {
           OR: [
             { nom: { contains: search } },
             { prenom: { contains: search } },
+            { email: { contains: search } },
+            { telephone: { contains: search } },
           ],
         }
       : {};
@@ -125,10 +139,19 @@ export class PatientsService {
     }
 
     // Mettre à jour le patient
-    return this.prisma.patient.update({
+    const patient = await this.prisma.patient.update({
       where: { patientID },
       data,
     });
+
+    // Journaliser l'action
+    await this.journalActivityService.logActivity({
+      utilisateurID: userId.toString(),
+      typeAction: 'MODIFICATION_PATIENT',
+      description: `Modification des informations du patient: ${patient.nom} ${patient.prenom}`,
+    });
+
+    return patient;
   }
 
   async remove(patientID: string) {
@@ -148,13 +171,22 @@ export class PatientsService {
     await this.findOne(patientId);
 
     // Créer le dossier médical
-    return this.prisma.dossierMedical.create({
+    const dossierMedical = await this.prisma.dossierMedical.create({
       data: {
         patientID: patientId,
         createdBy: userId,
         etatDossier,
-        createdAt: Date.now().toString()
+        createdAt: new Date(),
       },
     });
+
+    // Journaliser l'action
+    await this.journalActivityService.logActivity({
+      utilisateurID: userId.toString(),
+      typeAction: 'CREATION_DOSSIER',
+      description: `Création d'un nouveau dossier médical pour le patient ID: ${patientId}`,
+    });
+
+    return dossierMedical;
   }
 }

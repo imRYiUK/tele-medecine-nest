@@ -3,9 +3,11 @@ import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
 import { FindPatientsDto } from './dto/find-patients.dto';
 import { CreateMedicalRecordDto } from './dto/create-medical-record.dto';
+import { JournalActivityService } from '../journal/journal-activity.service';
 export declare class PatientsService {
     private prisma;
-    constructor(prisma: PrismaService);
+    private journalActivityService;
+    constructor(prisma: PrismaService, journalActivityService: JournalActivityService);
     create(createPatientDto: CreatePatientDto, userId: string): Promise<{
         nom: string;
         adresse: string;

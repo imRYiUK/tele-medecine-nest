@@ -15,43 +15,58 @@ const common_1 = require("@nestjs/common");
 const passport_1 = require("@nestjs/passport");
 const passport_jwt_1 = require("passport-jwt");
 const config_1 = require("@nestjs/config");
-const users_service_1 = require("../../users/users.service");
+const prisma_service_1 = require("../../prisma/prisma.service");
 let JwtStrategy = JwtStrategy_1 = class JwtStrategy extends (0, passport_1.PassportStrategy)(passport_jwt_1.Strategy) {
     configService;
-    usersService;
+    prisma;
     logger = new common_1.Logger(JwtStrategy_1.name);
-    constructor(configService, usersService) {
+    constructor(configService, prisma) {
+        const secret = configService.get('JWT_SECRET');
+        if (!secret) {
+            throw new Error('JWT_SECRET is not defined in environment variables');
+        }
         super({
             jwtFromRequest: passport_jwt_1.ExtractJwt.fromAuthHeaderAsBearerToken(),
             ignoreExpiration: false,
-            secretOrKey: configService.get('JWT_SECRET', 'your-secret-key-should-be-changed-in-production'),
+            secretOrKey: secret,
         });
         this.configService = configService;
-        this.usersService = usersService;
+        this.prisma = prisma;
+        this.logger.debug('JWT Strategy initialized with secret key');
     }
     async validate(payload) {
         try {
-            const user = await this.usersService.findById(payload.sub);
+            this.logger.debug('JWT Strategy validate called with payload:', JSON.stringify(payload, null, 2));
+            if (!payload.sub) {
+                this.logger.error('JWT payload missing sub claim');
+                throw new common_1.UnauthorizedException('Invalid token structure');
+            }
+            this.logger.debug(`Looking up user with ID: ${payload.sub}`);
+            const user = await this.prisma.utilisateur.findUnique({
+                where: { utilisateurID: payload.sub },
+            });
+            this.logger.debug('Database query result:', user ? 'User found' : 'User not found');
             if (!user) {
                 this.logger.warn(`User not found for ID: ${payload.sub}`);
-                throw new common_1.UnauthorizedException('User not found or token invalid');
+                throw new common_1.UnauthorizedException('User not found');
             }
             if (!user.estActif) {
                 this.logger.warn(`Inactive user attempted to authenticate: ${user.email}`);
-                throw new common_1.UnauthorizedException('User account is inactive');
+                throw new common_1.UnauthorizedException('Account is inactive');
             }
             const userInfo = {
-                userId: user.utilisateurID,
+                utilisateurID: user.utilisateurID,
                 email: user.email,
                 role: user.role,
                 nom: user.nom,
-                prenom: user.prenom
+                prenom: user.prenom,
+                estActif: user.estActif
             };
-            this.logger.debug(`User authenticated successfully: ${user.email}`);
+            this.logger.debug('JWT Strategy returning user info:', JSON.stringify(userInfo, null, 2));
             return userInfo;
         }
         catch (error) {
-            this.logger.error(`Error validating JWT token: ${error.message}`);
+            this.logger.error(`JWT validation error: ${error.message}`);
             throw new common_1.UnauthorizedException('Invalid token');
         }
     }
@@ -60,6 +75,6 @@ exports.JwtStrategy = JwtStrategy;
 exports.JwtStrategy = JwtStrategy = JwtStrategy_1 = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [config_1.ConfigService,
-        users_service_1.UsersService])
+        prisma_service_1.PrismaService])
 ], JwtStrategy);
 //# sourceMappingURL=jwt.strategy.js.map

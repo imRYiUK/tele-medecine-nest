@@ -13,7 +13,6 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
 
   canActivate(context: ExecutionContext) {
     try {
-      // Check if the route is marked as public
       const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
         context.getHandler(),
         context.getClass(),
@@ -23,18 +22,16 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
         return true;
       }
 
-      // For non-public routes, proceed with JWT validation
       return super.canActivate(context);
     } catch (error) {
-      this.logger.error(`Error in JwtAuthGuard: ${error.message}`);
+      this.logger.error(`Authentication error: ${error.message}`);
       throw new UnauthorizedException('Authentication failed');
     }
   }
 
   handleRequest(err: any, user: any, info: any) {
-    // Log authentication errors for debugging
     if (err) {
-      this.logger.error(`JWT Authentication error: ${err.message}`);
+      this.logger.error(`JWT validation error: ${err.message}`);
       throw new UnauthorizedException('Authentication failed');
     }
 
@@ -43,8 +40,10 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       throw new UnauthorizedException('Invalid or expired token');
     }
 
-    // Log successful authentication
-    this.logger.debug(`User authenticated: ${user.email}`);
+    if (!user.utilisateurID) {
+      this.logger.error('Invalid user object structure');
+      throw new UnauthorizedException('Invalid user object structure');
+    }
 
     return user;
   }
