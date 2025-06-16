@@ -1,87 +1,196 @@
-import { Injectable, Logger, ConflictException } from '@nestjs/common';
-import { User } from './user.entity';
-import * as bcrypt from 'bcrypt';
+import { Injectable, NotFoundException, ConflictException, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { UserDto, CreateUserDto, UpdateUserDto } from '../common/dto/user.dto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
-  private readonly logger = new Logger(UsersService.name);
-
   constructor(private prisma: PrismaService) {}
 
-  async findOne(utilisateurID: string): Promise<User | null> {
-    const user = await this.prisma.utilisateur.findUnique({
-      where: { utilisateurID },
+  async create(createUserDto: CreateUserDto, adminId: string): Promise<UserDto> {
+    const { password, ...userData } = createUserDto;
+
+    // Check if username or email already exists
+    const existingUser = await this.prisma.utilisateur.findFirst({
+      where: {
+        OR: [
+          { username: userData.username },
+          { email: userData.email }
+        ]
+      }
     });
 
-    return user as unknown as User;
+    if (existingUser) {
+      throw new ConflictException('Username or email already exists');
+    }
+
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await this.prisma.utilisateur.create({
+      data: {
+        ...userData,
+        password: hashedPassword,
+      },
+    });
+
+    const { password: _, ...result } = user;
+    return result;
   }
 
-  async findById(userId: string): Promise<User | null> {
+  async findAll(): Promise<UserDto[]> {
+    const users = await this.prisma.utilisateur.findMany({
+      select: {
+        utilisateurID: true,
+        nom: true,
+        prenom: true,
+        email: true,
+        username: true,
+        telephone: true,
+        role: true,
+        estActif: true,
+        etablissement: {
+          select: {
+            etablissementID: true,
+            nom: true,
+          },
+        },
+      },
+    });
+    return users;
+  }
+
+  async findOne(utilisateurID: string): Promise<UserDto> {
     const user = await this.prisma.utilisateur.findUnique({
+      where: { utilisateurID },
+      select: {
+        utilisateurID: true,
+        nom: true,
+        prenom: true,
+        email: true,
+        username: true,
+        telephone: true,
+        role: true,
+        estActif: true,
+        etablissement: {
+          select: {
+            etablissementID: true,
+            nom: true,
+          },
+        },
+      },
+    });
+    
+    if (!user) {
+      throw new NotFoundException(`User with ID ${utilisateurID} not found`);
+    }
+
+    return user;
+  }
+
+  async findById(userId: string): Promise<UserDto> {
+    return this.findOne(userId);
+  }
+
+  async update(id: string, updateUserDto: UpdateUserDto, adminId: string) {
+    const { password, ...updateData } = updateUserDto;
+
+    // Vérifier si l'utilisateur existe
+    const existingUser = await this.prisma.utilisateur.findUnique({
+      where: { utilisateurID: id },
+    });
+
+    if (!existingUser) {
+      throw new NotFoundException(`Utilisateur avec l'ID ${id} non trouvé`);
+    }
+
+    // Mettre à jour l'utilisateur
+    const updatedUser = await this.prisma.utilisateur.update({
+      where: { utilisateurID: id },
+      data: {
+        ...updateData,
+        ...(password && { password: await bcrypt.hash(password, 10) }),
+      },
+      select: {
+        utilisateurID: true,
+        nom: true,
+        prenom: true,
+        email: true,
+        username: true,
+        telephone: true,
+        role: true,
+        estActif: true,
+        etablissement: {
+          select: {
+            etablissementID: true,
+            nom: true,
+          },
+        },
+      },
+    });
+
+    return updatedUser;
+  }
+
+  async remove(utilisateurID: string, adminId: string): Promise<void> {
+    // Check if user exists
+    const user = await this.findOne(utilisateurID);
+
+    await this.prisma.utilisateur.delete({
+      where: { utilisateurID },
+    });
+  }
+
+  async getProfile(userId: string): Promise<UserDto> {
+    const user = await this.findById(userId);
+    
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    return {
+      ...user,
+      fullName: `${user.prenom} ${user.nom}`,
+    } as UserDto;
+  }
+
+  async updateProfile(userId: string, updateUserDto: UpdateUserDto) {
+    const { password, ...updateData } = updateUserDto;
+
+    // Vérifier si l'utilisateur existe
+    const existingUser = await this.prisma.utilisateur.findUnique({
       where: { utilisateurID: userId },
     });
 
-    return user as unknown as User;
-  }
-
-  async validateUser(email: string, password: string): Promise<User | null> {
-    const user = await this.findOne(email);
-    
-    if (!user) {
-      this.logger.warn(`Login attempt for non-existent user: ${email}`);
-      return null;
+    if (!existingUser) {
+      throw new NotFoundException('Profil utilisateur non trouvé');
     }
-    
-    // Nous avons supprimé la vérification isActive car ce champ n'existe plus dans le modèle User
-    // Si vous souhaitez ajouter cette fonctionnalité, vous devrez ajouter un champ isActive au modèle User
-    
-    // Vérifier que password existe avant de l'utiliser
-    if (!user.password) {
-      this.logger.warn(`User ${email} has no password set`);
-      return null;
-    }
-    
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    
-    // if (!isPasswordValid) {
-    //   // Note: Les champs failedLoginAttempts et isActive n'existent plus dans le modèle User
-    //   // Si vous souhaitez suivre les tentatives de connexion échouées, vous devrez ajouter ces champs au modèle User
-    //   // Pour l'instant, nous nous contentons de journaliser l'événement
-    //
-    //   // Log the failed attempt
-    //   await this.logAuthAttempt(user.userId, false, 'Invalid password');
-    //
-    //   this.logger.warn(`Failed login attempt for user: ${email}`);
-    //   return null;
-    // }
-    
-    // Note: Les champs failedLoginAttempts et lastLogin n'existent plus dans le modèle User
-    // Si vous souhaitez suivre les connexions réussies, vous devrez ajouter ces champs au modèle User
-    // Pour l'instant, nous nous contentons de journaliser l'événement
 
-    // Log the successful attempt
-    // await this.logAuthAttempt(user.userId, true, 'Login successful');
-    
-    this.logger.log(`Successful login for user: ${email}`);
-    return user;
+    // Mettre à jour le profil
+    const updatedUser = await this.prisma.utilisateur.update({
+      where: { utilisateurID: userId },
+      data: {
+        ...updateData,
+        ...(password && { password: await bcrypt.hash(password, 10) }),
+      },
+      select: {
+        utilisateurID: true,
+        nom: true,
+        prenom: true,
+        email: true,
+        username: true,
+        telephone: true,
+        role: true,
+        estActif: true,
+        etablissement: {
+          select: {
+            etablissementID: true,
+            nom: true,
+          },
+        },
+      },
+    });
+
+    return updatedUser;
   }
-  
-  // async logAuthAttempt(userId: string, success: boolean, message?: string) {
-  //   try {
-  //     await this.prisma.journalActivite.create({
-  //       data: {
-  //         utilisateurID,
-  //         success,
-  //         message,
-  //         ipAddress: '127.0.0.1', // In a real app, get from request
-  //         userAgent: 'API Client', // In a real app, get from request
-  //       },
-  //     });
-  //   } catch (error) {
-  //     this.logger.error(`Failed to log auth attempt: ${error.message}`);
-  //   }
-  // }
-  
-
 }

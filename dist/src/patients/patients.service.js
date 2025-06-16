@@ -19,87 +19,41 @@ let PatientsService = class PatientsService {
     }
     async create(createPatientDto, userId) {
         const { dossierMedical, ...patientData } = createPatientDto;
-        const patient = await this.prisma.patient.create({
+        return this.prisma.patient.create({
             data: {
                 ...patientData,
-                updatedAt: new Date(),
+                createdBy: userId,
                 createdAt: new Date(),
+                updatedAt: new Date(),
+                dossierMedical: dossierMedical ? {
+                    create: {
+                        ...dossierMedical,
+                        createdBy: userId,
+                        createdAt: new Date(),
+                    }
+                } : undefined
+            },
+            include: {
+                dossierMedical: true,
             },
         });
-        if (dossierMedical) {
-            await this.prisma.dossierMedical.create({
-                data: {
-                    patientID: patient.patientID,
-                    createdBy: userId,
-                    etatDossier: "en cours",
-                    createdAt: Date.now().toString()
-                },
-            });
-        }
-        return patient;
     }
-    async findAll(params) {
-        const { search, page = 1, limit = 10 } = params;
-        const skip = (page - 1) * limit;
-        const where = search
-            ? {
-                OR: [
-                    { nom: { contains: search } },
-                    { prenom: { contains: search } },
-                ],
-            }
-            : {};
-        const [patients, total] = await Promise.all([
-            this.prisma.patient.findMany({
-                where,
-                skip,
-                take: limit,
-                orderBy: { updatedAt: 'desc' },
-                include: {
-                    creator: {
-                        select: {
-                            utilisateurID: true,
-                            email: true,
-                        },
-                    },
-                    _count: {
-                        select: { consultations: true },
-                    },
-                },
-            }),
-            this.prisma.patient.count({ where }),
-        ]);
-        return {
-            data: patients,
-            meta: {
-                total,
-                page,
-                limit,
-                totalPages: Math.ceil(total / limit),
+    async findAll() {
+        return this.prisma.patient.findMany({
+            include: {
+                dossierMedical: true,
+                consultations: true,
+                examens: true,
             },
-        };
+        });
     }
     async findOne(patientID) {
         const patient = await this.prisma.patient.findUnique({
             where: { patientID },
             include: {
-                creator: {
-                    select: {
-                        utilisateurID: true,
-                        email: true,
-                    },
-                },
-                consultations: {
-                    orderBy: { createdAt: 'desc' },
-                    include: {
-                        medecin: {
-                            select: {
-                                utilisateurID: true,
-                                email: true,
-                            },
-                        },
-                    },
-                },
+                dossierMedical: true,
+                consultations: true,
+                examens: true,
             },
         });
         if (!patient) {
@@ -107,34 +61,55 @@ let PatientsService = class PatientsService {
         }
         return patient;
     }
-    async update(patientID, updatePatientDto, userId) {
-        await this.findOne(patientID);
-        const data = { ...updatePatientDto };
-        if (updatePatientDto.dateNaissance) {
-            data.dateNaissance = new Date(updatePatientDto.dateNaissance);
-        }
+    async update(patientID, updatePatientDto) {
+        const { dossierMedical, ...patientData } = updatePatientDto;
         return this.prisma.patient.update({
             where: { patientID },
-            data,
+            data: {
+                ...patientData,
+                updatedAt: new Date(),
+            },
+            include: {
+                dossierMedical: true,
+            },
         });
     }
     async remove(patientID) {
-        await this.findOne(patientID);
-        return this.prisma.patient.delete({
+        await this.prisma.patient.delete({
             where: { patientID },
         });
     }
-    async createMedicalRecord(createMedicalRecordDto, userId) {
-        const { patientId, etatDossier } = createMedicalRecordDto;
-        await this.findOne(patientId);
-        return this.prisma.dossierMedical.create({
+    async createMedicalRecord(patientID, createMedicalRecordDto, userId) {
+        const patient = await this.findOne(patientID);
+        if (patient.dossierMedical) {
+            throw new common_1.ConflictException('Un dossier médical existe déjà pour ce patient');
+        }
+        const dossierMedical = await this.prisma.dossierMedical.create({
             data: {
-                patientID: patientId,
+                patientID,
+                etatDossier: createMedicalRecordDto.etatDossier,
                 createdBy: userId,
-                etatDossier,
-                createdAt: Date.now().toString()
+                createdAt: new Date(),
             },
         });
+        return dossierMedical;
+    }
+    async getMedicalRecord(patientID) {
+        const patient = await this.findOne(patientID);
+        return patient.dossierMedical;
+    }
+    async updateMedicalRecord(patientID, updateMedicalRecordDto) {
+        const patient = await this.findOne(patientID);
+        if (!patient.dossierMedical) {
+            throw new common_1.NotFoundException('Aucun dossier médical trouvé pour ce patient');
+        }
+        const dossierMedical = await this.prisma.dossierMedical.update({
+            where: { patientID },
+            data: {
+                etatDossier: updateMedicalRecordDto.etatDossier,
+            },
+        });
+        return dossierMedical;
     }
 };
 exports.PatientsService = PatientsService;

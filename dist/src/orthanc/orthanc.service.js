@@ -12,157 +12,189 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.OrthancService = void 0;
 const common_1 = require("@nestjs/common");
 const axios_1 = require("@nestjs/axios");
-const rxjs_1 = require("rxjs");
 const config_1 = require("@nestjs/config");
+const rxjs_1 = require("rxjs");
+const prisma_service_1 = require("../prisma/prisma.service");
 let OrthancService = class OrthancService {
     httpService;
     configService;
-    baseUrl;
-    auth;
-    constructor(httpService, configService) {
+    prisma;
+    orthancUrl;
+    orthancUsername;
+    orthancPassword;
+    constructor(httpService, configService, prisma) {
         this.httpService = httpService;
         this.configService = configService;
-        this.baseUrl = this.configService.get('ORTHANC_URL') || 'http://localhost:8042';
-        this.auth = {
-            username: this.configService.get('ORTHANC_USERNAME') || 'orthanc',
-            password: this.configService.get('ORTHANC_PASSWORD') || 'orthanc',
-        };
+        this.prisma = prisma;
+        this.orthancUrl = this.configService.get('ORTHANC_URL') || 'http://localhost:8042';
+        this.orthancUsername = this.configService.get('ORTHANC_USERNAME') || 'orthanc';
+        this.orthancPassword = this.configService.get('ORTHANC_PASSWORD') || 'orthanc';
     }
-    async getStudies() {
-        const response = await (0, rxjs_1.firstValueFrom)(this.httpService.get(`${this.baseUrl}/studies`, {
-            auth: this.auth,
-        }));
-        return response.data;
-    }
-    async getStudyDetails(studyId) {
-        const response = await (0, rxjs_1.firstValueFrom)(this.httpService.get(`${this.baseUrl}/studies/${studyId}`, {
-            auth: this.auth,
-        }));
-        return response.data;
-    }
-    async getSeries(studyId) {
-        const response = await (0, rxjs_1.firstValueFrom)(this.httpService.get(`${this.baseUrl}/studies/${studyId}/series`, {
-            auth: this.auth,
-        }));
-        return response.data;
-    }
-    async getSeriesDetails(seriesId) {
-        const response = await (0, rxjs_1.firstValueFrom)(this.httpService.get(`${this.baseUrl}/series/${seriesId}`, {
-            auth: this.auth,
-        }));
-        return response.data;
-    }
-    async getInstances(seriesId) {
-        const response = await (0, rxjs_1.firstValueFrom)(this.httpService.get(`${this.baseUrl}/series/${seriesId}/instances`, {
-            auth: this.auth,
-        }));
-        return response.data;
-    }
-    async getInstanceDetails(instanceId) {
-        const response = await (0, rxjs_1.firstValueFrom)(this.httpService.get(`${this.baseUrl}/instances/${instanceId}`, {
-            auth: this.auth,
-        }));
-        return response.data;
-    }
-    async getDicomFile(instanceId) {
-        const response = await (0, rxjs_1.firstValueFrom)(this.httpService.get(`${this.baseUrl}/instances/${instanceId}/file`, {
-            auth: this.auth,
-            responseType: 'stream',
-        }));
-        return response.data;
-    }
-    async getInstancePreview(instanceId, quality = 90) {
-        const response = await (0, rxjs_1.firstValueFrom)(this.httpService.get(`${this.baseUrl}/instances/${instanceId}/preview`, {
-            auth: this.auth,
-            params: { quality },
-            responseType: 'arraybuffer',
-        }));
-        return response.data;
-    }
-    async saveImageMetadata(examenId, orthancId, studyUid, modalite) {
+    getAuthHeaders() {
         return {
-            message: 'Métadonnées sauvegardées avec succès',
-            examenId,
-            orthancId,
-            studyUid,
-            modalite,
+            Authorization: `Basic ${Buffer.from(`${this.orthancUsername}:${this.orthancPassword}`).toString('base64')}`,
         };
     }
-    async uploadDicomFile(fileBuffer) {
+    async getStudies(userId) {
         try {
-            const response = await (0, rxjs_1.firstValueFrom)(this.httpService.post(`${this.baseUrl}/instances`, fileBuffer, {
-                auth: this.auth,
+            const response = await (0, rxjs_1.firstValueFrom)(this.httpService.get(`${this.orthancUrl}/studies`, {
+                headers: this.getAuthHeaders(),
+            }));
+            return response.data;
+        }
+        catch (error) {
+            throw new common_1.HttpException('Erreur lors de la récupération des études', common_1.HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    async getStudyDetails(studyId, userId) {
+        try {
+            const response = await (0, rxjs_1.firstValueFrom)(this.httpService.get(`${this.orthancUrl}/studies/${studyId}`, {
+                headers: this.getAuthHeaders(),
+            }));
+            return response.data;
+        }
+        catch (error) {
+            throw new common_1.HttpException('Erreur lors de la récupération des détails de l\'étude', common_1.HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    async getSeries(studyId, userId) {
+        try {
+            const response = await (0, rxjs_1.firstValueFrom)(this.httpService.get(`${this.orthancUrl}/studies/${studyId}/series`, {
+                headers: this.getAuthHeaders(),
+            }));
+            return response.data;
+        }
+        catch (error) {
+            throw new common_1.HttpException('Erreur lors de la récupération des séries', common_1.HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    async getSeriesDetails(seriesId, userId) {
+        try {
+            const response = await (0, rxjs_1.firstValueFrom)(this.httpService.get(`${this.orthancUrl}/series/${seriesId}`, {
+                headers: this.getAuthHeaders(),
+            }));
+            return response.data;
+        }
+        catch (error) {
+            throw new common_1.HttpException('Erreur lors de la récupération des détails de la série', common_1.HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    async getInstances(seriesId, userId) {
+        try {
+            const response = await (0, rxjs_1.firstValueFrom)(this.httpService.get(`${this.orthancUrl}/series/${seriesId}/instances`, {
+                headers: this.getAuthHeaders(),
+            }));
+            return response.data;
+        }
+        catch (error) {
+            throw new common_1.HttpException('Erreur lors de la récupération des instances', common_1.HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    async getInstanceDetails(instanceId, userId) {
+        try {
+            const response = await (0, rxjs_1.firstValueFrom)(this.httpService.get(`${this.orthancUrl}/instances/${instanceId}`, {
+                headers: this.getAuthHeaders(),
+            }));
+            return response.data;
+        }
+        catch (error) {
+            throw new common_1.HttpException('Erreur lors de la récupération des détails de l\'instance', common_1.HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    async getDicomFile(instanceId, userId) {
+        try {
+            const response = await (0, rxjs_1.firstValueFrom)(this.httpService.get(`${this.orthancUrl}/instances/${instanceId}/file`, {
+                headers: this.getAuthHeaders(),
+                responseType: 'stream',
+            }));
+            return response.data;
+        }
+        catch (error) {
+            throw new common_1.HttpException('Erreur lors de la récupération du fichier DICOM', common_1.HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    async getInstancePreview(instanceId, userId, quality = 90) {
+        try {
+            const response = await (0, rxjs_1.firstValueFrom)(this.httpService.get(`${this.orthancUrl}/instances/${instanceId}/preview`, {
+                headers: this.getAuthHeaders(),
+                params: { quality },
+                responseType: 'arraybuffer',
+            }));
+            return response.data;
+        }
+        catch (error) {
+            throw new common_1.HttpException('Erreur lors de la récupération de l\'aperçu', common_1.HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    async uploadDicomFile(fileBuffer, userId) {
+        try {
+            const response = await (0, rxjs_1.firstValueFrom)(this.httpService.post(`${this.orthancUrl}/instances`, fileBuffer, {
                 headers: {
+                    ...this.getAuthHeaders(),
                     'Content-Type': 'application/dicom',
                 },
             }));
             return response.data;
         }
         catch (error) {
-            if (error.response?.status === 400) {
-                throw new common_1.HttpException({
-                    message: 'Fichier DICOM invalide',
-                    details: error.response.data,
-                }, common_1.HttpStatus.BAD_REQUEST);
-            }
-            throw error;
+            throw new common_1.HttpException('Erreur lors de l\'upload du fichier DICOM', common_1.HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    async findDicom(level, query) {
-        const validLevels = ['Patient', 'Study', 'Series', 'Instance'];
-        if (!validLevels.includes(level)) {
-            throw new common_1.HttpException(`Niveau de recherche invalide. Valeurs acceptées: ${validLevels.join(', ')}`, common_1.HttpStatus.BAD_REQUEST);
-        }
-        const response = await (0, rxjs_1.firstValueFrom)(this.httpService.post(`${this.baseUrl}/tools/find`, {
-            Level: level,
-            Query: query,
-        }, {
-            auth: this.auth,
-        }));
-        return response.data;
-    }
-    async getWadoImage(instanceId, contentType = 'image/jpeg') {
+    async findDicom(level, query, userId) {
         try {
-            await this.getInstanceDetails(instanceId);
+            const response = await (0, rxjs_1.firstValueFrom)(this.httpService.post(`${this.orthancUrl}/tools/find`, {
+                Level: level,
+                Query: query,
+            }, {
+                headers: this.getAuthHeaders(),
+            }));
+            return response.data;
         }
         catch (error) {
-            if (error.response?.status === 404) {
-                throw new common_1.HttpException('Instance non trouvée', common_1.HttpStatus.NOT_FOUND);
-            }
-            throw error;
+            throw new common_1.HttpException('Erreur lors de la recherche DICOM', common_1.HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        let endpoint = `${this.baseUrl}/instances/${instanceId}/preview`;
-        let responseType = 'arraybuffer';
-        let params = {};
-        if (contentType === 'application/dicom') {
-            endpoint = `${this.baseUrl}/instances/${instanceId}/file`;
-        }
-        else if (contentType.startsWith('image/')) {
-            endpoint = `${this.baseUrl}/instances/${instanceId}/rendered`;
-            params = {
-                format: contentType.split('/')[1],
-                quality: '90'
+    }
+    async getWadoImage(instanceId, contentType, userId) {
+        try {
+            const response = await (0, rxjs_1.firstValueFrom)(this.httpService.get(`${this.orthancUrl}/instances/${instanceId}/wado`, {
+                headers: this.getAuthHeaders(),
+                params: { contentType },
+                responseType: 'arraybuffer',
+            }));
+            return {
+                data: response.data,
+                headers: response.headers,
             };
         }
-        const response = await (0, rxjs_1.firstValueFrom)(this.httpService.get(endpoint, {
-            auth: this.auth,
-            responseType,
-            params,
-        }));
-        return {
-            data: response.data,
-            headers: {
-                'Content-Type': contentType,
-                'Content-Length': response.headers['content-length'],
-                'Cache-Control': 'max-age=3600',
-            },
-        };
+        catch (error) {
+            throw new common_1.HttpException('Erreur lors de la récupération de l\'image WADO', common_1.HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    async saveImageMetadata(examenId, orthancId, studyUid, modalite) {
+        try {
+            const image = await this.prisma.imageMedicale.create({
+                data: {
+                    examenID: examenId,
+                    studyInstanceUID: studyUid,
+                    seriesInstanceUID: orthancId,
+                    sopInstanceUID: orthancId,
+                    dateAcquisition: new Date(),
+                    modalite,
+                    description: `Image DICOM - ${modalite}`,
+                },
+            });
+            return image;
+        }
+        catch (error) {
+            throw new common_1.HttpException('Erreur lors de la sauvegarde des métadonnées', common_1.HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 };
 exports.OrthancService = OrthancService;
 exports.OrthancService = OrthancService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [axios_1.HttpService,
-        config_1.ConfigService])
+        config_1.ConfigService,
+        prisma_service_1.PrismaService])
 ], OrthancService);
 //# sourceMappingURL=orthanc.service.js.map

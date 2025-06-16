@@ -1,29 +1,49 @@
-import { Controller, Get, Param, UseGuards, Res, Query, HttpStatus, Header, Post, Body, UploadedFile, UseInterceptors, HttpException } from '@nestjs/common';
+import {
+  Controller, Get,
+  Param, UseGuards, Res,
+  Query, HttpStatus, Header,
+  Post, Body, UploadedFile,
+  UseInterceptors, HttpException, Req, UnauthorizedException
+} from '@nestjs/common';
 import { FindDicomDto } from './dto/find-dicom.dto';
 import { UploadDicomDto } from './dto/upload-dicom.dto';
 import { OrthancService } from './orthanc.service';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { RolesGuard } from './guards/roles.guard';
-import { Roles } from './decorators/roles.decorator';
+import { RolesGuard } from '../common/guards/roles.guard';
+import { Roles } from '../common/decorators/roles.decorator';
 import { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiOperation, ApiResponse, ApiConsumes, ApiBody } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { UserRole } from '../common/constants/roles';
+import { Request } from 'express';
+import { LogActivity } from '../common/decorators/log-activity.decorator';
 
 @Controller('dicom')
-// Temporairement désactivé pour les tests
-// @UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @ApiTags('DICOM')
 export class OrthancController {
   constructor(private readonly orthancService: OrthancService) {}
 
+  private getUserId(req: Request): string {
+    if (!req.user || !req.user['utilisateurID']) {
+      throw new UnauthorizedException('Utilisateur non authentifié');
+    }
+    return req.user['utilisateurID'];
+  }
+
   @Get('studies')
-  @Roles('RADIOLOGUE', 'MEDECIN')
+  @Roles(UserRole.RADIOLOGUE, UserRole.MEDECIN)
+  @LogActivity({
+    typeAction: 'CONSULTATION_ETUDES',
+    description: 'Consultation de la liste des études DICOM',
+  })
   @ApiOperation({ summary: 'Récupérer toutes les études DICOM' })
   @ApiResponse({ status: 200, description: 'Liste des études récupérée avec succès' })
   @ApiResponse({ status: 500, description: 'Erreur serveur' })
-  async getStudies() {
+  async getStudies(@Req() req: Request) {
     try {
-      const studies = await this.orthancService.getStudies();
+      const userId = this.getUserId(req);
+      const studies = await this.orthancService.getStudies(userId);
       return { success: true, data: studies };
     } catch (error) {
       return {
@@ -35,10 +55,17 @@ export class OrthancController {
   }
 
   @Get('studies/:id')
-  @Roles('RADIOLOGUE', 'MEDECIN')
-  async getStudyDetails(@Param('id') studyId: string) {
+  @Roles(UserRole.RADIOLOGUE, UserRole.MEDECIN)
+  @LogActivity({
+    typeAction: 'CONSULTATION_ETUDE',
+    description: (result) => `Consultation de l'étude DICOM: ${result.StudyInstanceUID}`,
+  })
+  @ApiOperation({ summary: 'Récupérer les détails d\'une étude DICOM' })
+  @ApiResponse({ status: 200, description: 'Détails de l\'étude récupérés avec succès' })
+  async getStudyDetails(@Param('id') studyId: string, @Req() req: Request) {
     try {
-      const study = await this.orthancService.getStudyDetails(studyId);
+      const userId = this.getUserId(req);
+      const study = await this.orthancService.getStudyDetails(studyId, userId);
       return { success: true, data: study };
     } catch (error) {
       return {
@@ -50,10 +77,13 @@ export class OrthancController {
   }
 
   @Get('studies/:id/series')
-  @Roles('RADIOLOGUE', 'MEDECIN')
-  async getSeries(@Param('id') studyId: string) {
+  @Roles(UserRole.RADIOLOGUE, UserRole.MEDECIN)
+  @ApiOperation({ summary: 'Récupérer les séries d\'une étude DICOM' })
+  @ApiResponse({ status: 200, description: 'Liste des séries récupérée avec succès' })
+  async getSeries(@Param('id') studyId: string, @Req() req: Request) {
     try {
-      const series = await this.orthancService.getSeries(studyId);
+      const userId = this.getUserId(req);
+      const series = await this.orthancService.getSeries(studyId, userId);
       return { success: true, data: series };
     } catch (error) {
       return {
@@ -65,10 +95,17 @@ export class OrthancController {
   }
 
   @Get('series/:id')
-  @Roles('RADIOLOGUE', 'MEDECIN')
-  async getSeriesDetails(@Param('id') seriesId: string) {
+  @Roles(UserRole.RADIOLOGUE, UserRole.MEDECIN)
+  @LogActivity({
+    typeAction: 'CONSULTATION_SERIE',
+    description: (result) => `Consultation de la série DICOM: ${result.SeriesInstanceUID}`,
+  })
+  @ApiOperation({ summary: 'Récupérer les détails d\'une série DICOM' })
+  @ApiResponse({ status: 200, description: 'Détails de la série récupérés avec succès' })
+  async getSeriesDetails(@Param('id') seriesId: string, @Req() req: Request) {
     try {
-      const series = await this.orthancService.getSeriesDetails(seriesId);
+      const userId = this.getUserId(req);
+      const series = await this.orthancService.getSeriesDetails(seriesId, userId);
       return { success: true, data: series };
     } catch (error) {
       return {
@@ -80,10 +117,13 @@ export class OrthancController {
   }
 
   @Get('series/:id/instances')
-  @Roles('RADIOLOGUE', 'MEDECIN')
-  async getInstances(@Param('id') seriesId: string) {
+  @Roles(UserRole.RADIOLOGUE, UserRole.MEDECIN)
+  @ApiOperation({ summary: 'Récupérer les instances d\'une série DICOM' })
+  @ApiResponse({ status: 200, description: 'Liste des instances récupérée avec succès' })
+  async getInstances(@Param('id') seriesId: string, @Req() req: Request) {
     try {
-      const instances = await this.orthancService.getInstances(seriesId);
+      const userId = this.getUserId(req);
+      const instances = await this.orthancService.getInstances(seriesId, userId);
       return { success: true, data: instances };
     } catch (error) {
       return {
@@ -95,10 +135,17 @@ export class OrthancController {
   }
 
   @Get('instances/:id')
-  @Roles('RADIOLOGUE', 'MEDECIN')
-  async getInstanceDetails(@Param('id') instanceId: string) {
+  @Roles(UserRole.RADIOLOGUE, UserRole.MEDECIN)
+  @LogActivity({
+    typeAction: 'CONSULTATION_INSTANCE',
+    description: (result) => `Consultation de l'instance DICOM: ${result.SOPInstanceUID}`,
+  })
+  @ApiOperation({ summary: 'Récupérer les détails d\'une instance DICOM' })
+  @ApiResponse({ status: 200, description: 'Détails de l\'instance récupérés avec succès' })
+  async getInstanceDetails(@Param('id') instanceId: string, @Req() req: Request) {
     try {
-      const instance = await this.orthancService.getInstanceDetails(instanceId);
+      const userId = this.getUserId(req);
+      const instance = await this.orthancService.getInstanceDetails(instanceId, userId);
       return { success: true, data: instance };
     } catch (error) {
       return {
@@ -110,37 +157,42 @@ export class OrthancController {
   }
 
   @Get('instances/:id/file')
-  @Roles('RADIOLOGUE', 'MEDECIN')
-  @Header('Content-Type', 'application/dicom')
-  async getDicomFile(@Param('id') instanceId: string, @Res() res: Response) {
+  @Roles(UserRole.RADIOLOGUE, UserRole.MEDECIN)
+  @ApiOperation({ summary: 'Télécharger un fichier DICOM' })
+  @ApiResponse({ status: 200, description: 'Fichier DICOM téléchargé avec succès' })
+  async getDicomFile(@Param('id') instanceId: string, @Res() res: Response, @Req() req: Request) {
     try {
-      const stream = await this.orthancService.getDicomFile(instanceId);
+      const userId = this.getUserId(req);
+      const stream = await this.orthancService.getDicomFile(instanceId, userId);
       stream.pipe(res);
     } catch (error) {
-      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+      res.status(500).json({
         success: false,
-        message: 'Erreur lors de la récupération du fichier DICOM',
+        message: 'Erreur lors du téléchargement du fichier DICOM',
         error: error.message,
       });
     }
   }
 
   @Get('instances/:id/preview')
-  @Roles('RADIOLOGUE', 'MEDECIN')
-  @Header('Content-Type', 'image/jpeg')
+  @Roles(UserRole.RADIOLOGUE, UserRole.MEDECIN)
+  @ApiOperation({ summary: 'Récupérer l\'aperçu d\'une instance DICOM' })
+  @ApiResponse({ status: 200, description: 'Aperçu de l\'instance récupéré avec succès' })
   async getInstancePreview(
     @Param('id') instanceId: string,
     @Query('quality') quality: string,
     @Res() res: Response,
+    @Req() req: Request,
   ) {
     try {
+      const userId = this.getUserId(req);
       const qualityValue = quality ? parseInt(quality, 10) : 90;
-      const imageData = await this.orthancService.getInstancePreview(instanceId, qualityValue);
+      const imageData = await this.orthancService.getInstancePreview(instanceId, userId, qualityValue);
       res.end(imageData);
     } catch (error) {
-      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+      res.status(500).json({
         success: false,
-        message: 'Erreur lors de la récupération de l\'aperçu de l\'image',
+        message: 'Erreur lors de la récupération de l\'aperçu',
         error: error.message,
       });
     }
@@ -176,6 +228,10 @@ export class OrthancController {
 
   @Post('upload')
   @Roles('RADIOLOGUE', 'MEDECIN')
+  @LogActivity({
+    typeAction: 'UPLOAD_DICOM',
+    description: 'Téléchargement d\'un fichier DICOM',
+  })
   @UseInterceptors(FileInterceptor('file'))
   @ApiOperation({ summary: 'Uploader un fichier DICOM (C-STORE)' })
   @ApiConsumes('multipart/form-data')
@@ -183,13 +239,14 @@ export class OrthancController {
   @ApiResponse({ status: 201, description: 'Fichier DICOM uploadé avec succès' })
   @ApiResponse({ status: 400, description: 'Fichier DICOM invalide' })
   @ApiResponse({ status: 500, description: 'Erreur serveur' })
-  async uploadDicomFile(@UploadedFile() file: Express.Multer.File) {
+  async uploadDicomFile(@UploadedFile() file: Express.Multer.File, @Req() req: Request) {
     try {
       if (!file) {
         throw new HttpException('Aucun fichier fourni', HttpStatus.BAD_REQUEST);
       }
       
-      const result = await this.orthancService.uploadDicomFile(file.buffer);
+      const userId = this.getUserId(req);
+      const result = await this.orthancService.uploadDicomFile(file.buffer, userId);
       return { success: true, data: result };
     } catch (error) {
       // Transmettre le code d'erreur d'Orthanc si disponible
@@ -209,9 +266,10 @@ export class OrthancController {
   @ApiResponse({ status: 200, description: 'Résultats de recherche' })
   @ApiResponse({ status: 400, description: 'Requête invalide' })
   @ApiResponse({ status: 500, description: 'Erreur serveur' })
-  async findDicom(@Body() findRequest: FindDicomDto) {
+  async findDicom(@Body() findRequest: FindDicomDto, @Req() req: Request) {
     try {
-      const results = await this.orthancService.findDicom(findRequest.Level, findRequest.Query);
+      const userId = this.getUserId(req);
+      const results = await this.orthancService.findDicom(findRequest.Level, findRequest.Query, userId);
       return { success: true, data: results };
     } catch (error) {
       const statusCode = error.response?.status || HttpStatus.INTERNAL_SERVER_ERROR;
@@ -225,7 +283,7 @@ export class OrthancController {
   }
 
   @Get('wado/:id')
-  //@Roles('RADIOLOGUE', 'MEDECIN')
+  @Roles('RADIOLOGUE', 'MEDECIN')
   @ApiOperation({ summary: 'Récupérer une image DICOM via WADO-GET' })
   @ApiResponse({ status: 200, description: 'Image récupérée avec succès' })
   @ApiResponse({ status: 404, description: 'Image non trouvée' })
@@ -234,9 +292,11 @@ export class OrthancController {
     @Param('id') instanceId: string,
     @Query('contentType') contentType: string,
     @Res() res: Response,
+    @Req() req: Request,
   ) {
     try {
-      const { data, headers } = await this.orthancService.getWadoImage(instanceId, contentType);
+      const userId = this.getUserId(req);
+      const { data, headers } = await this.orthancService.getWadoImage(instanceId, contentType, userId);
       
       // Définir les en-têtes de réponse
       Object.keys(headers).forEach(key => {

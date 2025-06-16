@@ -143,6 +143,7 @@ model Utilisateur {
   activites             JournalActivite[]
   DossierMedicalCreated DossierMedical[]
   Patient               Patient[]
+  Notification          Notification[]
 
   @@map("utilisateurs")
 }
@@ -218,4 +219,18 @@ model JournalActivite {
   utilisateur Utilisateur @relation(fields: [utilisateurID], references: [utilisateurID])
 
   @@map("journal_activites")
+}
+
+model Notification {
+  notificationID String      @id @default(uuid())
+  utilisateurID  String
+  titre          String
+  message        String
+  type           String?
+  lien           String?
+  dateCreation   DateTime    @default(now())
+  estLu          Boolean     @default(false)
+  utilisateur    Utilisateur @relation(fields: [utilisateurID], references: [utilisateurID])
+
+  @@index([utilisateurID])
 }

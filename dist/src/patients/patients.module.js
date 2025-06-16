@@ -11,13 +11,14 @@ const common_1 = require("@nestjs/common");
 const patients_service_1 = require("./patients.service");
 const patients_controller_1 = require("./patients.controller");
 const prisma_module_1 = require("../prisma/prisma.module");
+const journal_module_1 = require("../journal/journal.module");
 let PatientsModule = class PatientsModule {
 };
 exports.PatientsModule = PatientsModule;
 exports.PatientsModule = PatientsModule = __decorate([
     (0, common_1.Module)({
-        imports: [prisma_module_1.PrismaModule],
-        controllers: [patients_controller_1.PatientsController, patients_controller_1.MedicalRecordsController],
+        imports: [prisma_module_1.PrismaModule, journal_module_1.JournalModule],
+        controllers: [patients_controller_1.PatientsController],
         providers: [patients_service_1.PatientsService],
         exports: [patients_service_1.PatientsService],
     })

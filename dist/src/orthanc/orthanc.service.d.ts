@@ -1,34 +1,37 @@
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
+import { PrismaService } from '../prisma/prisma.service';
 export declare class OrthancService {
     private readonly httpService;
     private readonly configService;
-    private readonly baseUrl;
-    private readonly auth;
-    constructor(httpService: HttpService, configService: ConfigService);
-    getStudies(): Promise<any>;
-    getStudyDetails(studyId: string): Promise<any>;
-    getSeries(studyId: string): Promise<any>;
-    getSeriesDetails(seriesId: string): Promise<any>;
-    getInstances(seriesId: string): Promise<any>;
-    getInstanceDetails(instanceId: string): Promise<any>;
-    getDicomFile(instanceId: string): Promise<any>;
-    getInstancePreview(instanceId: string, quality?: number): Promise<any>;
-    saveImageMetadata(examenId: string, orthancId: string, studyUid: string, modalite: string): Promise<{
-        message: string;
-        examenId: string;
-        orthancId: string;
-        studyUid: string;
-        modalite: string;
+    private readonly prisma;
+    private readonly orthancUrl;
+    private readonly orthancUsername;
+    private readonly orthancPassword;
+    constructor(httpService: HttpService, configService: ConfigService, prisma: PrismaService);
+    private getAuthHeaders;
+    getStudies(userId: string): Promise<any>;
+    getStudyDetails(studyId: string, userId: string): Promise<any>;
+    getSeries(studyId: string, userId: string): Promise<any>;
+    getSeriesDetails(seriesId: string, userId: string): Promise<any>;
+    getInstances(seriesId: string, userId: string): Promise<any>;
+    getInstanceDetails(instanceId: string, userId: string): Promise<any>;
+    getDicomFile(instanceId: string, userId: string): Promise<any>;
+    getInstancePreview(instanceId: string, userId: string, quality?: number): Promise<any>;
+    uploadDicomFile(fileBuffer: Buffer, userId: string): Promise<any>;
+    findDicom(level: string, query: any, userId: string): Promise<any>;
+    getWadoImage(instanceId: string, contentType: string, userId: string): Promise<{
+        data: Buffer;
+        headers: Record<string, string>;
     }>;
-    uploadDicomFile(fileBuffer: Buffer): Promise<any>;
-    findDicom(level: string, query: Record<string, any>): Promise<any>;
-    getWadoImage(instanceId: string, contentType?: string): Promise<{
-        data: any;
-        headers: {
-            'Content-Type': string;
-            'Content-Length': any;
-            'Cache-Control': string;
-        };
+    saveImageMetadata(examenId: string, orthancId: string, studyUid: string, modalite: string): Promise<{
+        description: string;
+        examenID: string;
+        imageID: string;
+        studyInstanceUID: string;
+        seriesInstanceUID: string;
+        sopInstanceUID: string;
+        dateAcquisition: Date;
+        modalite: string;
     }>;
 }

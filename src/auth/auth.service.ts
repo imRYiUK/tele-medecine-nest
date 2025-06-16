@@ -1,68 +1,93 @@
-import { Injectable, Logger, UnauthorizedException, ConflictException, BadRequestException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { UsersService } from '../users/users.service';
-import { User } from '../users/user.entity';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import { RegisterDto } from './dto/register.dto';
+import { LoginDto } from './dto/login.dto';
 import * as bcrypt from 'bcrypt';
+import { UserDto } from '../common/dto/user.dto';
+import { JournalActivityService } from '../journal/journal-activity.service';
+import { JwtPayload } from '../common/interfaces/jwt-payload.interface';
 
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
 
   constructor(
-    private usersService: UsersService,
     private jwtService: JwtService,
     private configService: ConfigService,
     private prisma: PrismaService,
-  ) {}
+    private journalActivityService: JournalActivityService,
+  ) {
+  }
 
-  async validateUser(email: string, password: string): Promise<User> {
-    const user = await this.usersService.validateUser(email, password);
-    
+  async validateUser(email: string, pass: string): Promise<UserDto | null> {
+    // const user = await this.usersService.validateUser(email, password);
+
+    const user = await this.prisma.utilisateur.findUnique({
+      where: { email },
+    });
+
     if (!user) {
       this.logger.warn(`Failed login attempt for email: ${email}`);
       throw new UnauthorizedException('Identifiants invalides ou compte verrouillé');
     }
-    
-    this.logger.log(`Successful login for user ID: ${user.userId}`);
+
+    const isPasswordValid = await bcrypt.compare(pass, user.password);
+
+    if (!isPasswordValid) {
+      return null;
+    }
+
+    this.logger.log(`Successful login for user ID: ${user.utilisateurID}`);
     return user;
   }
 
-  async login(user: User) {
-    const payload = {
-      sub: user.userId,
-      email: user.email,
-      role: user.role?.name, // Accéder au nom du rôle via la relation
-    };
+  async login(loginDto: LoginDto) {
+    const { email, password } = loginDto;
 
-    const accessToken = this.jwtService.sign(payload, {
-      secret: this.configService.get<string>('JWT_SECRET'),
-      expiresIn: '24h', // Définir une durée fixe de 24 heures
+    // Rechercher l'utilisateur
+    const user = await this.prisma.utilisateur.findFirst({
+      where: {
+        OR: [
+          { email },
+          { email: email },
+        ],
+      },
     });
 
-    return {
-      access_token: accessToken,
-    };
-  }
-
-  async validateToken(token: string) {
-    try {
-      const payload = this.jwtService.verify(token, {
-        secret: this.configService.get<string>('JWT_SECRET'),
-      });
-      
-      return {
-        active: true,
-        ...payload,
-      };
-    } catch (error) {
-      return {
-        active: false,
-        error: error.message,
-      };
+    if (!user) {
+      throw new UnauthorizedException('Identifiants invalides');
     }
+
+    // Vérifier le mot de passe
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Identifiants invalides');
+    }
+
+    // Vérifier si l'utilisateur est actif
+    if (!user.estActif) {
+      throw new UnauthorizedException('Compte désactivé');
+    }
+
+    // Générer le token JWT
+    const payload = {
+      sub: user.utilisateurID,
+      email: user.email,
+      role: user.role
+    };
+
+    const token = this.jwtService.sign(payload);
+
+    // Ne pas renvoyer le mot de passe
+    const { password: _, ...result } = user;
+
+    return {
+      user: result,
+      token,
+    };
   }
 
   async revokeToken(token: string) {
@@ -74,63 +99,48 @@ export class AuthService {
   }
 
   async register(registerDto: RegisterDto) {
-    try {
-      // Check if username already exists
-      const existingUsername = await this.prisma.utilisateur.findUnique({
-        where: { username: registerDto.username },
-      });
+    const { password, ...userData } = registerDto;
 
-      if (existingUsername) {
-        throw new ConflictException('Ce nom d\'utilisateur est déjà utilisé');
-      }
+    // Vérifier si l'utilisateur existe déjà
+    const existingUser = await this.prisma.utilisateur.findFirst({
+      where: {
+        OR: [
+          { email: userData.email },
+          { username: userData.username },
+        ],
+      },
+    });
 
-      // Check if email already exists
-      const existingEmail = await this.prisma.utilisateur.findUnique({
-        where: { email: registerDto.email },
-      });
-
-      if (existingEmail) {
-        throw new ConflictException('Cet email est déjà utilisé');
-      }
-
-      // Hash the password
-      const hashedPassword = await bcrypt.hash(registerDto.password, 10);
-
-      // Create the user
-      const user = await this.prisma.utilisateur.create({
-        data: {
-          nom: registerDto.nom,
-          prenom: registerDto.prenom,
-          username: registerDto.username,
-          password: hashedPassword,
-          email: registerDto.email,
-          telephone: registerDto.telephone,
-          role: registerDto.role,
-          etablissementID: registerDto.etablissementID,
-          estActif: registerDto.estActif,
-        },
-        select: {
-          utilisateurID: true,
-          nom: true,
-          prenom: true,
-          username: true,
-          email: true,
-          telephone: true,
-          role: true,
-          etablissementID: true,
-          estActif: true,
-        },
-      });
-
-      return {
-        message: 'Utilisateur créé avec succès',
-        user,
-      };
-    } catch (error) {
-      if (error instanceof ConflictException) {
-        throw error;
-      }
-      throw new BadRequestException('Erreur lors de la création de l\'utilisateur');
+    if (existingUser) {
+      throw new ConflictException('Un utilisateur avec cet email ou ce nom d\'utilisateur existe déjà');
     }
+
+    // Hasher le mot de passe
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Créer l'utilisateur
+    const user = await this.prisma.utilisateur.create({
+      data: {
+        ...userData,
+        password: hashedPassword,
+      },
+    });
+
+    // Générer le token JWT
+    const payload = {
+      sub: user.utilisateurID,
+      email: user.email,
+      role: user.role
+    };
+
+    const token = this.jwtService.sign(payload);
+
+    // Ne pas renvoyer le mot de passe
+    const { password: _, ...result } = user;
+
+    return {
+      user: result,
+      token,
+    };
   }
 }
