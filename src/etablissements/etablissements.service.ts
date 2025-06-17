@@ -2,10 +2,17 @@ import { Injectable, NotFoundException, ConflictException } from '@nestjs/common
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateEtablissementDto, UpdateEtablissementDto, EtablissementDto } from './dto/etablissement.dto';
 import { Etablissement, Prisma, TypeEtablissement } from '@prisma/client';
+import { NotificationsService } from '../notifications/notifications.service';
+import { UsersService } from '../users/users.service';
+import { UserRole } from '../common/constants/roles';
 
 @Injectable()
 export class EtablissementsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notificationsService: NotificationsService,
+    private usersService: UsersService,
+  ) {}
 
   async create(createEtablissementDto: CreateEtablissementDto): Promise<EtablissementDto> {
     // Check if email already exists
@@ -37,6 +44,14 @@ export class EtablissementsService {
           }
         }
       }
+    });
+
+    // Notifier uniquement les super_admins
+    await this.notifySuperAdmins({
+      titre: 'Nouvel établissement créé',
+      message: `L'établissement "${etablissement.nom}" a été créé.`,
+      type: 'ETABLISSEMENT_CREATED',
+      lien: `/etablissements/${etablissement.etablissementID}`,
     });
 
     return this.mapToDto(etablissement);
@@ -126,6 +141,14 @@ export class EtablissementsService {
       }
     });
 
+    // Notifier uniquement les super_admins
+    await this.notifySuperAdmins({
+      titre: 'Établissement modifié',
+      message: `L'établissement "${updatedEtablissement.nom}" a été modifié.`,
+      type: 'ETABLISSEMENT_UPDATED',
+      lien: `/etablissements/${updatedEtablissement.etablissementID}`,
+    });
+
     return this.mapToDto(updatedEtablissement);
   }
 
@@ -150,6 +173,14 @@ export class EtablissementsService {
 
     await this.prisma.etablissement.delete({
       where: { etablissementID: id },
+    });
+
+    // Notifier uniquement les super_admins
+    await this.notifySuperAdmins({
+      titre: 'Établissement supprimé',
+      message: `L'établissement "${etablissement.nom}" a été supprimé.`,
+      type: 'ETABLISSEMENT_DELETED',
+      lien: '/etablissements',
     });
   }
 
@@ -200,5 +231,22 @@ export class EtablissementsService {
       description: etablissementData.description ?? undefined,
       siteWeb: etablissementData.siteWeb ?? undefined,
     };
+  }
+
+  private async notifySuperAdmins(notification: { titre: string, message: string, type: string, lien: string }) {
+    // Récupérer uniquement les utilisateurs avec le rôle SUPER_ADMIN
+    const superAdmins = await this.prisma.utilisateur.findMany({
+      where: {
+        role: UserRole.SUPER_ADMIN,
+        estActif: true,
+      },
+      select: { utilisateurID: true }
+    });
+    for (const admin of superAdmins) {
+      await this.notificationsService.create({
+        utilisateurID: admin.utilisateurID,
+        ...notification,
+      });
+    }
   }
 } 
