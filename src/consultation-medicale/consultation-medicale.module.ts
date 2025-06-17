@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { ConsultationMedicaleService } from './consultation-medicale.service';
 import { ConsultationMedicaleController } from './consultation-medicale.controller';
-import { PrismaModule } from '../prisma/prisma.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
-  imports: [PrismaModule],
+  imports: [NotificationsModule],
   controllers: [ConsultationMedicaleController],
   providers: [ConsultationMedicaleService],
   exports: [ConsultationMedicaleService],

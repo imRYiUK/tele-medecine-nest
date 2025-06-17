@@ -2,16 +2,20 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateConsultationMedicaleDto } from './dto/create-consultation-medicale.dto';
 import { UpdateConsultationMedicaleDto } from './dto/update-consultation-medicale.dto';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class ConsultationMedicaleService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notificationsService: NotificationsService,
+  ) {}
 
   async create(createConsultationMedicaleDto: CreateConsultationMedicaleDto, medecinID: string) {
     const { ordonnance, ...consultationData } = createConsultationMedicaleDto;
     const now = new Date();
 
-    return this.prisma.consultationMedicale.create({
+    const consultation = await this.prisma.consultationMedicale.create({
       data: {
         ...consultationData,
         medecinID,
@@ -59,6 +63,17 @@ export class ConsultationMedicaleService {
         },
       },
     });
+
+    // Notification au médecin
+    await this.notificationsService.create({
+      utilisateurID: medecinID,
+      titre: 'Nouvelle Consultation Créée',
+      message: `Une nouvelle consultation a été créée pour ${consultation.patient.nom} ${consultation.patient.prenom}`,
+      type: 'CONSULTATION_CREATED',
+      lien: `/consultations/${consultation.consultationID}`,
+    });
+
+    return consultation;
   }
 
   async findAll() {
@@ -134,7 +149,7 @@ export class ConsultationMedicaleService {
   async update(consultationID: string, updateConsultationMedicaleDto: UpdateConsultationMedicaleDto) {
     const consultation = await this.findOne(consultationID);
 
-    return this.prisma.consultationMedicale.update({
+    const updatedConsultation = await this.prisma.consultationMedicale.update({
       where: { consultationID },
       data: updateConsultationMedicaleDto,
       include: {
@@ -163,10 +178,30 @@ export class ConsultationMedicaleService {
         },
       },
     });
+
+    // Notification au médecin
+    await this.notificationsService.create({
+      utilisateurID: consultation.medecinID,
+      titre: 'Consultation Mise à Jour',
+      message: `La consultation pour ${consultation.patient.nom} ${consultation.patient.prenom} a été mise à jour`,
+      type: 'CONSULTATION_UPDATED',
+      lien: `/consultations/${consultationID}`,
+    });
+
+    return updatedConsultation;
   }
 
   async remove(consultationID: string) {
-    await this.findOne(consultationID);
+    const consultation = await this.findOne(consultationID);
+
+    // Notification au médecin avant la suppression
+    await this.notificationsService.create({
+      utilisateurID: consultation.medecinID,
+      titre: 'Consultation Supprimée',
+      message: `La consultation pour ${consultation.patient.nom} ${consultation.patient.prenom} a été supprimée`,
+      type: 'CONSULTATION_DELETED',
+      lien: '/consultations',
+    });
 
     return this.prisma.consultationMedicale.delete({
       where: { consultationID },
