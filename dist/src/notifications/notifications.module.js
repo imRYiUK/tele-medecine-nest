@@ -10,15 +10,27 @@ exports.NotificationsModule = void 0;
 const common_1 = require("@nestjs/common");
 const notifications_service_1 = require("./notifications.service");
 const notifications_controller_1 = require("./notifications.controller");
-const prisma_service_1 = require("../prisma/prisma.service");
+const notifications_gateway_1 = require("./notifications.gateway");
+const jwt_1 = require("@nestjs/jwt");
+const config_1 = require("@nestjs/config");
 let NotificationsModule = class NotificationsModule {
 };
 exports.NotificationsModule = NotificationsModule;
 exports.NotificationsModule = NotificationsModule = __decorate([
     (0, common_1.Module)({
-        providers: [notifications_service_1.NotificationsService, prisma_service_1.PrismaService],
+        imports: [
+            jwt_1.JwtModule.registerAsync({
+                imports: [config_1.ConfigModule],
+                useFactory: async (configService) => ({
+                    secret: configService.get('JWT_SECRET'),
+                    signOptions: { expiresIn: '1d' },
+                }),
+                inject: [config_1.ConfigService],
+            }),
+        ],
         controllers: [notifications_controller_1.NotificationsController],
-        exports: [notifications_service_1.NotificationsService],
+        providers: [notifications_service_1.NotificationsService, notifications_gateway_1.NotificationsGateway],
+        exports: [notifications_service_1.NotificationsService, notifications_gateway_1.NotificationsGateway],
     })
 ], NotificationsModule);
 //# sourceMappingURL=notifications.module.js.map

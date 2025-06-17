@@ -18,10 +18,29 @@ let ConsultationMedicaleService = class ConsultationMedicaleService {
         this.prisma = prisma;
     }
     async create(createConsultationMedicaleDto, medecinID) {
+        const { ordonnance, ...consultationData } = createConsultationMedicaleDto;
+        const now = new Date();
         return this.prisma.consultationMedicale.create({
             data: {
-                ...createConsultationMedicaleDto,
+                ...consultationData,
                 medecinID,
+                createdAt: now,
+                updatedAt: now,
+                ordonnances: ordonnance ? {
+                    create: [{
+                            dateEmission: now,
+                            dateExpiration: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000),
+                            estRenouvelable: false,
+                            prescriptions: {
+                                create: ordonnance.prescriptions.map(prescription => ({
+                                    medicamentID: prescription.medicamentID,
+                                    posologie: prescription.posologie,
+                                    duree: prescription.duree,
+                                    instructions: prescription.instructions,
+                                })),
+                            },
+                        }],
+                } : undefined,
             },
             include: {
                 patient: {

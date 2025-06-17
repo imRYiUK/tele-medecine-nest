@@ -12,19 +12,24 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.NotificationsService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
+const notifications_gateway_1 = require("./notifications.gateway");
 let NotificationsService = class NotificationsService {
     prisma;
-    constructor(prisma) {
+    notificationsGateway;
+    constructor(prisma, notificationsGateway) {
         this.prisma = prisma;
+        this.notificationsGateway = notificationsGateway;
     }
     async create(createNotificationDto) {
-        return this.prisma.notification.create({
+        const notification = await this.prisma.notification.create({
             data: {
                 ...createNotificationDto,
                 dateCreation: new Date(),
                 estLu: false,
             },
         });
+        await this.notificationsGateway.sendNotificationToUser(createNotificationDto.utilisateurID, notification);
+        return notification;
     }
     async findAll(userId) {
         return this.prisma.notification.findMany({
@@ -48,19 +53,25 @@ let NotificationsService = class NotificationsService {
         });
     }
     async markAsRead(notificationId) {
-        return this.prisma.notification.update({
+        const notification = await this.prisma.notification.update({
             where: { notificationID: notificationId },
             data: { estLu: true },
         });
+        await this.notificationsGateway.sendNotificationToUser(notification.utilisateurID, { type: 'notification_read', notificationId });
+        return notification;
     }
     async markAllAsRead(userId) {
-        return this.prisma.notification.updateMany({
+        const result = await this.prisma.notification.updateMany({
             where: {
                 utilisateurID: userId,
                 estLu: false,
             },
             data: { estLu: true },
         });
+        await this.notificationsGateway.sendNotificationToUser(userId, {
+            type: 'all_notifications_read',
+        });
+        return result;
     }
     async remove(notificationId) {
         return this.prisma.notification.delete({
@@ -71,6 +82,7 @@ let NotificationsService = class NotificationsService {
 exports.NotificationsService = NotificationsService;
 exports.NotificationsService = NotificationsService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        notifications_gateway_1.NotificationsGateway])
 ], NotificationsService);
 //# sourceMappingURL=notifications.service.js.map

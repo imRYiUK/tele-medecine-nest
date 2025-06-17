@@ -1,3 +1,12 @@
+declare class CreatePrescriptionDto {
+    medicamentID: string;
+    posologie: string;
+    duree: string;
+    instructions: string;
+}
+declare class CreateOrdonnanceDto {
+    prescriptions: CreatePrescriptionDto[];
+}
 export declare class CreateConsultationMedicaleDto {
     dossierID: string;
     patientID: string;
@@ -8,4 +17,6 @@ export declare class CreateConsultationMedicaleDto {
     traitementPrescrit: string;
     estTelemedicine?: boolean;
     lienVisio?: string;
+    ordonnance?: CreateOrdonnanceDto;
 }
+export {};

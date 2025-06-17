@@ -5,6 +5,41 @@ export declare class ConsultationMedicaleController {
     private readonly consultationMedicaleService;
     constructor(consultationMedicaleService: ConsultationMedicaleService);
     create(createConsultationMedicaleDto: CreateConsultationMedicaleDto, req: any): Promise<{
+        patient: {
+            nom: string;
+            prenom: string;
+            dateNaissance: Date;
+        };
+        medecin: {
+            nom: string;
+            prenom: string;
+            role: string;
+        };
+        ordonnances: ({
+            prescriptions: ({
+                medicament: {
+                    nom: string;
+                    description: string | null;
+                    medicamentID: string;
+                    dosage: string;
+                    forme: string;
+                };
+            } & {
+                medicamentID: string;
+                ordonnanceID: string;
+                prescriptionID: string;
+                posologie: string;
+                duree: string;
+                instructions: string;
+            })[];
+        } & {
+            consultationID: string;
+            ordonnanceID: string;
+            dateEmission: Date;
+            dateExpiration: Date;
+            estRenouvelable: boolean;
+        })[];
+    } & {
         createdAt: Date;
         updatedAt: Date;
         patientID: string;
