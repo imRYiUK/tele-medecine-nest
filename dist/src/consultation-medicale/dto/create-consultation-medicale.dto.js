@@ -13,6 +13,42 @@ exports.CreateConsultationMedicaleDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
 const class_transformer_1 = require("class-transformer");
+class CreatePrescriptionDto {
+    medicamentID;
+    posologie;
+    duree;
+    instructions;
+}
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: 'ID du médicament' }),
+    (0, class_validator_1.IsUUID)(),
+    __metadata("design:type", String)
+], CreatePrescriptionDto.prototype, "medicamentID", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: 'Posologie' }),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreatePrescriptionDto.prototype, "posologie", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: 'Durée du traitement' }),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreatePrescriptionDto.prototype, "duree", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: 'Instructions pour la prise du médicament' }),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreatePrescriptionDto.prototype, "instructions", void 0);
+class CreateOrdonnanceDto {
+    prescriptions;
+}
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: 'Liste des prescriptions' }),
+    (0, class_validator_1.IsArray)(),
+    (0, class_validator_1.ValidateNested)({ each: true }),
+    (0, class_transformer_1.Type)(() => CreatePrescriptionDto),
+    __metadata("design:type", Array)
+], CreateOrdonnanceDto.prototype, "prescriptions", void 0);
 class CreateConsultationMedicaleDto {
     dossierID;
     patientID;
@@ -23,6 +59,7 @@ class CreateConsultationMedicaleDto {
     traitementPrescrit;
     estTelemedicine;
     lienVisio;
+    ordonnance;
 }
 exports.CreateConsultationMedicaleDto = CreateConsultationMedicaleDto;
 __decorate([
@@ -73,4 +110,11 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], CreateConsultationMedicaleDto.prototype, "lienVisio", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: 'Ordonnance associée à la consultation', type: CreateOrdonnanceDto }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.ValidateNested)(),
+    (0, class_transformer_1.Type)(() => CreateOrdonnanceDto),
+    __metadata("design:type", CreateOrdonnanceDto)
+], CreateConsultationMedicaleDto.prototype, "ordonnance", void 0);
 //# sourceMappingURL=create-consultation-medicale.dto.js.map

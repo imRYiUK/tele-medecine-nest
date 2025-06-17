@@ -11,6 +11,7 @@ import { EtablissementsModule } from './etablissements/etablissements.module';
 import { PatientsModule } from './patients/patients.module';
 import { ExamenMedicalModule } from './examen-medical/examen-medical.module';
 import { ConsultationMedicaleModule } from './consultation-medicale/consultation-medicale.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { ConsultationMedicaleModule } from './consultation-medicale/consultation
     CommonModule,
     EtablissementsModule,
     PatientsModule,
+    NotificationsModule,
     ExamenMedicalModule,
     ConsultationMedicaleModule,
   ],
