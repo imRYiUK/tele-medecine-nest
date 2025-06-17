@@ -40,10 +40,6 @@ export class PatientsController {
 
   @Get()
   @Roles(UserRole.ADMINISTRATEUR, UserRole.PERSONNEL_ADMINISTRATIF, UserRole.MEDECIN, UserRole.RADIOLOGUE)
-  @LogActivity({
-    typeAction: 'CONSULTATION_PATIENTS',
-    description: 'Consultation de la liste des patients',
-  })
   @ApiOperation({ summary: 'Récupérer la liste des patients avec pagination et filtrage' })
   @ApiResponse({ status: 200, description: 'Liste des patients récupérée avec succès' })
   findAll() {
@@ -52,10 +48,6 @@ export class PatientsController {
 
   @Get(':id')
   @Roles(UserRole.ADMINISTRATEUR, UserRole.PERSONNEL_ADMINISTRATIF, UserRole.MEDECIN, UserRole.RADIOLOGUE)
-  @LogActivity({
-    typeAction: 'CONSULTATION_PATIENT',
-    description: (result) => `Consultation du patient: ${result.nom} ${result.prenom}`,
-  })
   @ApiOperation({ summary: 'Récupérer un patient par son ID' })
   @ApiResponse({ status: 200, description: 'Patient récupéré avec succès' })
   @ApiResponse({ status: 404, description: 'Patient non trouvé' })

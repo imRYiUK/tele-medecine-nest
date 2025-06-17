@@ -12,10 +12,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.EtablissementsService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
+const notifications_service_1 = require("../notifications/notifications.service");
+const users_service_1 = require("../users/users.service");
 let EtablissementsService = class EtablissementsService {
     prisma;
-    constructor(prisma) {
+    notificationsService;
+    usersService;
+    constructor(prisma, notificationsService, usersService) {
         this.prisma = prisma;
+        this.notificationsService = notificationsService;
+        this.usersService = usersService;
     }
     async create(createEtablissementDto) {
         const existingEtablissement = await this.prisma.etablissement.findFirst({
@@ -43,6 +49,12 @@ let EtablissementsService = class EtablissementsService {
                     }
                 }
             }
+        });
+        await this.notifySuperAdmins({
+            titre: 'Nouvel établissement créé',
+            message: `L'établissement "${etablissement.nom}" a été créé.`,
+            type: 'ETABLISSEMENT_CREATED',
+            lien: `/etablissements/${etablissement.etablissementID}`,
         });
         return this.mapToDto(etablissement);
     }
@@ -117,6 +129,12 @@ let EtablissementsService = class EtablissementsService {
                 }
             }
         });
+        await this.notifySuperAdmins({
+            titre: 'Établissement modifié',
+            message: `L'établissement "${updatedEtablissement.nom}" a été modifié.`,
+            type: 'ETABLISSEMENT_UPDATED',
+            lien: `/etablissements/${updatedEtablissement.etablissementID}`,
+        });
         return this.mapToDto(updatedEtablissement);
     }
     async remove(id) {
@@ -134,6 +152,12 @@ let EtablissementsService = class EtablissementsService {
         }
         await this.prisma.etablissement.delete({
             where: { etablissementID: id },
+        });
+        await this.notifySuperAdmins({
+            titre: 'Établissement supprimé',
+            message: `L'établissement "${etablissement.nom}" a été supprimé.`,
+            type: 'ETABLISSEMENT_DELETED',
+            lien: '/etablissements',
         });
     }
     async findByRegion(region) {
@@ -180,10 +204,27 @@ let EtablissementsService = class EtablissementsService {
             siteWeb: etablissementData.siteWeb ?? undefined,
         };
     }
+    async notifySuperAdmins(notification) {
+        const superAdmins = await this.prisma.utilisateur.findMany({
+            where: {
+                role: "SUPER_ADMIN",
+                estActif: true,
+            },
+            select: { utilisateurID: true }
+        });
+        for (const admin of superAdmins) {
+            await this.notificationsService.create({
+                utilisateurID: admin.utilisateurID,
+                ...notification,
+            });
+        }
+    }
 };
 exports.EtablissementsService = EtablissementsService;
 exports.EtablissementsService = EtablissementsService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        notifications_service_1.NotificationsService,
+        users_service_1.UsersService])
 ], EtablissementsService);
 //# sourceMappingURL=etablissements.service.js.map

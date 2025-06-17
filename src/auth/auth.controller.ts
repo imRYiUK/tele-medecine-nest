@@ -1,18 +1,17 @@
-import { Controller, Post, Body, UseGuards, Req, Get, HttpCode, HttpStatus, HttpException } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
+import { Controller, Post, Body} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
-import { Request } from 'express';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import passport from 'passport';
+import { ApiTags } from '@nestjs/swagger';
 import { LogActivity } from '../common/decorators/log-activity.decorator';
+import { Public } from '../common/decorators/public.decorator';
 
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @Public()
   @Post('login')
   @LogActivity({
     typeAction: 'CONNEXION',

@@ -12,13 +12,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ExamenMedicalService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
+const notifications_service_1 = require("../notifications/notifications.service");
 let ExamenMedicalService = class ExamenMedicalService {
     prisma;
-    constructor(prisma) {
+    notificationsService;
+    constructor(prisma, notificationsService) {
         this.prisma = prisma;
+        this.notificationsService = notificationsService;
     }
     async create(createExamenMedicalDto, demandeParID) {
-        return this.prisma.examenMedical.create({
+        const examen = await this.prisma.examenMedical.create({
             data: {
                 ...createExamenMedicalDto,
                 demandeParID,
@@ -41,6 +44,14 @@ let ExamenMedicalService = class ExamenMedicalService {
                 },
             },
         });
+        await this.notificationsService.create({
+            utilisateurID: demandeParID,
+            titre: 'Nouvel examen médical créé',
+            message: `Un nouvel examen médical a été créé pour le patient ${examen.patient.prenom} ${examen.patient.nom}`,
+            type: 'EXAMEN_CREATED',
+            lien: `/examens/${examen.examenID}`,
+        });
+        return examen;
     }
     async findAll() {
         return this.prisma.examenMedical.findMany({
@@ -95,7 +106,7 @@ let ExamenMedicalService = class ExamenMedicalService {
     }
     async update(examenID, updateExamenMedicalDto) {
         const examen = await this.findOne(examenID);
-        return this.prisma.examenMedical.update({
+        const updatedExamen = await this.prisma.examenMedical.update({
             where: { examenID },
             data: updateExamenMedicalDto,
             include: {
@@ -116,9 +127,24 @@ let ExamenMedicalService = class ExamenMedicalService {
                 },
             },
         });
+        await this.notificationsService.create({
+            utilisateurID: examen.demandeParID,
+            titre: 'Examen médical mis à jour',
+            message: `L'examen médical du patient ${updatedExamen.patient.prenom} ${updatedExamen.patient.nom} a été mis à jour`,
+            type: 'EXAMEN_UPDATED',
+            lien: `/examens/${examenID}`,
+        });
+        return updatedExamen;
     }
     async remove(examenID) {
-        await this.findOne(examenID);
+        const examen = await this.findOne(examenID);
+        await this.notificationsService.create({
+            utilisateurID: examen.demandeParID,
+            titre: 'Examen médical supprimé',
+            message: `L'examen médical du patient ${examen.patient.prenom} ${examen.patient.nom} a été supprimé`,
+            type: 'EXAMEN_DELETED',
+            lien: '/examens',
+        });
         return this.prisma.examenMedical.delete({
             where: { examenID },
         });
@@ -165,6 +191,7 @@ let ExamenMedicalService = class ExamenMedicalService {
 exports.ExamenMedicalService = ExamenMedicalService;
 exports.ExamenMedicalService = ExamenMedicalService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        notifications_service_1.NotificationsService])
 ], ExamenMedicalService);
 //# sourceMappingURL=examen-medical.service.js.map

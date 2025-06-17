@@ -1,9 +1,11 @@
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateExamenMedicalDto } from './dto/create-examen-medical.dto';
 import { UpdateExamenMedicalDto } from './dto/update-examen-medical.dto';
+import { NotificationsService } from '../notifications/notifications.service';
 export declare class ExamenMedicalService {
     private prisma;
-    constructor(prisma: PrismaService);
+    private notificationsService;
+    constructor(prisma: PrismaService, notificationsService: NotificationsService);
     create(createExamenMedicalDto: CreateExamenMedicalDto, demandeParID: string): Promise<{
         patient: {
             nom: string;

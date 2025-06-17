@@ -7,7 +7,6 @@ import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole } from '../common/constants/roles';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { LogActivity } from '../common/decorators/log-activity.decorator';
 
 @ApiTags('users')
 @Controller('users')
@@ -41,10 +40,6 @@ export class UsersController {
 
   @Post()
   @Roles(UserRole.SUPER_ADMIN, UserRole.ADMINISTRATEUR)
-  @LogActivity({
-    typeAction: 'CREATION_UTILISATEUR',
-    description: (result) => `Création d'un nouvel utilisateur: ${result.email}`,
-  })
   @ApiOperation({ summary: 'Create a new user' })
   @ApiResponse({ status: 201, description: 'User created successfully', type: UserDto })
   @ApiResponse({ status: 400, description: 'Invalid input' })
@@ -60,10 +55,6 @@ export class UsersController {
 
   @Get()
   @Roles(UserRole.SUPER_ADMIN, UserRole.ADMINISTRATEUR)
-  @LogActivity({
-    typeAction: 'CONSULTATION_UTILISATEURS',
-    description: 'Consultation de la liste des utilisateurs',
-  })
   @ApiOperation({ summary: 'Get all users' })
   @ApiResponse({ status: 200, description: 'Returns all users', type: [UserDto] })
   async findAll(@Req() req: Request) {
@@ -73,10 +64,6 @@ export class UsersController {
 
   @Get(':id')
   @Roles(UserRole.SUPER_ADMIN, UserRole.ADMINISTRATEUR)
-  @LogActivity({
-    typeAction: 'CONSULTATION_UTILISATEUR',
-    description: (result) => `Consultation de l'utilisateur: ${result.email}`,
-  })
   @ApiOperation({ summary: 'Get a user by ID' })
   @ApiResponse({ status: 200, description: 'Returns the user', type: UserDto })
   @ApiResponse({ status: 404, description: 'User not found' })
@@ -91,10 +78,6 @@ export class UsersController {
 
   @Put(':id')
   @Roles(UserRole.SUPER_ADMIN, UserRole.ADMINISTRATEUR)
-  @LogActivity({
-    typeAction: 'MODIFICATION_UTILISATEUR',
-    description: (result) => `Modification de l'utilisateur: ${result.email}`,
-  })
   @ApiOperation({ summary: 'Update a user' })
   @ApiResponse({ status: 200, description: 'User updated successfully', type: UserDto })
   @ApiResponse({ status: 404, description: 'User not found' })
@@ -118,10 +101,6 @@ export class UsersController {
 
   @Delete(':id')
   @Roles(UserRole.SUPER_ADMIN, UserRole.ADMINISTRATEUR)
-  @LogActivity({
-    typeAction: 'SUPPRESSION_UTILISATEUR',
-    description: (result) => `Suppression de l'utilisateur: ${result.email}`,
-  })
   @ApiOperation({ summary: 'Delete a user' })
   @ApiResponse({ status: 200, description: 'User deleted successfully' })
   @ApiResponse({ status: 404, description: 'User not found' })
@@ -137,10 +116,6 @@ export class UsersController {
 
   @Get('profile/me')
   @Roles(UserRole.SUPER_ADMIN, UserRole.ADMINISTRATEUR, UserRole.RADIOLOGUE, UserRole.MEDECIN, UserRole.PERSONNEL_ADMINISTRATIF, UserRole.TECHNICIEN)
-  @LogActivity({
-    typeAction: 'CONSULTATION_PROFIL',
-    description: 'Consultation du profil utilisateur',
-  })
   @ApiOperation({ summary: 'Get current user profile' })
   @ApiResponse({ 
     status: 200, 
@@ -158,10 +133,6 @@ export class UsersController {
 
   @Put('profile/me')
   @Roles(UserRole.SUPER_ADMIN, UserRole.ADMINISTRATEUR, UserRole.RADIOLOGUE, UserRole.MEDECIN, UserRole.PERSONNEL_ADMINISTRATIF, UserRole.TECHNICIEN)
-  @LogActivity({
-    typeAction: 'MODIFICATION_PROFIL',
-    description: 'Modification du profil utilisateur',
-  })
   @ApiOperation({ summary: 'Update current user profile' })
   @ApiResponse({ 
     status: 200, 
