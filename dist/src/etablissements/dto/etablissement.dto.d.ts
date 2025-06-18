@@ -5,8 +5,6 @@ export declare class CreateEtablissementDto {
     telephone: string;
     email: string;
     type: TypeEtablissement;
-    latitude: number;
-    longitude: number;
     region: string;
     description?: string;
     siteWeb?: string;
@@ -18,8 +16,6 @@ export declare class UpdateEtablissementDto {
     telephone?: string;
     email?: string;
     type?: TypeEtablissement;
-    latitude?: number;
-    longitude?: number;
     region?: string;
     description?: string;
     siteWeb?: string;
@@ -32,8 +28,6 @@ export declare class EtablissementDto {
     telephone: string;
     email: string;
     type: TypeEtablissement;
-    latitude: number;
-    longitude: number;
     region: string;
     description?: string;
     siteWeb?: string;

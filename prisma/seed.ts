@@ -18,8 +18,6 @@ async function main() {
       telephone: '+221338675309',
       email: 'contact@sunusante.sn',
       type: 'HOPITAL',
-      latitude: 14.7167,
-      longitude: -17.4677,
       region: 'Dakar'
     },
   });

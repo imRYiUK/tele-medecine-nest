@@ -62,14 +62,14 @@ __decorate([
 ], ConsultationMedicaleController.prototype, "create", null);
 __decorate([
     (0, common_1.Get)(),
-    (0, roles_decorator_1.Roles)("ADMIN", "SUPER_ADMIN"),
+    (0, roles_decorator_1.Roles)("ADMINISTRATEUR", "SUPER_ADMIN"),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
 ], ConsultationMedicaleController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)(':id'),
-    (0, roles_decorator_1.Roles)("ADMIN", "SUPER_ADMIN", "MEDECIN"),
+    (0, roles_decorator_1.Roles)("ADMINISTRATEUR", "SUPER_ADMIN", "MEDECIN"),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -86,7 +86,7 @@ __decorate([
 ], ConsultationMedicaleController.prototype, "update", null);
 __decorate([
     (0, common_1.Delete)(':id'),
-    (0, roles_decorator_1.Roles)("ADMIN", "SUPER_ADMIN"),
+    (0, roles_decorator_1.Roles)("ADMINISTRATEUR", "SUPER_ADMIN"),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -94,7 +94,7 @@ __decorate([
 ], ConsultationMedicaleController.prototype, "remove", null);
 __decorate([
     (0, common_1.Get)('patient/:patientId'),
-    (0, roles_decorator_1.Roles)("ADMIN", "SUPER_ADMIN", "MEDECIN"),
+    (0, roles_decorator_1.Roles)("ADMINISTRATEUR", "SUPER_ADMIN", "MEDECIN"),
     __param(0, (0, common_1.Param)('patientId')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -102,7 +102,7 @@ __decorate([
 ], ConsultationMedicaleController.prototype, "findByPatient", null);
 __decorate([
     (0, common_1.Get)('dossier/:dossierId'),
-    (0, roles_decorator_1.Roles)("ADMIN", "SUPER_ADMIN", "MEDECIN"),
+    (0, roles_decorator_1.Roles)("ADMINISTRATEUR", "SUPER_ADMIN", "MEDECIN"),
     __param(0, (0, common_1.Param)('dossierId')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -110,7 +110,7 @@ __decorate([
 ], ConsultationMedicaleController.prototype, "findByDossier", null);
 __decorate([
     (0, common_1.Get)('medecin/:medecinId'),
-    (0, roles_decorator_1.Roles)("ADMIN", "SUPER_ADMIN"),
+    (0, roles_decorator_1.Roles)("ADMINISTRATEUR", "SUPER_ADMIN"),
     __param(0, (0, common_1.Param)('medecinId')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),

@@ -52,6 +52,12 @@ export declare class ExamenMedicalService {
             prenom: string;
             role: string;
         };
+        radiologues: {
+            nom: string;
+            email: string;
+            utilisateurID: string;
+            prenom: string;
+        }[];
     } & {
         description: string;
         patientID: string;
@@ -90,6 +96,12 @@ export declare class ExamenMedicalService {
             sopInstanceUID: string;
             dateAcquisition: Date;
             modalite: string;
+        }[];
+        radiologues: {
+            nom: string;
+            email: string;
+            utilisateurID: string;
+            prenom: string;
         }[];
     } & {
         description: string;
@@ -166,6 +178,12 @@ export declare class ExamenMedicalService {
             dateAcquisition: Date;
             modalite: string;
         }[];
+        radiologues: {
+            nom: string;
+            email: string;
+            utilisateurID: string;
+            prenom: string;
+        }[];
     } & {
         description: string;
         patientID: string;
@@ -200,6 +218,12 @@ export declare class ExamenMedicalService {
             dateAcquisition: Date;
             modalite: string;
         }[];
+        radiologues: {
+            nom: string;
+            email: string;
+            utilisateurID: string;
+            prenom: string;
+        }[];
     } & {
         description: string;
         patientID: string;
@@ -212,4 +236,23 @@ export declare class ExamenMedicalService {
         resultat: string | null;
         estAnalyse: boolean;
     })[]>;
+    inviteRadiologue(examenID: string, radiologueID: string): Promise<{
+        radiologues: {
+            nom: string;
+            email: string;
+            utilisateurID: string;
+            prenom: string;
+        }[];
+    } & {
+        description: string;
+        patientID: string;
+        dossierID: string;
+        typeExamenID: string;
+        consultationID: string | null;
+        examenID: string;
+        demandeParID: string;
+        dateExamen: Date;
+        resultat: string | null;
+        estAnalyse: boolean;
+    }>;
 }

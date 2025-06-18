@@ -62,7 +62,7 @@ let PatientsController = class PatientsController {
 exports.PatientsController = PatientsController;
 __decorate([
     (0, common_1.Post)(),
-    (0, roles_decorator_1.Roles)("ADMIN", "RECEPTIONNISTE", "MEDECIN"),
+    (0, roles_decorator_1.Roles)("ADMINISTRATEUR", "RECEPTIONNISTE", "MEDECIN"),
     (0, log_activity_decorator_1.LogActivity)({
         typeAction: 'CREATION_PATIENT',
         description: (result) => `Création d'un nouveau patient: ${result.nom} ${result.prenom}`,
@@ -77,11 +77,7 @@ __decorate([
 ], PatientsController.prototype, "create", null);
 __decorate([
     (0, common_1.Get)(),
-    (0, roles_decorator_1.Roles)("ADMIN", "RECEPTIONNISTE", "MEDECIN", "RADIOLOGUE"),
-    (0, log_activity_decorator_1.LogActivity)({
-        typeAction: 'CONSULTATION_PATIENTS',
-        description: 'Consultation de la liste des patients',
-    }),
+    (0, roles_decorator_1.Roles)("ADMINISTRATEUR", "RECEPTIONNISTE", "MEDECIN", "RADIOLOGUE"),
     (0, swagger_1.ApiOperation)({ summary: 'Récupérer la liste des patients avec pagination et filtrage' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Liste des patients récupérée avec succès' }),
     __metadata("design:type", Function),
@@ -90,11 +86,7 @@ __decorate([
 ], PatientsController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)(':id'),
-    (0, roles_decorator_1.Roles)("ADMIN", "RECEPTIONNISTE", "MEDECIN", "RADIOLOGUE"),
-    (0, log_activity_decorator_1.LogActivity)({
-        typeAction: 'CONSULTATION_PATIENT',
-        description: (result) => `Consultation du patient: ${result.nom} ${result.prenom}`,
-    }),
+    (0, roles_decorator_1.Roles)("ADMINISTRATEUR", "RECEPTIONNISTE", "MEDECIN", "RADIOLOGUE"),
     (0, swagger_1.ApiOperation)({ summary: 'Récupérer un patient par son ID' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Patient récupéré avec succès' }),
     (0, swagger_1.ApiResponse)({ status: 404, description: 'Patient non trouvé' }),
@@ -105,7 +97,7 @@ __decorate([
 ], PatientsController.prototype, "findOne", null);
 __decorate([
     (0, common_1.Patch)(':id'),
-    (0, roles_decorator_1.Roles)("ADMIN", "RECEPTIONNISTE", "MEDECIN"),
+    (0, roles_decorator_1.Roles)("ADMINISTRATEUR", "RECEPTIONNISTE", "MEDECIN"),
     (0, log_activity_decorator_1.LogActivity)({
         typeAction: 'MODIFICATION_PATIENT',
         description: (result) => `Modification du patient: ${result.nom} ${result.prenom}`,
@@ -122,7 +114,7 @@ __decorate([
 ], PatientsController.prototype, "update", null);
 __decorate([
     (0, common_1.Delete)(':id'),
-    (0, roles_decorator_1.Roles)("ADMIN"),
+    (0, roles_decorator_1.Roles)("ADMINISTRATEUR"),
     (0, log_activity_decorator_1.LogActivity)({
         typeAction: 'SUPPRESSION_PATIENT',
         description: (result) => `Suppression du patient: ${result.nom} ${result.prenom}`,

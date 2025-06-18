@@ -23,14 +23,6 @@ export class CreateEtablissementDto {
   @IsEnum(TypeEtablissement)
   type: TypeEtablissement;
 
-  @ApiProperty({ description: 'Latitude de l\'établissement' })
-  @IsNumber()
-  latitude: number;
-
-  @ApiProperty({ description: 'Longitude de l\'établissement' })
-  @IsNumber()
-  longitude: number;
-
   @ApiProperty({ description: 'Région où se trouve l\'établissement' })
   @IsString()
   region: string;
@@ -77,16 +69,6 @@ export class UpdateEtablissementDto {
   @IsOptional()
   type?: TypeEtablissement;
 
-  @ApiProperty({ description: 'Latitude de l\'établissement', required: false })
-  @IsNumber()
-  @IsOptional()
-  latitude?: number;
-
-  @ApiProperty({ description: 'Longitude de l\'établissement', required: false })
-  @IsNumber()
-  @IsOptional()
-  longitude?: number;
-
   @ApiProperty({ description: 'Région où se trouve l\'établissement', required: false })
   @IsString()
   @IsOptional()
@@ -126,12 +108,6 @@ export class EtablissementDto {
 
   @ApiProperty({ description: 'Type d\'établissement', enum: TypeEtablissement })
   type: TypeEtablissement;
-
-  @ApiProperty({ description: 'Latitude de l\'établissement' })
-  latitude: number;
-
-  @ApiProperty({ description: 'Longitude de l\'établissement' })
-  longitude: number;
 
   @ApiProperty({ description: 'Région où se trouve l\'établissement' })
   region: string;

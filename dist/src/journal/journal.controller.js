@@ -40,7 +40,7 @@ let JournalController = class JournalController {
 exports.JournalController = JournalController;
 __decorate([
     (0, common_1.Get)(),
-    (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMIN"),
+    (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMINISTRATEUR"),
     (0, swagger_1.ApiOperation)({ summary: 'Récupérer tout l\'historique des actions' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Liste des actions récupérée avec succès' }),
     __param(0, (0, common_1.Request)()),
@@ -50,7 +50,7 @@ __decorate([
 ], JournalController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)('user'),
-    (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMIN"),
+    (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMINISTRATEUR"),
     (0, swagger_1.ApiOperation)({ summary: 'Récupérer l\'historique des actions d\'un utilisateur' }),
     (0, swagger_1.ApiQuery)({ name: 'utilisateurID', required: true, type: String }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Liste des actions de l\'utilisateur récupérée avec succès' }),
@@ -62,7 +62,7 @@ __decorate([
 ], JournalController.prototype, "findByUser", null);
 __decorate([
     (0, common_1.Get)('date-range'),
-    (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMIN"),
+    (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMINISTRATEUR"),
     (0, swagger_1.ApiOperation)({ summary: 'Récupérer l\'historique des actions sur une période donnée' }),
     (0, swagger_1.ApiQuery)({ name: 'startDate', required: true, type: Date }),
     (0, swagger_1.ApiQuery)({ name: 'endDate', required: true, type: Date }),
@@ -76,7 +76,7 @@ __decorate([
 ], JournalController.prototype, "findByDateRange", null);
 __decorate([
     (0, common_1.Get)('type'),
-    (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMIN"),
+    (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMINISTRATEUR"),
     (0, swagger_1.ApiOperation)({ summary: 'Récupérer l\'historique des actions par type' }),
     (0, swagger_1.ApiQuery)({ name: 'typeAction', required: true, type: String }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Liste des actions du type spécifié récupérée avec succès' }),

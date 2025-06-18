@@ -47,6 +47,9 @@ let ExamenMedicalController = class ExamenMedicalController {
     findByDossier(dossierID) {
         return this.examenMedicalService.findByDossier(dossierID);
     }
+    inviteRadiologue(examenID, radiologueID) {
+        return this.examenMedicalService.inviteRadiologue(examenID, radiologueID);
+    }
 };
 exports.ExamenMedicalController = ExamenMedicalController;
 __decorate([
@@ -120,6 +123,17 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], ExamenMedicalController.prototype, "findByDossier", null);
+__decorate([
+    (0, common_1.Put)(':id/invite-radiologue/:radiologueId'),
+    (0, roles_decorator_1.Roles)("RADIOLOGUE"),
+    (0, swagger_1.ApiOperation)({ summary: "Inviter un radiologue à participer à l'examen" }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: "Radiologue invité avec succès" }),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Param)('radiologueId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", void 0)
+], ExamenMedicalController.prototype, "inviteRadiologue", null);
 exports.ExamenMedicalController = ExamenMedicalController = __decorate([
     (0, common_1.Controller)('examens-medicaux'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),

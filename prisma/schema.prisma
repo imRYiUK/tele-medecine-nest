@@ -100,6 +100,7 @@ model ExamenMedical {
   demandePar   Utilisateur           @relation(fields: [demandeParID], references: [utilisateurID])
   consultation ConsultationMedicale? @relation(fields: [consultationID], references: [consultationID])
   images       ImageMedicale[]
+  radiologues  Utilisateur[]         @relation("ExamensRadiologues")
 
   @@map("examens_medicaux")
 }
@@ -152,6 +153,7 @@ model Utilisateur {
   DossierMedicalCreated DossierMedical[]
   Patient               Patient[]
   Notification          Notification[]
+  examensInvites        ExamenMedical[]       @relation("ExamensRadiologues")
 
   @@map("utilisateurs")
 }
@@ -163,8 +165,6 @@ model Etablissement {
   telephone       String
   email           String
   type            TypeEtablissement
-  latitude        Float
-  longitude       Float
   region          String
   description     String?
   siteWeb         String?
@@ -173,7 +173,7 @@ model Etablissement {
   updatedAt       DateTime          @updatedAt
 
   // Relations
-  utilisateurs    Utilisateur[]
+  utilisateurs     Utilisateur[]
   journalActivites JournalActivite[]
 
   @@map("etablissements")

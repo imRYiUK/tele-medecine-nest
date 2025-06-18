@@ -22,6 +22,7 @@ let RolesGuard = RolesGuard_1 = class RolesGuard {
     canActivate(context) {
         try {
             const requiredRoles = this.reflector.get('roles', context.getHandler());
+            console.log(requiredRoles);
             if (!requiredRoles) {
                 return true;
             }

@@ -19,8 +19,6 @@ class CreateEtablissementDto {
     telephone;
     email;
     type;
-    latitude;
-    longitude;
     region;
     description;
     siteWeb;
@@ -53,16 +51,6 @@ __decorate([
     __metadata("design:type", String)
 ], CreateEtablissementDto.prototype, "type", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Latitude de l\'établissement' }),
-    (0, class_validator_1.IsNumber)(),
-    __metadata("design:type", Number)
-], CreateEtablissementDto.prototype, "latitude", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Longitude de l\'établissement' }),
-    (0, class_validator_1.IsNumber)(),
-    __metadata("design:type", Number)
-], CreateEtablissementDto.prototype, "longitude", void 0);
-__decorate([
     (0, swagger_1.ApiProperty)({ description: 'Région où se trouve l\'établissement' }),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
@@ -91,8 +79,6 @@ class UpdateEtablissementDto {
     telephone;
     email;
     type;
-    latitude;
-    longitude;
     region;
     description;
     siteWeb;
@@ -130,18 +116,6 @@ __decorate([
     __metadata("design:type", String)
 ], UpdateEtablissementDto.prototype, "type", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Latitude de l\'établissement', required: false }),
-    (0, class_validator_1.IsNumber)(),
-    (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", Number)
-], UpdateEtablissementDto.prototype, "latitude", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Longitude de l\'établissement', required: false }),
-    (0, class_validator_1.IsNumber)(),
-    (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", Number)
-], UpdateEtablissementDto.prototype, "longitude", void 0);
-__decorate([
     (0, swagger_1.ApiProperty)({ description: 'Région où se trouve l\'établissement', required: false }),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsOptional)(),
@@ -172,8 +146,6 @@ class EtablissementDto {
     telephone;
     email;
     type;
-    latitude;
-    longitude;
     region;
     description;
     siteWeb;
@@ -206,14 +178,6 @@ __decorate([
     (0, swagger_1.ApiProperty)({ description: 'Type d\'établissement', enum: client_1.TypeEtablissement }),
     __metadata("design:type", String)
 ], EtablissementDto.prototype, "type", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Latitude de l\'établissement' }),
-    __metadata("design:type", Number)
-], EtablissementDto.prototype, "latitude", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Longitude de l\'établissement' }),
-    __metadata("design:type", Number)
-], EtablissementDto.prototype, "longitude", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({ description: 'Région où se trouve l\'établissement' }),
     __metadata("design:type", String)

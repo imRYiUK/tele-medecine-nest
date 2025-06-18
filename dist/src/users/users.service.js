@@ -22,7 +22,7 @@ let UsersService = class UsersService {
         if (requesterRole === "SUPER_ADMIN") {
             return true;
         }
-        if (requesterRole === "ADMIN" && targetRole !== "SUPER_ADMIN") {
+        if (requesterRole === "ADMINISTRATEUR" && targetRole !== "SUPER_ADMIN") {
             return true;
         }
         return false;

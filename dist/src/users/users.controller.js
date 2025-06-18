@@ -42,7 +42,7 @@ let UsersController = class UsersController {
         if (requesterRole === "SUPER_ADMIN") {
             return true;
         }
-        if (requesterRole === "ADMIN" && targetRole !== "SUPER_ADMIN") {
+        if (requesterRole === "ADMINISTRATEUR" && targetRole !== "SUPER_ADMIN") {
             return true;
         }
         return false;
@@ -100,7 +100,7 @@ let UsersController = class UsersController {
 exports.UsersController = UsersController;
 __decorate([
     (0, common_1.Post)(),
-    (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMIN"),
+    (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMINISTRATEUR"),
     (0, log_activity_decorator_1.LogActivity)({
         typeAction: 'CREATION_UTILISATEUR',
         description: (result) => `Création d'un nouvel utilisateur: ${result.email}`,
@@ -117,11 +117,7 @@ __decorate([
 ], UsersController.prototype, "create", null);
 __decorate([
     (0, common_1.Get)(),
-    (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMIN"),
-    (0, log_activity_decorator_1.LogActivity)({
-        typeAction: 'CONSULTATION_UTILISATEURS',
-        description: 'Consultation de la liste des utilisateurs',
-    }),
+    (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMINISTRATEUR"),
     (0, swagger_1.ApiOperation)({ summary: 'Get all users' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Returns all users', type: [user_dto_1.UserDto] }),
     __param(0, (0, common_1.Req)()),
@@ -131,11 +127,7 @@ __decorate([
 ], UsersController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)(':id'),
-    (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMIN"),
-    (0, log_activity_decorator_1.LogActivity)({
-        typeAction: 'CONSULTATION_UTILISATEUR',
-        description: (result) => `Consultation de l'utilisateur: ${result.email}`,
-    }),
+    (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMINISTRATEUR"),
     (0, swagger_1.ApiOperation)({ summary: 'Get a user by ID' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Returns the user', type: user_dto_1.UserDto }),
     (0, swagger_1.ApiResponse)({ status: 404, description: 'User not found' }),
@@ -147,7 +139,7 @@ __decorate([
 ], UsersController.prototype, "findOne", null);
 __decorate([
     (0, common_1.Put)(':id'),
-    (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMIN"),
+    (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMINISTRATEUR"),
     (0, log_activity_decorator_1.LogActivity)({
         typeAction: 'MODIFICATION_UTILISATEUR',
         description: (result) => `Modification de l'utilisateur: ${result.email}`,
@@ -165,7 +157,7 @@ __decorate([
 ], UsersController.prototype, "update", null);
 __decorate([
     (0, common_1.Delete)(':id'),
-    (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMIN"),
+    (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMINISTRATEUR"),
     (0, log_activity_decorator_1.LogActivity)({
         typeAction: 'SUPPRESSION_UTILISATEUR',
         description: (result) => `Suppression de l'utilisateur: ${result.email}`,
@@ -181,11 +173,7 @@ __decorate([
 ], UsersController.prototype, "remove", null);
 __decorate([
     (0, common_1.Get)('profile/me'),
-    (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMIN", "RADIOLOGUE", "MEDECIN", "RECEPTIONNISTE", "TECHNICIEN"),
-    (0, log_activity_decorator_1.LogActivity)({
-        typeAction: 'CONSULTATION_PROFIL',
-        description: 'Consultation du profil utilisateur',
-    }),
+    (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMINISTRATEUR", "RADIOLOGUE", "MEDECIN", "RECEPTIONNISTE", "TECHNICIEN"),
     (0, swagger_1.ApiOperation)({ summary: 'Get current user profile' }),
     (0, swagger_1.ApiResponse)({
         status: 200,
@@ -203,7 +191,7 @@ __decorate([
 ], UsersController.prototype, "getProfile", null);
 __decorate([
     (0, common_1.Put)('profile/me'),
-    (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMIN", "RADIOLOGUE", "MEDECIN", "RECEPTIONNISTE", "TECHNICIEN"),
+    (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMINISTRATEUR", "RADIOLOGUE", "MEDECIN", "RECEPTIONNISTE", "TECHNICIEN"),
     (0, log_activity_decorator_1.LogActivity)({
         typeAction: 'MODIFICATION_PROFIL',
         description: 'Modification du profil utilisateur',
