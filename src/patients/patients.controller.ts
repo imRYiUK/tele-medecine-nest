@@ -27,7 +27,7 @@ export class PatientsController {
   }
 
   @Post()
-  @Roles(UserRole.ADMINISTRATEUR, UserRole.PERSONNEL_ADMINISTRATIF, UserRole.MEDECIN)
+  @Roles(UserRole.ADMINISTRATEUR, UserRole.RECEPTIONNISTE, UserRole.MEDECIN)
   @LogActivity({
     typeAction: 'CREATION_PATIENT',
     description: (result) => `Création d'un nouveau patient: ${result.nom} ${result.prenom}`,
@@ -39,7 +39,7 @@ export class PatientsController {
   }
 
   @Get()
-  @Roles(UserRole.ADMINISTRATEUR, UserRole.PERSONNEL_ADMINISTRATIF, UserRole.MEDECIN, UserRole.RADIOLOGUE)
+  @Roles(UserRole.ADMINISTRATEUR, UserRole.RECEPTIONNISTE, UserRole.MEDECIN, UserRole.RADIOLOGUE)
   @ApiOperation({ summary: 'Récupérer la liste des patients avec pagination et filtrage' })
   @ApiResponse({ status: 200, description: 'Liste des patients récupérée avec succès' })
   findAll() {
@@ -47,7 +47,7 @@ export class PatientsController {
   }
 
   @Get(':id')
-  @Roles(UserRole.ADMINISTRATEUR, UserRole.PERSONNEL_ADMINISTRATIF, UserRole.MEDECIN, UserRole.RADIOLOGUE)
+  @Roles(UserRole.ADMINISTRATEUR, UserRole.RECEPTIONNISTE, UserRole.MEDECIN, UserRole.RADIOLOGUE)
   @ApiOperation({ summary: 'Récupérer un patient par son ID' })
   @ApiResponse({ status: 200, description: 'Patient récupéré avec succès' })
   @ApiResponse({ status: 404, description: 'Patient non trouvé' })
@@ -56,7 +56,7 @@ export class PatientsController {
   }
 
   @Patch(':id')
-  @Roles(UserRole.ADMINISTRATEUR, UserRole.PERSONNEL_ADMINISTRATIF, UserRole.MEDECIN)
+  @Roles(UserRole.ADMINISTRATEUR, UserRole.RECEPTIONNISTE, UserRole.MEDECIN)
   @LogActivity({
     typeAction: 'MODIFICATION_PATIENT',
     description: (result) => `Modification du patient: ${result.nom} ${result.prenom}`,

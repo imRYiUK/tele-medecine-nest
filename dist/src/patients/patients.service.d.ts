@@ -25,7 +25,6 @@ export declare class PatientsService {
         patientID: string;
         dateNaissance: Date;
         genre: string;
-        assuranceMaladie: string;
         groupeSanguin: string;
         createdBy: string;
     }>;
@@ -76,7 +75,6 @@ export declare class PatientsService {
         patientID: string;
         dateNaissance: Date;
         genre: string;
-        assuranceMaladie: string;
         groupeSanguin: string;
         createdBy: string;
     })[]>;
@@ -127,7 +125,6 @@ export declare class PatientsService {
         patientID: string;
         dateNaissance: Date;
         genre: string;
-        assuranceMaladie: string;
         groupeSanguin: string;
         createdBy: string;
     }>;
@@ -151,7 +148,6 @@ export declare class PatientsService {
         patientID: string;
         dateNaissance: Date;
         genre: string;
-        assuranceMaladie: string;
         groupeSanguin: string;
         createdBy: string;
     }>;

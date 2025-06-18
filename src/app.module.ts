@@ -12,6 +12,7 @@ import { PatientsModule } from './patients/patients.module';
 import { ExamenMedicalModule } from './examen-medical/examen-medical.module';
 import { ConsultationMedicaleModule } from './consultation-medicale/consultation-medicale.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { RendezVousModule } from './rendez-vous/rendez-vous.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     NotificationsModule,
     ExamenMedicalModule,
     ConsultationMedicaleModule,
+    RendezVousModule,
   ],
   controllers: [AppController],
   providers: [AppService],

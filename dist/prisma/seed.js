@@ -62,7 +62,6 @@ async function main() {
             adresse: '123 Rue Test, Dakar',
             telephone: '+221711111111',
             email: 'patient@example.com',
-            assuranceMaladie: 'ASN123456',
             groupeSanguin: 'O+',
             createdBy: adminUser.utilisateurID,
             createdAt: new Date(),

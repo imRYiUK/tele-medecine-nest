@@ -16,25 +16,25 @@ enum TypeEtablissement {
 }
 
 model Patient {
-  patientID        String   @id @default(uuid())
-  nom              String
-  prenom           String
-  dateNaissance    DateTime
-  genre            String
-  adresse          String
-  telephone        String
-  email            String?
-  assuranceMaladie String
-  groupeSanguin    String
-  createdBy        String
-  updatedAt        DateTime
-  createdAt        DateTime
+  patientID     String   @id @default(uuid())
+  nom           String
+  prenom        String
+  dateNaissance DateTime
+  genre         String
+  adresse       String
+  telephone     String
+  email         String?
+  groupeSanguin String
+  createdBy     String
+  updatedAt     DateTime
+  createdAt     DateTime
 
   // Relations
   dossierMedical DossierMedical?
   consultations  ConsultationMedicale[]
   examens        ExamenMedical[]
   creator        Utilisateur            @relation(fields: [createdBy], references: [utilisateurID])
+  RendezVous     RendezVous[]
 
   @@map("patients")
 }
@@ -153,7 +153,10 @@ model Utilisateur {
   DossierMedicalCreated DossierMedical[]
   Patient               Patient[]
   Notification          Notification[]
-  examensInvites        ExamenMedical[]       @relation("ExamensRadiologues")
+  examensInvites        ExamenMedical[]        @relation("ExamensRadiologues")
+  rendezVousMedecin     RendezVous[]           @relation("MedecinRendezVous")
+  rendezVousCrees       RendezVous[]           @relation("CreateurRendezVous")
+  HoraireMedecin        HoraireMedecin[]
 
   @@map("utilisateurs")
 }
@@ -249,4 +252,30 @@ model Notification {
   utilisateur    Utilisateur @relation(fields: [utilisateurID], references: [utilisateurID])
 
   @@index([utilisateurID])
+}
+
+model RendezVous {
+  rendezVousID String   @id @default(uuid())
+  dateHeure    DateTime
+  motif        String?
+  patientID    String
+  medecinID    String
+  createdByID  String
+  createdAt    DateTime @default(now())
+
+  // Relations
+  patient   Patient     @relation(fields: [patientID], references: [patientID])
+  medecin   Utilisateur @relation("MedecinRendezVous", fields: [medecinID], references: [utilisateurID])
+  createdBy Utilisateur @relation("CreateurRendezVous", fields: [createdByID], references: [utilisateurID])
+}
+
+model HoraireMedecin {
+  horaireID   String @id @default(uuid())
+  medecinID   String
+  jourSemaine Int // 0 = Dimanche, 1 = Lundi, ..., 6 = Samedi
+  heureDebut  String // Format 'HH:mm'
+  heureFin    String // Format 'HH:mm'
+
+  // Relations
+  medecin Utilisateur @relation(fields: [medecinID], references: [utilisateurID])
 }
