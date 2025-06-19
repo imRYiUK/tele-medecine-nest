@@ -38,4 +38,5 @@ export declare class UsersService {
         username: string;
         role: string;
     }>;
+    findMedecinsByEtablissement(etablissementID: string): Promise<UserDto[]>;
 }

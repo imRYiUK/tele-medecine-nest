@@ -96,6 +96,9 @@ let UsersController = class UsersController {
         const userId = this.getUserId(req);
         return this.usersService.updateProfile(userId, updateUserDto);
     }
+    async findMedecinsByEtablissement(etablissementID) {
+        return this.usersService.findMedecinsByEtablissement(etablissementID);
+    }
 };
 exports.UsersController = UsersController;
 __decorate([
@@ -212,6 +215,16 @@ __decorate([
     __metadata("design:paramtypes", [Object, user_dto_1.UpdateUserDto]),
     __metadata("design:returntype", Promise)
 ], UsersController.prototype, "updateProfile", null);
+__decorate([
+    (0, common_1.Get)('medecins/etablissement/:etablissementID'),
+    (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMINISTRATEUR", "RECEPTIONNISTE"),
+    (0, swagger_1.ApiOperation)({ summary: 'Get all medecins for a given etablissement' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Returns all medecins for the etablissement', type: [user_dto_1.UserDto] }),
+    __param(0, (0, common_1.Param)('etablissementID')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], UsersController.prototype, "findMedecinsByEtablissement", null);
 exports.UsersController = UsersController = __decorate([
     (0, swagger_1.ApiTags)('users'),
     (0, common_1.Controller)('users'),

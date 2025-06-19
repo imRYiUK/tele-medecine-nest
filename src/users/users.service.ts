@@ -210,4 +210,29 @@ export class UsersService {
 
     return updatedUser;
   }
+
+  async findMedecinsByEtablissement(etablissementID: string): Promise<UserDto[]> {
+    return this.prisma.utilisateur.findMany({
+      where: {
+        role: UserRole.MEDECIN,
+        etablissementID,
+      },
+      select: {
+        utilisateurID: true,
+        nom: true,
+        prenom: true,
+        email: true,
+        username: true,
+        telephone: true,
+        role: true,
+        estActif: true,
+        etablissement: {
+          select: {
+            etablissementID: true,
+            nom: true,
+          },
+        },
+      },
+    });
+  }
 }

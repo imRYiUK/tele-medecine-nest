@@ -164,4 +164,12 @@ export class UsersController {
     const userId = this.getUserId(req);
     return this.usersService.updateProfile(userId, updateUserDto);
   }
+
+  @Get('medecins/etablissement/:etablissementID')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMINISTRATEUR, UserRole.RECEPTIONNISTE)
+  @ApiOperation({ summary: 'Get all medecins for a given etablissement' })
+  @ApiResponse({ status: 200, description: 'Returns all medecins for the etablissement', type: [UserDto] })
+  async findMedecinsByEtablissement(@Param('etablissementID') etablissementID: string) {
+    return this.usersService.findMedecinsByEtablissement(etablissementID);
+  }
 }
