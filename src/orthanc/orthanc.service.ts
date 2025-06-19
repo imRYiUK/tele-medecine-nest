@@ -21,17 +21,38 @@ export class OrthancService {
     this.orthancPassword = this.configService.get<string>('ORTHANC_PASSWORD') || 'orthanc';
   }
 
-  private getAuthHeaders() {
+  /**
+   * Récupère la configuration Orthanc (url, login, password) pour l'utilisateur donné.
+   * Si l'établissement n'a pas de config, fallback sur la config globale.
+   */
+  private async getOrthancConfigForUser(userId: string): Promise<{ url: string; login: string; password: string }> {
+    // Récupérer l'utilisateur et son établissement avec les bons champs
+    const user = await this.prisma.utilisateur.findUnique({
+      where: { utilisateurID: userId },
+      select: {
+        utilisateurID: true,
+        etablissement: true,
+      },
+    });
+    const etab = user?.etablissement as any;
+    const url = etab?.orthancUrl || this.orthancUrl;
+    const login = etab?.orthancLogin || this.orthancUsername;
+    const password = etab?.orthancPassword || this.orthancPassword;
+    return { url, login, password };
+  }
+
+  private getAuthHeaders(login: string, password: string) {
     return {
-      Authorization: `Basic ${Buffer.from(`${this.orthancUsername}:${this.orthancPassword}`).toString('base64')}`,
+      Authorization: `Basic ${Buffer.from(`${login}:${password}`).toString('base64')}`,
     };
   }
 
   async getStudies(userId: string) {
+    const { url, login, password } = await this.getOrthancConfigForUser(userId);
     try {
       const response = await firstValueFrom(
-        this.httpService.get(`${this.orthancUrl}/studies`, {
-          headers: this.getAuthHeaders(),
+        this.httpService.get(`${url}/studies`, {
+          headers: this.getAuthHeaders(login, password),
         }),
       );
       return response.data;
@@ -44,10 +65,11 @@ export class OrthancService {
   }
 
   async getStudyDetails(studyId: string, userId: string) {
+    const { url, login, password } = await this.getOrthancConfigForUser(userId);
     try {
       const response = await firstValueFrom(
-        this.httpService.get(`${this.orthancUrl}/studies/${studyId}`, {
-          headers: this.getAuthHeaders(),
+        this.httpService.get(`${url}/studies/${studyId}`, {
+          headers: this.getAuthHeaders(login, password),
         }),
       );
       return response.data;
@@ -60,10 +82,11 @@ export class OrthancService {
   }
 
   async getSeries(studyId: string, userId: string) {
+    const { url, login, password } = await this.getOrthancConfigForUser(userId);
     try {
       const response = await firstValueFrom(
-        this.httpService.get(`${this.orthancUrl}/studies/${studyId}/series`, {
-          headers: this.getAuthHeaders(),
+        this.httpService.get(`${url}/studies/${studyId}/series`, {
+          headers: this.getAuthHeaders(login, password),
         }),
       );
       return response.data;
@@ -76,10 +99,11 @@ export class OrthancService {
   }
 
   async getSeriesDetails(seriesId: string, userId: string) {
+    const { url, login, password } = await this.getOrthancConfigForUser(userId);
     try {
       const response = await firstValueFrom(
-        this.httpService.get(`${this.orthancUrl}/series/${seriesId}`, {
-          headers: this.getAuthHeaders(),
+        this.httpService.get(`${url}/series/${seriesId}`, {
+          headers: this.getAuthHeaders(login, password),
         }),
       );
       return response.data;
@@ -92,10 +116,11 @@ export class OrthancService {
   }
 
   async getInstances(seriesId: string, userId: string) {
+    const { url, login, password } = await this.getOrthancConfigForUser(userId);
     try {
       const response = await firstValueFrom(
-        this.httpService.get(`${this.orthancUrl}/series/${seriesId}/instances`, {
-          headers: this.getAuthHeaders(),
+        this.httpService.get(`${url}/series/${seriesId}/instances`, {
+          headers: this.getAuthHeaders(login, password),
         }),
       );
       return response.data;
@@ -108,10 +133,11 @@ export class OrthancService {
   }
 
   async getInstanceDetails(instanceId: string, userId: string) {
+    const { url, login, password } = await this.getOrthancConfigForUser(userId);
     try {
       const response = await firstValueFrom(
-        this.httpService.get(`${this.orthancUrl}/instances/${instanceId}`, {
-          headers: this.getAuthHeaders(),
+        this.httpService.get(`${url}/instances/${instanceId}`, {
+          headers: this.getAuthHeaders(login, password),
         }),
       );
       return response.data;
@@ -124,10 +150,11 @@ export class OrthancService {
   }
 
   async getDicomFile(instanceId: string, userId: string) {
+    const { url, login, password } = await this.getOrthancConfigForUser(userId);
     try {
       const response = await firstValueFrom(
-        this.httpService.get(`${this.orthancUrl}/instances/${instanceId}/file`, {
-          headers: this.getAuthHeaders(),
+        this.httpService.get(`${url}/instances/${instanceId}/file`, {
+          headers: this.getAuthHeaders(login, password),
           responseType: 'stream',
         }),
       );
@@ -141,10 +168,11 @@ export class OrthancService {
   }
 
   async getInstancePreview(instanceId: string, userId: string, quality: number = 90) {
+    const { url, login, password } = await this.getOrthancConfigForUser(userId);
     try {
       const response = await firstValueFrom(
-        this.httpService.get(`${this.orthancUrl}/instances/${instanceId}/preview`, {
-          headers: this.getAuthHeaders(),
+        this.httpService.get(`${url}/instances/${instanceId}/preview`, {
+          headers: this.getAuthHeaders(login, password),
           params: { quality },
           responseType: 'arraybuffer',
         }),
@@ -159,11 +187,12 @@ export class OrthancService {
   }
 
   async uploadDicomFile(fileBuffer: Buffer, userId: string) {
+    const { url, login, password } = await this.getOrthancConfigForUser(userId);
     try {
       const response = await firstValueFrom(
-        this.httpService.post(`${this.orthancUrl}/instances`, fileBuffer, {
+        this.httpService.post(`${url}/instances`, fileBuffer, {
           headers: {
-            ...this.getAuthHeaders(),
+            ...this.getAuthHeaders(login, password),
             'Content-Type': 'application/dicom',
           },
         }),
@@ -178,13 +207,14 @@ export class OrthancService {
   }
 
   async findDicom(level: string, query: any, userId: string) {
+    const { url, login, password } = await this.getOrthancConfigForUser(userId);
     try {
       const response = await firstValueFrom(
-        this.httpService.post(`${this.orthancUrl}/tools/find`, {
+        this.httpService.post(`${url}/tools/find`, {
           Level: level,
           Query: query,
         }, {
-          headers: this.getAuthHeaders(),
+          headers: this.getAuthHeaders(login, password),
         }),
       );
       return response.data;
@@ -197,21 +227,22 @@ export class OrthancService {
   }
 
   async getWadoImage(instanceId: string, contentType: string, userId: string): Promise<{ data: Buffer; headers: Record<string, string> }> {
+    const { url, login, password } = await this.getOrthancConfigForUser(userId);
     try {
       const response = await firstValueFrom(
-        this.httpService.get(`${this.orthancUrl}/instances/${instanceId}/wado`, {
-          headers: this.getAuthHeaders(),
+        this.httpService.get(`${url}/instances/${instanceId}/wado`, {
+          headers: this.getAuthHeaders(login, password),
           params: { contentType },
           responseType: 'arraybuffer',
-        }),
+        })
       );
       return {
         data: response.data,
-        headers: response.headers as Record<string, string>,
+        headers: Object.fromEntries(Object.entries(response.headers).map(([k, v]) => [k, String(v)])),
       };
     } catch (error) {
       throw new HttpException(
-        'Erreur lors de la récupération de l\'image WADO',
+        "Erreur lors de la récupération de l'image WADO",
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

@@ -221,7 +221,8 @@ export class EtablissementsService {
   }
 
   private mapToDto(etablissement: Etablissement & { _count?: { utilisateurs: number } }): EtablissementDto {
-    const { _count, ...etablissementData } = etablissement;
+    const { _count, ...rest } = etablissement;
+    const { orthancLogin, orthancPassword, ...etablissementData } = rest as any;
     return {
       ...etablissementData,
       type: etablissementData.type,

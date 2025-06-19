@@ -174,6 +174,9 @@ model Etablissement {
   estActif        Boolean           @default(true)
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
+  orthancUrl      String?           // URL d'accès à l'instance Orthanc
+  orthancLogin    String?           // Login pour l'accès à Orthanc
+  orthancPassword String?           // Mot de passe pour l'accès à Orthanc
 
   // Relations
   utilisateurs     Utilisateur[]

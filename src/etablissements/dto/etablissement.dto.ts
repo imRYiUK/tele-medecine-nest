@@ -41,6 +41,21 @@ export class CreateEtablissementDto {
   @IsBoolean()
   @IsOptional()
   estActif?: boolean = true;
+
+  @ApiProperty({ description: "URL d'accès à l'instance Orthanc", required: false })
+  @IsString()
+  @IsOptional()
+  orthancUrl?: string;
+
+  @ApiProperty({ description: "Login pour l'accès à Orthanc", required: false })
+  @IsString()
+  @IsOptional()
+  orthancLogin?: string;
+
+  @ApiProperty({ description: "Mot de passe pour l'accès à Orthanc", required: false })
+  @IsString()
+  @IsOptional()
+  orthancPassword?: string;
 }
 
 export class UpdateEtablissementDto {
@@ -88,6 +103,21 @@ export class UpdateEtablissementDto {
   @IsBoolean()
   @IsOptional()
   estActif?: boolean;
+
+  @ApiProperty({ description: "URL d'accès à l'instance Orthanc", required: false })
+  @IsString()
+  @IsOptional()
+  orthancUrl?: string;
+
+  @ApiProperty({ description: "Login pour l'accès à Orthanc", required: false })
+  @IsString()
+  @IsOptional()
+  orthancLogin?: string;
+
+  @ApiProperty({ description: "Mot de passe pour l'accès à Orthanc", required: false })
+  @IsString()
+  @IsOptional()
+  orthancPassword?: string;
 }
 
 export class EtablissementDto {
@@ -126,4 +156,13 @@ export class EtablissementDto {
 
   @ApiProperty({ description: 'Date de dernière modification' })
   updatedAt: Date;
+
+  @ApiProperty({ description: "URL d'accès à l'instance Orthanc" })
+  orthancUrl?: string;
+
+  @ApiProperty({ description: "Login pour l'accès à Orthanc" })
+  orthancLogin?: string;
+
+  @ApiProperty({ description: "Mot de passe pour l'accès à Orthanc" })
+  orthancPassword?: string;
 } 
