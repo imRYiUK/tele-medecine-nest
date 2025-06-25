@@ -193,7 +193,8 @@ let EtablissementsService = class EtablissementsService {
         return etablissements.map(etablissement => this.mapToDto(etablissement));
     }
     mapToDto(etablissement) {
-        const { _count, ...etablissementData } = etablissement;
+        const { _count, ...rest } = etablissement;
+        const { orthancLogin, orthancPassword, ...etablissementData } = rest;
         return {
             ...etablissementData,
             type: etablissementData.type,

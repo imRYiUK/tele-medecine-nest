@@ -117,6 +117,18 @@ model TypeExamen {
   @@map("types_examens")
 }
 
+model ImageCollaboration {
+  id         String   @id @default(uuid())
+  imageID    String
+  inviterID  String
+  inviteeID  String
+  createdAt  DateTime @default(now())
+
+  image      ImageMedicale @relation(fields: [imageID], references: [imageID])
+  inviter    Utilisateur   @relation("Inviter", fields: [inviterID], references: [utilisateurID])
+  invitee    Utilisateur   @relation("Invitee", fields: [inviteeID], references: [utilisateurID])
+}
+
 model ImageMedicale {
   imageID           String   @id @default(uuid())
   examenID          String
@@ -126,6 +138,7 @@ model ImageMedicale {
   dateAcquisition   DateTime
   modalite          String
   description       String
+  collaborations    ImageCollaboration[]
 
   // Relations
   examen ExamenMedical @relation(fields: [examenID], references: [examenID])
@@ -144,6 +157,8 @@ model Utilisateur {
   role            String
   etablissementID String?
   estActif        Boolean @default(true)
+  invitedCollaborations   ImageCollaboration[] @relation("Invitee")
+  sentInvitations         ImageCollaboration[] @relation("Inviter")
 
   // Relations
   etablissement         Etablissement?         @relation(fields: [etablissementID], references: [etablissementID])

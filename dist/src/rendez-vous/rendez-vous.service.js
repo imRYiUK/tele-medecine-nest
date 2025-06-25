@@ -12,57 +12,80 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.RendezVousService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
+const rendez_vous_dto_1 = require("./dto/rendez-vous.dto");
 let RendezVousService = class RendezVousService {
     prisma;
     constructor(prisma) {
         this.prisma = prisma;
     }
     async create(data) {
+        let dateHeure = data.dateHeure;
+        if (typeof dateHeure === 'string') {
+            if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(dateHeure)) {
+                dateHeure += ':00';
+            }
+            dateHeure = new Date(dateHeure);
+        }
         const conflits = await this.prisma.rendezVous.findFirst({
             where: {
                 medecinID: data.medecinID,
-                dateHeure: data.dateHeure,
+                dateHeure: dateHeure,
             },
         });
         if (conflits) {
             throw new common_1.BadRequestException('Le médecin a déjà un rendez-vous à cette date/heure.');
         }
-        return this.prisma.rendezVous.create({ data });
+        const created = await this.prisma.rendezVous.create({
+            data: { ...data, dateHeure },
+            include: {
+                patient: { select: { patientID: true, nom: true, prenom: true } },
+                medecin: { select: { utilisateurID: true, nom: true, prenom: true } },
+            },
+        });
+        return new rendez_vous_dto_1.RendezVousDto(created);
     }
     async findAll() {
-        return this.prisma.rendezVous.findMany({
+        const results = await this.prisma.rendezVous.findMany({
             include: {
-                patient: { select: { nom: true, prenom: true } },
-                medecin: { select: { nom: true, prenom: true, email: true } },
-                createdBy: { select: { nom: true, prenom: true } },
+                patient: { select: { patientID: true, nom: true, prenom: true } },
+                medecin: { select: { utilisateurID: true, nom: true, prenom: true } },
             },
             orderBy: { dateHeure: 'asc' },
         });
+        return results.map(rdv => new rendez_vous_dto_1.RendezVousDto(rdv));
     }
     async findByMedecin(medecinID) {
-        return this.prisma.rendezVous.findMany({
+        const results = await this.prisma.rendezVous.findMany({
             where: { medecinID },
             include: {
-                patient: { select: { nom: true, prenom: true } },
+                patient: { select: { patientID: true, nom: true, prenom: true } },
             },
             orderBy: { dateHeure: 'asc' },
         });
+        return results.map(rdv => new rendez_vous_dto_1.RendezVousDto(rdv));
     }
     async findByPatient(patientID) {
-        return this.prisma.rendezVous.findMany({
+        const results = await this.prisma.rendezVous.findMany({
             where: { patientID },
             include: {
-                medecin: { select: { nom: true, prenom: true, email: true } },
+                medecin: { select: { utilisateurID: true, nom: true, prenom: true } },
             },
             orderBy: { dateHeure: 'asc' },
         });
+        return results.map(rdv => new rendez_vous_dto_1.RendezVousDto(rdv));
     }
     async update(id, data) {
         const rendezVous = await this.prisma.rendezVous.findUnique({ where: { rendezVousID: id } });
         if (!rendezVous)
             throw new common_1.NotFoundException('Rendez-vous non trouvé');
         const newMedecinID = data.medecinID ?? rendezVous.medecinID;
-        const newDateHeure = data.dateHeure ?? rendezVous.dateHeure;
+        let newDateHeure = data.dateHeure ?? rendezVous.dateHeure;
+        if (typeof newDateHeure === 'string') {
+            if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(newDateHeure)) {
+                newDateHeure += ':00';
+            }
+            newDateHeure = new Date(newDateHeure);
+        }
         const conflits = await this.prisma.rendezVous.findFirst({
             where: {
                 medecinID: newMedecinID,
@@ -73,10 +96,25 @@ let RendezVousService = class RendezVousService {
         if (conflits) {
             throw new common_1.BadRequestException('Le médecin a déjà un rendez-vous à cette date/heure.');
         }
-        return this.prisma.rendezVous.update({ where: { rendezVousID: id }, data });
+        const updated = await this.prisma.rendezVous.update({
+            where: { rendezVousID: id },
+            data: { ...data, dateHeure: newDateHeure },
+            include: {
+                patient: { select: { patientID: true, nom: true, prenom: true } },
+                medecin: { select: { utilisateurID: true, nom: true, prenom: true } },
+            },
+        });
+        return new rendez_vous_dto_1.RendezVousDto(updated);
     }
     async remove(id) {
-        return this.prisma.rendezVous.delete({ where: { rendezVousID: id } });
+        const deleted = await this.prisma.rendezVous.delete({
+            where: { rendezVousID: id },
+            include: {
+                patient: { select: { patientID: true, nom: true, prenom: true } },
+                medecin: { select: { utilisateurID: true, nom: true, prenom: true } },
+            },
+        });
+        return new rendez_vous_dto_1.RendezVousDto(deleted);
     }
 };
 exports.RendezVousService = RendezVousService;

@@ -9,6 +9,9 @@ export declare class CreateEtablissementDto {
     description?: string;
     siteWeb?: string;
     estActif?: boolean;
+    orthancUrl?: string;
+    orthancLogin?: string;
+    orthancPassword?: string;
 }
 export declare class UpdateEtablissementDto {
     nom?: string;
@@ -20,6 +23,9 @@ export declare class UpdateEtablissementDto {
     description?: string;
     siteWeb?: string;
     estActif?: boolean;
+    orthancUrl?: string;
+    orthancLogin?: string;
+    orthancPassword?: string;
 }
 export declare class EtablissementDto {
     etablissementID: string;
@@ -34,4 +40,7 @@ export declare class EtablissementDto {
     estActif: boolean;
     createdAt: Date;
     updatedAt: Date;
+    orthancUrl?: string;
+    orthancLogin?: string;
+    orthancPassword?: string;
 }

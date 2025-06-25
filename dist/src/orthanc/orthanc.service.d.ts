@@ -9,6 +9,7 @@ export declare class OrthancService {
     private readonly orthancUsername;
     private readonly orthancPassword;
     constructor(httpService: HttpService, configService: ConfigService, prisma: PrismaService);
+    private getOrthancConfigForUser;
     private getAuthHeaders;
     getStudies(userId: string): Promise<any>;
     getStudyDetails(studyId: string, userId: string): Promise<any>;

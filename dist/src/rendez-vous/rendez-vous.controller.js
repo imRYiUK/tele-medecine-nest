@@ -16,6 +16,7 @@ exports.RendezVousController = void 0;
 const common_1 = require("@nestjs/common");
 const rendez_vous_service_1 = require("./rendez-vous.service");
 const update_rendez_vous_dto_1 = require("./dto/update-rendez-vous.dto");
+const log_activity_decorator_1 = require("../common/decorators/log-activity.decorator");
 let RendezVousController = class RendezVousController {
     rendezVousService;
     constructor(rendezVousService) {
@@ -43,6 +44,10 @@ let RendezVousController = class RendezVousController {
 exports.RendezVousController = RendezVousController;
 __decorate([
     (0, common_1.Post)(),
+    (0, log_activity_decorator_1.LogActivity)({
+        typeAction: 'RENDEZVOUS_CREATE',
+        description: (result) => `Création d'un rendez-vous (ID: ${result?.rendezVousID || result?.id || 'N/A'})`
+    }),
     __param(0, (0, common_1.Body)()),
     __param(1, (0, common_1.Req)()),
     __metadata("design:type", Function),
@@ -71,6 +76,10 @@ __decorate([
 ], RendezVousController.prototype, "findByPatient", null);
 __decorate([
     (0, common_1.Put)(':id'),
+    (0, log_activity_decorator_1.LogActivity)({
+        typeAction: 'RENDEZVOUS_UPDATE',
+        description: (result) => `Modification du rendez-vous (ID: ${result?.rendezVousID || result?.id || 'N/A'})`
+    }),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -79,6 +88,10 @@ __decorate([
 ], RendezVousController.prototype, "update", null);
 __decorate([
     (0, common_1.Delete)(':id'),
+    (0, log_activity_decorator_1.LogActivity)({
+        typeAction: 'RENDEZVOUS_DELETE',
+        description: (result) => `Suppression du rendez-vous (ID: ${result?.rendezVousID || result?.id || 'N/A'})`
+    }),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
