@@ -21,4 +21,18 @@ export declare class ImageCollaborationService {
         password: string;
         role: string;
     }[]>;
+    sendMessage(imageID: string, senderID: string, content: string): Promise<{
+        content: string;
+        imageID: string;
+        messageID: string;
+        senderID: string;
+        timestamp: Date;
+    }>;
+    getMessages(imageID: string): Promise<{
+        content: string;
+        imageID: string;
+        messageID: string;
+        senderID: string;
+        timestamp: Date;
+    }[]>;
 }

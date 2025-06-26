@@ -33,7 +33,13 @@ export class RendezVousDto {
   rendezVousID: string;
 
   @ApiProperty()
-  dateHeure: string; // ISO string
+  date: string; // ISO date string (YYYY-MM-DD)
+
+  @ApiProperty()
+  debutTime: string; // Time string (HH:mm)
+
+  @ApiProperty()
+  endTime: string; // Time string (HH:mm)
 
   @ApiProperty()
   motif?: string;
@@ -46,9 +52,22 @@ export class RendezVousDto {
 
   constructor(entity: any) {
     this.rendezVousID = entity.rendezVousID;
-    this.dateHeure = entity.dateHeure instanceof Date
-      ? entity.dateHeure.toISOString()
-      : String(entity.dateHeure);
+    // Handle if entity has date, debutTime, endTime directly
+    if (entity.date && entity.debutTime && entity.endTime) {
+      this.date = entity.date;
+      this.debutTime = entity.debutTime;
+      this.endTime = entity.endTime;
+    } else if (entity.dateHeure) {
+      // If entity has a single dateHeure (Date or ISO string), split it
+      const dateObj = entity.dateHeure instanceof Date ? entity.dateHeure : new Date(entity.dateHeure);
+      this.date = dateObj.toISOString().slice(0, 10); // YYYY-MM-DD
+      this.debutTime = dateObj.toISOString().slice(11, 16); // HH:mm
+      this.endTime = entity.endTime || this.debutTime; // fallback if endTime not present
+    } else {
+      this.date = '';
+      this.debutTime = '';
+      this.endTime = '';
+    }
     this.motif = entity.motif;
     this.patient = entity.patient
       ? new PatientInfoDto(entity.patient)

@@ -1,5 +1,7 @@
 export declare class UpdateRendezVousDto {
-    dateHeure?: Date;
+    date?: string;
+    debutTime?: string;
+    endTime?: string;
     motif?: string;
     medecinID?: string;
 }

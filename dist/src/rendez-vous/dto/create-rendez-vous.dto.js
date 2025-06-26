@@ -2,7 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CreateRendezVousDto = void 0;
 class CreateRendezVousDto {
-    dateHeure;
+    date;
+    debutTime;
+    endTime;
     motif;
     patientID;
     medecinID;

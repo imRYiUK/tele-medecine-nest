@@ -2,7 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UpdateRendezVousDto = void 0;
 class UpdateRendezVousDto {
-    dateHeure;
+    date;
+    debutTime;
+    endTime;
     motif;
     medecinID;
 }

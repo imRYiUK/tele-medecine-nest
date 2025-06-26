@@ -59,15 +59,30 @@ __decorate([
 ], MedecinInfoDto.prototype, "prenom", void 0);
 class RendezVousDto {
     rendezVousID;
-    dateHeure;
+    date;
+    debutTime;
+    endTime;
     motif;
     patient;
     medecin;
     constructor(entity) {
         this.rendezVousID = entity.rendezVousID;
-        this.dateHeure = entity.dateHeure instanceof Date
-            ? entity.dateHeure.toISOString()
-            : String(entity.dateHeure);
+        if (entity.date && entity.debutTime && entity.endTime) {
+            this.date = entity.date;
+            this.debutTime = entity.debutTime;
+            this.endTime = entity.endTime;
+        }
+        else if (entity.dateHeure) {
+            const dateObj = entity.dateHeure instanceof Date ? entity.dateHeure : new Date(entity.dateHeure);
+            this.date = dateObj.toISOString().slice(0, 10);
+            this.debutTime = dateObj.toISOString().slice(11, 16);
+            this.endTime = entity.endTime || this.debutTime;
+        }
+        else {
+            this.date = '';
+            this.debutTime = '';
+            this.endTime = '';
+        }
         this.motif = entity.motif;
         this.patient = entity.patient
             ? new PatientInfoDto(entity.patient)
@@ -85,7 +100,15 @@ __decorate([
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
-], RendezVousDto.prototype, "dateHeure", void 0);
+], RendezVousDto.prototype, "date", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], RendezVousDto.prototype, "debutTime", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], RendezVousDto.prototype, "endTime", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)

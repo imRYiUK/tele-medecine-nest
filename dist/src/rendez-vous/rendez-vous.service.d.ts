@@ -4,7 +4,9 @@ export declare class RendezVousService {
     private prisma;
     constructor(prisma: PrismaService);
     create(data: {
-        dateHeure: string | Date;
+        date: string;
+        debutTime: string;
+        endTime: string;
         motif?: string;
         patientID: string;
         medecinID: string;
@@ -14,7 +16,9 @@ export declare class RendezVousService {
     findByMedecin(medecinID: string): Promise<RendezVousDto[]>;
     findByPatient(patientID: string): Promise<RendezVousDto[]>;
     update(id: string, data: Partial<{
-        dateHeure: string | Date;
+        date: string;
+        debutTime: string;
+        endTime: string;
         motif: string;
         medecinID: string;
     }>): Promise<RendezVousDto>;

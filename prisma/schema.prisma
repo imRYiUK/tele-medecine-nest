@@ -139,6 +139,7 @@ model ImageMedicale {
   modalite          String
   description       String
   collaborations    ImageCollaboration[]
+  chatMessages      ChatMessage[]
 
   // Relations
   examen ExamenMedical @relation(fields: [examenID], references: [examenID])
@@ -159,6 +160,7 @@ model Utilisateur {
   estActif        Boolean @default(true)
   invitedCollaborations   ImageCollaboration[] @relation("Invitee")
   sentInvitations         ImageCollaboration[] @relation("Inviter")
+  chatMessages           ChatMessage[]
 
   // Relations
   etablissement         Etablissement?         @relation(fields: [etablissementID], references: [etablissementID])
@@ -274,7 +276,9 @@ model Notification {
 
 model RendezVous {
   rendezVousID String   @id @default(uuid())
-  dateHeure    DateTime
+  date         String
+  debutTime    String
+  endTime      String
   motif        String?
   patientID    String
   medecinID    String
@@ -296,4 +300,15 @@ model HoraireMedecin {
 
   // Relations
   medecin Utilisateur @relation(fields: [medecinID], references: [utilisateurID])
+}
+
+model ChatMessage {
+  messageID   String   @id @default(uuid())
+  imageID     String
+  senderID    String
+  content     String
+  timestamp   DateTime @default(now())
+
+  image       ImageMedicale @relation(fields: [imageID], references: [imageID])
+  sender      Utilisateur   @relation(fields: [senderID], references: [utilisateurID])
 }

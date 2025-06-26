@@ -42,4 +42,30 @@ export class ImageCollaborationService {
     });
     return collaborations.map((c) => c.invitee);
   }
+
+  async sendMessage(imageID: string, senderID: string, content: string) {
+    // Check if sender is a collaborator (inviter or invitee) on this image
+    const collaborations = await this.prisma.imageCollaboration.findMany({
+      where: { imageID },
+    });
+    const isCollaborator = collaborations.some(
+      (c) => c.inviterID === senderID || c.inviteeID === senderID
+    );
+    if (!isCollaborator) throw new ForbiddenException('You are not a collaborator on this image');
+    // Create chat message
+    return this.prisma.chatMessage.create({
+      data: {
+        imageID,
+        senderID,
+        content,
+      },
+    });
+  }
+
+  async getMessages(imageID: string) {
+    return this.prisma.chatMessage.findMany({
+      where: { imageID },
+      orderBy: { timestamp: 'asc' },
+    });
+  }
 } 

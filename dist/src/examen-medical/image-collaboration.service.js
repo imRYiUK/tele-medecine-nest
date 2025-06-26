@@ -49,6 +49,27 @@ let ImageCollaborationService = class ImageCollaborationService {
         });
         return collaborations.map((c) => c.invitee);
     }
+    async sendMessage(imageID, senderID, content) {
+        const collaborations = await this.prisma.imageCollaboration.findMany({
+            where: { imageID },
+        });
+        const isCollaborator = collaborations.some((c) => c.inviterID === senderID || c.inviteeID === senderID);
+        if (!isCollaborator)
+            throw new common_1.ForbiddenException('You are not a collaborator on this image');
+        return this.prisma.chatMessage.create({
+            data: {
+                imageID,
+                senderID,
+                content,
+            },
+        });
+    }
+    async getMessages(imageID) {
+        return this.prisma.chatMessage.findMany({
+            where: { imageID },
+            orderBy: { timestamp: 'asc' },
+        });
+    }
 };
 exports.ImageCollaborationService = ImageCollaborationService;
 exports.ImageCollaborationService = ImageCollaborationService = __decorate([

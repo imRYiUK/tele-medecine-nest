@@ -1,5 +1,7 @@
 export declare class CreateRendezVousDto {
-    dateHeure: Date;
+    date: string;
+    debutTime: string;
+    endTime: string;
     motif?: string;
     patientID: string;
     medecinID: string;

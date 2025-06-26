@@ -8,34 +8,30 @@ export class RendezVousService {
   constructor(private prisma: PrismaService) {}
 
   async create(data: {
-    dateHeure: string | Date;
+    date: string;
+    debutTime: string;
+    endTime: string;
     motif?: string;
     patientID: string;
     medecinID: string;
     createdByID: string;
   }) {
-    // Correction du format dateHeure
-    let dateHeure = data.dateHeure;
-    if (typeof dateHeure === 'string') {
-      if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(dateHeure)) {
-        dateHeure += ':00';
-      }
-      dateHeure = new Date(dateHeure);
-    }
-    // Vérifier la disponibilité du médecin
+    // Vérifier la disponibilité du médecin pour le créneau
     const conflits = await this.prisma.rendezVous.findFirst({
       where: {
         medecinID: data.medecinID,
-        dateHeure: dateHeure,
+        date: data.date,
+        AND: [
+          { debutTime: { lt: data.endTime } },
+          { endTime: { gt: data.debutTime } },
+        ],
       },
     });
     if (conflits) {
-      throw new BadRequestException('Le médecin a déjà un rendez-vous à cette date/heure.');
+      throw new BadRequestException('Le médecin a déjà un rendez-vous à ce créneau.');
     }
-    // (Optionnel) Vérifier que la date/heure est dans les horaires du médecin
-    // ...
     const created = await this.prisma.rendezVous.create({
-      data: { ...data, dateHeure },
+      data,
       include: {
         patient: { select: { patientID: true, nom: true, prenom: true } },
         medecin: { select: { utilisateurID: true, nom: true, prenom: true } },
@@ -49,9 +45,11 @@ export class RendezVousService {
       include: {
         patient: { select: { patientID: true, nom: true, prenom: true } },
         medecin: { select: { utilisateurID: true, nom: true, prenom: true } },
-        // createdBy: { select: { nom: true, prenom: true } },
       },
-      orderBy: { dateHeure: 'asc' },
+      orderBy: [
+        { date: 'asc' as const },
+        { debutTime: 'asc' as const },
+      ],
     });
     return results.map(rdv => new RendezVousDto(rdv));
   }
@@ -62,7 +60,10 @@ export class RendezVousService {
       include: {
         patient: { select: { patientID: true, nom: true, prenom: true } },
       },
-      orderBy: { dateHeure: 'asc' },
+      orderBy: [
+        { date: 'asc' as const },
+        { debutTime: 'asc' as const },
+      ],
     });
     return results.map(rdv => new RendezVousDto(rdv));
   }
@@ -73,37 +74,45 @@ export class RendezVousService {
       include: {
         medecin: { select: { utilisateurID: true, nom: true, prenom: true } },
       },
-      orderBy: { dateHeure: 'asc' },
+      orderBy: [
+        { date: 'asc' as const },
+        { debutTime: 'asc' as const },
+      ],
     });
     return results.map(rdv => new RendezVousDto(rdv));
   }
 
-  async update(id: string, data: Partial<{ dateHeure: string | Date; motif: string; medecinID: string }>) {
+  async update(id: string, data: Partial<{ date: string; debutTime: string; endTime: string; motif: string; medecinID: string }>) {
     const rendezVous = await this.prisma.rendezVous.findUnique({ where: { rendezVousID: id } });
     if (!rendezVous) throw new NotFoundException('Rendez-vous non trouvé');
-    // Déterminer le nouveau medecinID et la nouvelle dateHeure
     const newMedecinID = data.medecinID ?? rendezVous.medecinID;
-    let newDateHeure = data.dateHeure ?? rendezVous.dateHeure;
-    if (typeof newDateHeure === 'string') {
-      if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(newDateHeure)) {
-        newDateHeure += ':00';
-      }
-      newDateHeure = new Date(newDateHeure);
-    }
-    // Vérifier les conflits pour le nouveau médecin à la nouvelle date/heure
+    const newDate = data.date ?? rendezVous.date;
+    const newDebutTime = data.debutTime ?? rendezVous.debutTime;
+    const newEndTime = data.endTime ?? rendezVous.endTime;
+    // Vérifier les conflits pour le nouveau médecin à la nouvelle date/créneau
     const conflits = await this.prisma.rendezVous.findFirst({
       where: {
         medecinID: newMedecinID,
-        dateHeure: newDateHeure,
+        date: newDate,
+        AND: [
+          { debutTime: { lt: newEndTime } },
+          { endTime: { gt: newDebutTime } },
+        ],
         NOT: { rendezVousID: id },
       },
     });
     if (conflits) {
-      throw new BadRequestException('Le médecin a déjà un rendez-vous à cette date/heure.');
+      throw new BadRequestException('Le médecin a déjà un rendez-vous à ce créneau.');
     }
     const updated = await this.prisma.rendezVous.update({
       where: { rendezVousID: id },
-      data: { ...data, dateHeure: newDateHeure },
+      data: {
+        ...data,
+        date: newDate,
+        debutTime: newDebutTime,
+        endTime: newEndTime,
+        medecinID: newMedecinID,
+      },
       include: {
         patient: { select: { patientID: true, nom: true, prenom: true } },
         medecin: { select: { utilisateurID: true, nom: true, prenom: true } },

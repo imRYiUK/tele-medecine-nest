@@ -12,7 +12,9 @@ export declare class MedecinInfoDto {
 }
 export declare class RendezVousDto {
     rendezVousID: string;
-    dateHeure: string;
+    date: string;
+    debutTime: string;
+    endTime: string;
     motif?: string;
     patient?: PatientInfoDto;
     medecin?: MedecinInfoDto;
