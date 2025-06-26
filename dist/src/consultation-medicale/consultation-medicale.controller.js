@@ -26,7 +26,7 @@ let ConsultationMedicaleController = class ConsultationMedicaleController {
         this.consultationMedicaleService = consultationMedicaleService;
     }
     create(createConsultationMedicaleDto, req) {
-        return this.consultationMedicaleService.create(createConsultationMedicaleDto, req.user.userId);
+        return this.consultationMedicaleService.create(createConsultationMedicaleDto);
     }
     findAll() {
         return this.consultationMedicaleService.findAll();
@@ -110,7 +110,7 @@ __decorate([
 ], ConsultationMedicaleController.prototype, "findByDossier", null);
 __decorate([
     (0, common_1.Get)('medecin/:medecinId'),
-    (0, roles_decorator_1.Roles)("ADMINISTRATEUR", "SUPER_ADMIN"),
+    (0, roles_decorator_1.Roles)("ADMINISTRATEUR", "SUPER_ADMIN", "MEDECIN"),
     __param(0, (0, common_1.Param)('medecinId')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),

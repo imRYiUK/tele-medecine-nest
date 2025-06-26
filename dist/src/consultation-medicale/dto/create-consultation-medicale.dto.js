@@ -21,7 +21,7 @@ class CreatePrescriptionDto {
 }
 __decorate([
     (0, swagger_1.ApiProperty)({ description: 'ID du médicament' }),
-    (0, class_validator_1.IsUUID)(),
+    (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], CreatePrescriptionDto.prototype, "medicamentID", void 0);
 __decorate([
@@ -51,7 +51,7 @@ __decorate([
 ], CreateOrdonnanceDto.prototype, "prescriptions", void 0);
 class CreateConsultationMedicaleDto {
     dossierID;
-    patientID;
+    medecinID;
     dateConsultation;
     motif;
     diagnostics;
@@ -68,10 +68,10 @@ __decorate([
     __metadata("design:type", String)
 ], CreateConsultationMedicaleDto.prototype, "dossierID", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: 'ID du patient' }),
+    (0, swagger_1.ApiProperty)({ description: 'ID du médecin' }),
     (0, class_validator_1.IsUUID)(),
     __metadata("design:type", String)
-], CreateConsultationMedicaleDto.prototype, "patientID", void 0);
+], CreateConsultationMedicaleDto.prototype, "medecinID", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({ description: 'Date de la consultation' }),
     (0, class_validator_1.IsDate)(),

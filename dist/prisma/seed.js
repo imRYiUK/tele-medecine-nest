@@ -96,7 +96,6 @@ async function main() {
         create: {
             consultationID: 'test-consultation-id',
             dossierID: dossierMedical.dossierID,
-            patientID: patient.patientID,
             medecinID: medecinUser.utilisateurID,
             dateConsultation: new Date(),
             motif: 'Douleur thoracique',
@@ -131,9 +130,6 @@ async function main() {
         create: {
             medicamentID: 'test-medicament-id',
             nom: 'Amoxicilline',
-            dosage: '500mg',
-            forme: 'Comprimé',
-            description: 'Antibiotique à large spectre'
         },
     });
     const ordonnance = await prisma.ordonnance.upsert({

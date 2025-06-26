@@ -15,7 +15,7 @@ export class ConsultationMedicaleController {
   @Post()
   @Roles(UserRole.MEDECIN)
   create(@Body() createConsultationMedicaleDto: CreateConsultationMedicaleDto, @Request() req) {
-    return this.consultationMedicaleService.create(createConsultationMedicaleDto, req.user.userId);
+    return this.consultationMedicaleService.create(createConsultationMedicaleDto);
   }
 
   @Get()
@@ -58,7 +58,7 @@ export class ConsultationMedicaleController {
   }
 
   @Get('medecin/:medecinId')
-  @Roles(UserRole.ADMINISTRATEUR, UserRole.SUPER_ADMIN)
+  @Roles(UserRole.ADMINISTRATEUR, UserRole.SUPER_ADMIN, UserRole.MEDECIN)
   findByMedecin(@Param('medecinId') medecinId: string) {
     return this.consultationMedicaleService.findByMedecin(medecinId);
   }

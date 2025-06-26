@@ -36,7 +36,6 @@ export class PatientsService {
     return this.prisma.patient.findMany({
       include: {
         dossierMedical: true,
-        consultations: true,
         examens: true,
       },
     });
@@ -47,7 +46,6 @@ export class PatientsService {
       where: { patientID },
       include: {
         dossierMedical: true,
-        consultations: true,
         examens: true,
       },
     });
