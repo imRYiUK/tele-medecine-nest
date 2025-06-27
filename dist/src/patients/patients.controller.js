@@ -129,7 +129,7 @@ __decorate([
 ], PatientsController.prototype, "remove", null);
 __decorate([
     (0, common_1.Post)(':id/medical-record'),
-    (0, roles_decorator_1.Roles)('ADMINISTRATEUR', 'MEDECIN'),
+    (0, roles_decorator_1.Roles)('ADMINISTRATEUR', 'MEDECIN', 'RADIOLOGUE'),
     (0, log_activity_decorator_1.LogActivity)({
         typeAction: 'CREATION_DOSSIER_MEDICAL',
         description: 'Création d\'un dossier médical pour un patient',
@@ -143,7 +143,7 @@ __decorate([
 ], PatientsController.prototype, "createMedicalRecord", null);
 __decorate([
     (0, common_1.Get)(':id/medical-record'),
-    (0, roles_decorator_1.Roles)('ADMINISTRATEUR', 'MEDECIN'),
+    (0, roles_decorator_1.Roles)('ADMINISTRATEUR', 'MEDECIN', 'RADIOLOGUE'),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -151,7 +151,7 @@ __decorate([
 ], PatientsController.prototype, "getMedicalRecord", null);
 __decorate([
     (0, common_1.Patch)(':id/medical-record'),
-    (0, roles_decorator_1.Roles)('ADMINISTRATEUR', 'MEDECIN'),
+    (0, roles_decorator_1.Roles)('ADMINISTRATEUR', 'MEDECIN', 'RADIOLOGUE'),
     (0, log_activity_decorator_1.LogActivity)({
         typeAction: 'MODIFICATION_DOSSIER_MEDICAL',
         description: 'Modification d\'un dossier médical',

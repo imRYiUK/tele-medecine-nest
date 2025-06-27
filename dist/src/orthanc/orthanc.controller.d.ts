@@ -79,6 +79,7 @@ export declare class OrthancController {
         data: {
             description: string;
             examenID: string;
+            url: string | null;
             imageID: string;
             studyInstanceUID: string;
             seriesInstanceUID: string;

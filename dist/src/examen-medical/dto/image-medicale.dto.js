@@ -20,38 +20,48 @@ class ImageMedicaleDto {
     dateAcquisition;
     modalite;
     description;
+    url;
+    orthancInstanceId;
 }
 exports.ImageMedicaleDto = ImageMedicaleDto;
 __decorate([
-    (0, swagger_1.ApiProperty)(),
+    (0, swagger_1.ApiProperty)({ description: 'Identifiant unique de l\'image médicale' }),
     __metadata("design:type", String)
 ], ImageMedicaleDto.prototype, "imageID", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)(),
+    (0, swagger_1.ApiProperty)({ description: 'ID de l\'examen médical auquel cette image appartient' }),
     __metadata("design:type", String)
 ], ImageMedicaleDto.prototype, "examenID", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)(),
+    (0, swagger_1.ApiProperty)({ description: 'UID de l\'étude DICOM' }),
     __metadata("design:type", String)
 ], ImageMedicaleDto.prototype, "studyInstanceUID", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)(),
+    (0, swagger_1.ApiProperty)({ description: 'UID de la série DICOM' }),
     __metadata("design:type", String)
 ], ImageMedicaleDto.prototype, "seriesInstanceUID", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)(),
+    (0, swagger_1.ApiProperty)({ description: 'UID de l\'instance DICOM' }),
     __metadata("design:type", String)
 ], ImageMedicaleDto.prototype, "sopInstanceUID", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)(),
+    (0, swagger_1.ApiProperty)({ description: 'Date d\'acquisition de l\'image' }),
     __metadata("design:type", Date)
 ], ImageMedicaleDto.prototype, "dateAcquisition", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)(),
+    (0, swagger_1.ApiProperty)({ description: 'Modalité d\'imagerie (ex: CT, MRI, X-Ray, Ultrasound)' }),
     __metadata("design:type", String)
 ], ImageMedicaleDto.prototype, "modalite", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)(),
+    (0, swagger_1.ApiProperty)({ description: 'Description détaillée de l\'image et de la zone examinée' }),
     __metadata("design:type", String)
 ], ImageMedicaleDto.prototype, "description", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: 'URL d\'accès à l\'image (WADO, preview, etc.)', required: false }),
+    __metadata("design:type", Object)
+], ImageMedicaleDto.prototype, "url", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: 'ID de l\'instance Orthanc pour l\'accès aux previews', required: false }),
+    __metadata("design:type", Object)
+], ImageMedicaleDto.prototype, "orthancInstanceId", void 0);
 //# sourceMappingURL=image-medicale.dto.js.map

@@ -1,7 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateExamenMedicalDto } from './dto/create-examen-medical.dto';
-import { UpdateExamenMedicalDto } from './dto/update-examen-medical.dto';
+import { 
+  CreateExamenMedicalDto, 
+  UpdateExamenMedicalDto,
+  ExamenMedicalResponseDto,
+  ExamenMedicalListDto,
+  CreateImageMedicaleDto,
+  UpdateImageMedicaleDto,
+  ImageMedicaleDto
+} from './dto';
 import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
@@ -12,9 +19,15 @@ export class ExamenMedicalService {
   ) {}
 
   async create(createExamenMedicalDto: CreateExamenMedicalDto, demandeParID: string) {
+    // Ensure dossierID is provided since it's required in the database
+    if (!createExamenMedicalDto.dossierID) {
+      throw new Error('dossierID est requis pour créer un examen médical');
+    }
+
     const examen = await this.prisma.examenMedical.create({
       data: {
         ...createExamenMedicalDto,
+        dateExamen: new Date(createExamenMedicalDto.dateExamen),
         demandeParID,
       },
       include: {
@@ -48,27 +61,72 @@ export class ExamenMedicalService {
     return examen;
   }
 
-  async findAll() {
-    return this.prisma.examenMedical.findMany({
-      include: {
-        patient: {
-          select: {
-            nom: true,
-            prenom: true,
-            dateNaissance: true,
-          },
+  async findAll(status?: string, category?: string, search?: string) {
+    const where: any = {};
+
+    // Filtre par statut
+    if (status && status !== 'TOUS') {
+      if (status === 'EN_ATTENTE') {
+        where.estAnalyse = false;
+      } else if (status === 'EN_COURS') {
+        where.estAnalyse = false;
+        where.radiologues = {
+          some: {}
+        };
+      } else if (status === 'TERMINE') {
+        where.estAnalyse = true;
+      } else if (status === 'URGENT') {
+        where.description = {
+          contains: 'urgent'
+        };
+      }
+    }
+
+    // Filtre par catégorie
+    if (category && category !== 'TOUS') {
+      where.typeExamen = {
+        categorie: category
+      };
+    }
+
+    // Filtre par recherche
+    if (search) {
+      where.OR = [
+        {
+          patient: {
+            OR: [
+              { nom: { contains: search } },
+              { prenom: { contains: search } }
+            ]
+          }
         },
-        typeExamen: true,
-        demandePar: {
-          select: {
-            nom: true,
-            prenom: true,
-            role: true,
-          },
+        {
+          typeExamen: {
+            nomType: { contains: search }
+          }
         },
-        radiologues: {
-          select: { utilisateurID: true, nom: true, prenom: true, email: true }
+        {
+          demandePar: {
+            OR: [
+              { nom: { contains: search } },
+              { prenom: { contains: search } }
+            ]
+          }
+        },
+        {
+          description: { contains: search }
         }
+      ];
+    }
+
+    return this.prisma.examenMedical.findMany({
+      where,
+      include: {
+        patient: true,
+        typeExamen: true,
+        demandePar: true,
+        images: true,
+        radiologues: true,
       },
       orderBy: {
         dateExamen: 'desc',
@@ -112,9 +170,15 @@ export class ExamenMedicalService {
   async update(examenID: string, updateExamenMedicalDto: UpdateExamenMedicalDto) {
     const examen = await this.findOne(examenID);
 
+    // Convert dateExamen string to Date if provided
+    const updateData: any = { ...updateExamenMedicalDto };
+    if (updateData.dateExamen) {
+      updateData.dateExamen = new Date(updateData.dateExamen);
+    }
+
     const updatedExamen = await this.prisma.examenMedical.update({
       where: { examenID },
-      data: updateExamenMedicalDto,
+      data: updateData,
       include: {
         patient: {
           select: {
@@ -226,5 +290,292 @@ export class ExamenMedicalService {
         }
       }
     });
+  }
+
+  async getRadiologistStats(radiologueID: string) {
+    const [
+      examensEnAttente,
+      examensEnCours,
+      examensTermines,
+      examensUrgents
+    ] = await Promise.all([
+      this.prisma.examenMedical.count({
+        where: {
+          estAnalyse: false,
+          radiologues: {
+            none: {}
+          }
+        }
+      }),
+      this.prisma.examenMedical.count({
+        where: {
+          estAnalyse: false,
+          radiologues: {
+            some: {}
+          }
+        }
+      }),
+      this.prisma.examenMedical.count({
+        where: {
+          estAnalyse: true
+        }
+      }),
+      this.prisma.examenMedical.count({
+        where: {
+          OR: [
+            { description: { contains: 'urgent' } },
+            { description: { contains: 'critique' } }
+          ]
+        }
+      })
+    ]);
+
+    return {
+      examensEnAttente,
+      examensEnCours,
+      examensTermines,
+      examensUrgents
+    };
+  }
+
+  async getRecentExams(radiologueID: string) {
+    return this.prisma.examenMedical.findMany({
+      where: {
+        OR: [
+          { radiologues: { some: { utilisateurID: radiologueID } } },
+          { estAnalyse: false }
+        ]
+      },
+      include: {
+        patient: true,
+        typeExamen: true,
+        demandePar: true,
+        images: true,
+        radiologues: true,
+      },
+      orderBy: {
+        dateExamen: 'desc',
+      },
+      take: 10,
+    });
+  }
+
+  async markAsAnalyzed(examenID: string, resultat: string) {
+    return this.prisma.examenMedical.update({
+      where: { examenID },
+      data: {
+        estAnalyse: true,
+        resultat,
+      },
+      include: {
+        patient: true,
+        typeExamen: true,
+        demandePar: true,
+        images: true,
+        radiologues: true,
+      },
+    });
+  }
+
+  async getTypeExamens() {
+    return this.prisma.typeExamen.findMany({
+      orderBy: {
+        nomType: 'asc',
+      },
+    });
+  }
+
+  // Image Management Methods
+  async createImage(createImageDto: CreateImageMedicaleDto): Promise<ImageMedicaleDto> {
+    // Verify that the exam exists
+    const exam = await this.prisma.examenMedical.findUnique({
+      where: { examenID: createImageDto.examenID },
+    });
+
+    if (!exam) {
+      throw new NotFoundException(`Examen médical avec l'ID ${createImageDto.examenID} non trouvé`);
+    }
+
+    // Auto-generate a default WADO/preview URL if not provided
+    let url = createImageDto.url;
+    if (!url && createImageDto.sopInstanceUID) {
+      // Example: /dicom/wado/:sopInstanceUID (adjust to your actual route)
+      url = `/dicom/wado/${encodeURIComponent(createImageDto.sopInstanceUID)}`;
+    }
+
+    // Generate preview URL if orthancInstanceId is provided
+    let previewUrl: string | null = null;
+    if (createImageDto.orthancInstanceId) {
+      previewUrl = `/dicom/instances/${createImageDto.orthancInstanceId}/preview`;
+    }
+
+    // Convert dateAcquisition string to Date object
+    const dateAcquisition = new Date(createImageDto.dateAcquisition);
+
+    const image = await this.prisma.imageMedicale.create({
+      data: {
+        examenID: createImageDto.examenID,
+        studyInstanceUID: createImageDto.studyInstanceUID,
+        seriesInstanceUID: createImageDto.seriesInstanceUID,
+        sopInstanceUID: createImageDto.sopInstanceUID,
+        dateAcquisition: dateAcquisition,
+        modalite: createImageDto.modalite,
+        description: createImageDto.description,
+        url: url || null,
+        orthancInstanceId: createImageDto.orthancInstanceId || null,
+      } as any,
+    });
+
+    // Notify the exam requester about the new image
+    await this.notificationsService.create({
+      utilisateurID: exam.demandeParID,
+      titre: 'Nouvelle image ajoutée',
+      message: `Une nouvelle image a été ajoutée à l'examen médical du patient`,
+      type: 'IMAGE_ADDED',
+      lien: `/examens/${exam.examenID}`,
+    });
+
+    return image;
+  }
+
+  async getImagesByExam(examenID: string): Promise<ImageMedicaleDto[]> {
+    // Verify that the exam exists
+    const exam = await this.prisma.examenMedical.findUnique({
+      where: { examenID },
+    });
+
+    if (!exam) {
+      throw new NotFoundException(`Examen médical avec l'ID ${examenID} non trouvé`);
+    }
+
+    return this.prisma.imageMedicale.findMany({
+      where: { examenID },
+      orderBy: { dateAcquisition: 'desc' },
+    });
+  }
+
+  async updateImage(imageID: string, updateImageDto: UpdateImageMedicaleDto): Promise<ImageMedicaleDto> {
+    const image = await this.prisma.imageMedicale.findUnique({
+      where: { imageID },
+      include: {
+        examen: {
+          include: {
+            patient: true,
+          },
+        },
+      },
+    });
+
+    if (!image) {
+      throw new NotFoundException(`Image médicale avec l'ID ${imageID} non trouvée`);
+    }
+
+    const updatedImage = await this.prisma.imageMedicale.update({
+      where: { imageID },
+      data: updateImageDto,
+    });
+
+    // Notify about image update
+    await this.notificationsService.create({
+      utilisateurID: image.examen.demandeParID,
+      titre: 'Image médicale mise à jour',
+      message: `Une image de l'examen du patient ${image.examen.patient.prenom} ${image.examen.patient.nom} a été mise à jour`,
+      type: 'IMAGE_UPDATED',
+      lien: `/examens/${image.examenID}`,
+    });
+
+    return updatedImage;
+  }
+
+  async deleteImage(imageID: string): Promise<void> {
+    const image = await this.prisma.imageMedicale.findUnique({
+      where: { imageID },
+      include: {
+        examen: {
+          include: {
+            patient: true,
+          },
+        },
+      },
+    });
+
+    if (!image) {
+      throw new NotFoundException(`Image médicale avec l'ID ${imageID} non trouvée`);
+    }
+
+    await this.prisma.imageMedicale.delete({
+      where: { imageID },
+    });
+
+    // Notify about image deletion
+    await this.notificationsService.create({
+      utilisateurID: image.examen.demandeParID,
+      titre: 'Image médicale supprimée',
+      message: `Une image de l'examen du patient ${image.examen.patient.prenom} ${image.examen.patient.nom} a été supprimée`,
+      type: 'IMAGE_DELETED',
+      lien: `/examens/${image.examenID}`,
+    });
+  }
+
+  async getImageCountByExam(examenID: string): Promise<number> {
+    return this.prisma.imageMedicale.count({
+      where: { examenID },
+    });
+  }
+
+  async getExamsWithImageCounts(etablissementID?: string): Promise<ExamenMedicalListDto[]> {
+    const where: any = {};
+    if (etablissementID) {
+      where.demandePar = { etablissementID };
+    }
+    
+    const exams = await this.prisma.examenMedical.findMany({
+      where,
+      include: {
+        patient: {
+          select: {
+            nom: true,
+            prenom: true,
+          },
+        },
+        typeExamen: {
+          select: {
+            nomType: true,
+            categorie: true,
+          },
+        },
+        demandePar: {
+          select: {
+            nom: true,
+            prenom: true,
+            etablissementID: true,
+          },
+        },
+        _count: {
+          select: {
+            images: true,
+            radiologues: true,
+          },
+        },
+      },
+      orderBy: {
+        dateExamen: 'desc',
+      },
+    });
+
+    return exams.map(exam => ({
+      examenID: exam.examenID,
+      dateExamen: exam.dateExamen,
+      description: exam.description,
+      estAnalyse: exam.estAnalyse,
+      patientNom: exam.patient.nom,
+      patientPrenom: exam.patient.prenom,
+      typeExamenNom: exam.typeExamen.nomType,
+      typeExamenCategorie: exam.typeExamen.categorie,
+      demandeParNom: exam.demandePar.nom,
+      demandeParPrenom: exam.demandePar.prenom,
+      nombreImages: exam._count.images,
+      nombreRadiologues: exam._count.radiologues,
+    }));
   }
 } 

@@ -23,39 +23,63 @@ class CreateExamenMedicalDto {
 }
 exports.CreateExamenMedicalDto = CreateExamenMedicalDto;
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: 'ID du dossier médical' }),
-    (0, class_validator_1.IsUUID)(),
+    (0, swagger_1.ApiProperty)({
+        description: 'ID du dossier médical auquel l\'examen appartient',
+        example: '123e4567-e89b-12d3-a456-426614174000'
+    }),
+    (0, class_validator_1.IsUUID)('4', { message: 'dossierID doit être un UUID valide' }),
     __metadata("design:type", String)
 ], CreateExamenMedicalDto.prototype, "dossierID", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: 'ID du patient' }),
-    (0, class_validator_1.IsUUID)(),
+    (0, swagger_1.ApiProperty)({
+        description: 'ID du patient qui subit l\'examen',
+        example: '123e4567-e89b-12d3-a456-426614174001'
+    }),
+    (0, class_validator_1.IsUUID)('4', { message: 'patientID doit être un UUID valide' }),
     __metadata("design:type", String)
 ], CreateExamenMedicalDto.prototype, "patientID", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: 'ID du type d\'examen' }),
-    (0, class_validator_1.IsUUID)(),
+    (0, swagger_1.ApiProperty)({
+        description: 'ID du type d\'examen (ex: radiographie, échographie, etc.)',
+        example: '123e4567-e89b-12d3-a456-426614174002'
+    }),
+    (0, class_validator_1.IsUUID)('4', { message: 'typeExamenID doit être un UUID valide' }),
     __metadata("design:type", String)
 ], CreateExamenMedicalDto.prototype, "typeExamenID", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Date de l\'examen' }),
-    (0, class_validator_1.IsDate)(),
-    __metadata("design:type", Date)
+    (0, swagger_1.ApiProperty)({
+        description: 'Date prévue ou effectuée de l\'examen (format ISO: YYYY-MM-DDTHH:mm:ss.sssZ)',
+        example: '2024-01-15T10:30:00.000Z'
+    }),
+    (0, class_validator_1.IsDateString)({}, { message: 'dateExamen doit être une date valide au format ISO' }),
+    __metadata("design:type", String)
 ], CreateExamenMedicalDto.prototype, "dateExamen", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Description de l\'examen' }),
-    (0, class_validator_1.IsString)(),
+    (0, swagger_1.ApiProperty)({
+        description: 'Description détaillée de l\'examen et des instructions',
+        example: 'Radiographie du thorax pour suspicion de pneumonie'
+    }),
+    (0, class_validator_1.IsString)({ message: 'description doit être une chaîne de caractères' }),
     __metadata("design:type", String)
 ], CreateExamenMedicalDto.prototype, "description", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Résultat de l\'examen (optionnel)' }),
-    (0, class_validator_1.IsString)(),
+    (0, swagger_1.ApiProperty)({
+        description: 'Résultat de l\'examen (rempli après analyse)',
+        required: false,
+        example: 'Pneumonie confirmée dans le lobe inférieur droit'
+    }),
+    (0, class_validator_1.IsString)({ message: 'resultat doit être une chaîne de caractères' }),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], CreateExamenMedicalDto.prototype, "resultat", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: 'État de l\'analyse' }),
-    (0, class_validator_1.IsBoolean)(),
+    (0, swagger_1.ApiProperty)({
+        description: 'Indique si l\'examen a été analysé par un radiologue',
+        required: false,
+        default: false,
+        example: false
+    }),
+    (0, class_validator_1.IsBoolean)({ message: 'estAnalyse doit être un booléen' }),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Boolean)
 ], CreateExamenMedicalDto.prototype, "estAnalyse", void 0);

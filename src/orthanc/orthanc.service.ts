@@ -269,4 +269,51 @@ export class OrthancService {
       );
     }
   }
+
+  /**
+   * Fetch DICOM tags for a given instance from Orthanc
+   */
+  async getDicomTags(instanceId: string, userId: string): Promise<any> {
+    const { url, login, password } = await this.getOrthancConfigForUser(userId);
+    try {
+      const response = await firstValueFrom(
+        this.httpService.get(`${url}/instances/${instanceId}/tags?short`, {
+          headers: this.getAuthHeaders(login, password),
+        }),
+      );
+      return response.data;
+    } catch (error) {
+      throw new HttpException(
+        'Erreur lors de la récupération des tags DICOM',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * Extract acquisition date (ISO string) from DICOM tags
+   */
+  extractAcquisitionDate(tags: any): string | null {
+    const acq = tags['0008,0022'] || tags['0008,0020'];
+    if (!acq) return null;
+    return `${acq.slice(0, 4)}-${acq.slice(4, 6)}-${acq.slice(6, 8)}T00:00:00.000Z`;
+  }
+
+  /**
+   * Extract modality from DICOM tags
+   */
+  extractModality(tags: any): string | null {
+    return tags['0008,0060'] || null;
+  }
+
+  /**
+   * Get acquisition date and modality for a given instance
+   */
+  async getInstanceAcquisitionAndModality(instanceId: string, userId: string): Promise<{ acquisitionDate: string | null, modality: string | null }> {
+    const tags = await this.getDicomTags(instanceId, userId);
+    return {
+      acquisitionDate: this.extractAcquisitionDate(tags),
+      modality: this.extractModality(tags),
+    };
+  }
 }

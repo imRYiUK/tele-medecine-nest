@@ -400,4 +400,7 @@ export declare class ConsultationMedicaleService {
         estTelemedicine: boolean;
         lienVisio: string | null;
     })[]>;
+    getConsultationCount(patientID: string): Promise<{
+        count: number;
+    }>;
 }

@@ -16,8 +16,7 @@ exports.ExamenMedicalController = void 0;
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const examen_medical_service_1 = require("./examen-medical.service");
-const create_examen_medical_dto_1 = require("./dto/create-examen-medical.dto");
-const update_examen_medical_dto_1 = require("./dto/update-examen-medical.dto");
+const dto_1 = require("./dto");
 const jwt_auth_guard_1 = require("../common/guards/jwt-auth.guard");
 const roles_guard_1 = require("../common/guards/roles.guard");
 const roles_decorator_1 = require("../common/decorators/roles.decorator");
@@ -29,8 +28,14 @@ let ExamenMedicalController = class ExamenMedicalController {
     create(createExamenMedicalDto, req) {
         return this.examenMedicalService.create(createExamenMedicalDto, req.user.utilisateurID);
     }
-    findAll() {
-        return this.examenMedicalService.findAll();
+    getExamsWithImageCounts(etablissementID) {
+        return this.examenMedicalService.getExamsWithImageCounts(etablissementID);
+    }
+    findAll(status, category, search) {
+        return this.examenMedicalService.findAll(status, category, search);
+    }
+    getTypeExamens() {
+        return this.examenMedicalService.getTypeExamens();
     }
     findOne(id) {
         return this.examenMedicalService.findOne(id);
@@ -50,6 +55,30 @@ let ExamenMedicalController = class ExamenMedicalController {
     inviteRadiologue(examenID, radiologueID) {
         return this.examenMedicalService.inviteRadiologue(examenID, radiologueID);
     }
+    getRadiologistStats(req) {
+        return this.examenMedicalService.getRadiologistStats(req.user.utilisateurID);
+    }
+    getRecentExams(req) {
+        return this.examenMedicalService.getRecentExams(req.user.utilisateurID);
+    }
+    markAsAnalyzed(examenID, resultat) {
+        return this.examenMedicalService.markAsAnalyzed(examenID, resultat.resultat);
+    }
+    getImagesByExam(examenID) {
+        return this.examenMedicalService.getImagesByExam(examenID);
+    }
+    getImageCountByExam(examenID) {
+        return this.examenMedicalService.getImageCountByExam(examenID);
+    }
+    createImage(createImageDto) {
+        return this.examenMedicalService.createImage(createImageDto);
+    }
+    updateImage(imageID, updateImageDto) {
+        return this.examenMedicalService.updateImage(imageID, updateImageDto);
+    }
+    deleteImage(imageID) {
+        return this.examenMedicalService.deleteImage(imageID);
+    }
 };
 exports.ExamenMedicalController = ExamenMedicalController;
 __decorate([
@@ -60,18 +89,40 @@ __decorate([
     __param(0, (0, common_1.Body)()),
     __param(1, (0, common_1.Request)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [create_examen_medical_dto_1.CreateExamenMedicalDto, Object]),
+    __metadata("design:paramtypes", [dto_1.CreateExamenMedicalDto, Object]),
     __metadata("design:returntype", void 0)
 ], ExamenMedicalController.prototype, "create", null);
+__decorate([
+    (0, common_1.Get)('liste-avec-images'),
+    (0, roles_decorator_1.Roles)("MEDECIN", "RADIOLOGUE", "TECHNICIEN"),
+    (0, swagger_1.ApiOperation)({ summary: 'Récupérer la liste des examens avec le nombre d\'images' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Liste des examens avec compteurs d\'images récupérée avec succès', type: [dto_1.ExamenMedicalListDto] }),
+    __param(0, (0, common_1.Query)('etablissementID')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], ExamenMedicalController.prototype, "getExamsWithImageCounts", null);
 __decorate([
     (0, common_1.Get)(),
     (0, roles_decorator_1.Roles)("MEDECIN", "RADIOLOGUE", "TECHNICIEN"),
     (0, swagger_1.ApiOperation)({ summary: 'Récupérer tous les examens médicaux' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Liste des examens médicaux récupérée avec succès' }),
+    __param(0, (0, common_1.Query)('status')),
+    __param(1, (0, common_1.Query)('category')),
+    __param(2, (0, common_1.Query)('search')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, String]),
+    __metadata("design:returntype", void 0)
+], ExamenMedicalController.prototype, "findAll", null);
+__decorate([
+    (0, common_1.Get)('types'),
+    (0, roles_decorator_1.Roles)("MEDECIN", "RADIOLOGUE", "TECHNICIEN"),
+    (0, swagger_1.ApiOperation)({ summary: 'Récupérer tous les types d\'examens' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Liste des types d\'examens récupérée avec succès' }),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
-], ExamenMedicalController.prototype, "findAll", null);
+], ExamenMedicalController.prototype, "getTypeExamens", null);
 __decorate([
     (0, common_1.Get)(':id'),
     (0, roles_decorator_1.Roles)("MEDECIN", "RADIOLOGUE", "TECHNICIEN"),
@@ -90,7 +141,7 @@ __decorate([
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, update_examen_medical_dto_1.UpdateExamenMedicalDto]),
+    __metadata("design:paramtypes", [String, dto_1.UpdateExamenMedicalDto]),
     __metadata("design:returntype", void 0)
 ], ExamenMedicalController.prototype, "update", null);
 __decorate([
@@ -134,6 +185,88 @@ __decorate([
     __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", void 0)
 ], ExamenMedicalController.prototype, "inviteRadiologue", null);
+__decorate([
+    (0, common_1.Get)('radiologue/statistiques'),
+    (0, roles_decorator_1.Roles)("RADIOLOGUE"),
+    (0, swagger_1.ApiOperation)({ summary: 'Récupérer les statistiques du dashboard radiologue' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Statistiques récupérées avec succès' }),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], ExamenMedicalController.prototype, "getRadiologistStats", null);
+__decorate([
+    (0, common_1.Get)('radiologue/examens-recents'),
+    (0, roles_decorator_1.Roles)("RADIOLOGUE"),
+    (0, swagger_1.ApiOperation)({ summary: 'Récupérer les examens récents pour le radiologue' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Examens récents récupérés avec succès' }),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], ExamenMedicalController.prototype, "getRecentExams", null);
+__decorate([
+    (0, common_1.Put)(':id/marquer-analyse'),
+    (0, roles_decorator_1.Roles)("RADIOLOGUE"),
+    (0, swagger_1.ApiOperation)({ summary: 'Marquer un examen comme analysé' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Examen marqué comme analysé' }),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", void 0)
+], ExamenMedicalController.prototype, "markAsAnalyzed", null);
+__decorate([
+    (0, common_1.Get)(':examenId/images'),
+    (0, roles_decorator_1.Roles)("MEDECIN", "RADIOLOGUE", "TECHNICIEN"),
+    (0, swagger_1.ApiOperation)({ summary: 'Récupérer toutes les images d\'un examen médical' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Images de l\'examen récupérées avec succès' }),
+    __param(0, (0, common_1.Param)('examenId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], ExamenMedicalController.prototype, "getImagesByExam", null);
+__decorate([
+    (0, common_1.Get)(':examenId/images/count'),
+    (0, roles_decorator_1.Roles)("MEDECIN", "RADIOLOGUE", "TECHNICIEN"),
+    (0, swagger_1.ApiOperation)({ summary: 'Récupérer le nombre d\'images d\'un examen médical' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Nombre d\'images récupéré avec succès' }),
+    __param(0, (0, common_1.Param)('examenId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], ExamenMedicalController.prototype, "getImageCountByExam", null);
+__decorate([
+    (0, common_1.Post)('images'),
+    (0, roles_decorator_1.Roles)("RADIOLOGUE", "TECHNICIEN"),
+    (0, swagger_1.ApiOperation)({ summary: 'Ajouter une nouvelle image à un examen médical' }),
+    (0, swagger_1.ApiResponse)({ status: 201, description: 'Image ajoutée avec succès' }),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [dto_1.CreateImageMedicaleDto]),
+    __metadata("design:returntype", void 0)
+], ExamenMedicalController.prototype, "createImage", null);
+__decorate([
+    (0, common_1.Patch)('images/:imageId'),
+    (0, roles_decorator_1.Roles)("RADIOLOGUE", "TECHNICIEN"),
+    (0, swagger_1.ApiOperation)({ summary: 'Mettre à jour une image médicale' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Image mise à jour avec succès' }),
+    __param(0, (0, common_1.Param)('imageId')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, dto_1.UpdateImageMedicaleDto]),
+    __metadata("design:returntype", void 0)
+], ExamenMedicalController.prototype, "updateImage", null);
+__decorate([
+    (0, common_1.Delete)('images/:imageId'),
+    (0, roles_decorator_1.Roles)("RADIOLOGUE", "TECHNICIEN"),
+    (0, swagger_1.ApiOperation)({ summary: 'Supprimer une image médicale' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Image supprimée avec succès' }),
+    __param(0, (0, common_1.Param)('imageId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], ExamenMedicalController.prototype, "deleteImage", null);
 exports.ExamenMedicalController = ExamenMedicalController = __decorate([
     (0, common_1.Controller)('examens-medicaux'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),

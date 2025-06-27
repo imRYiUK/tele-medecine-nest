@@ -332,6 +332,16 @@ let ConsultationMedicaleService = class ConsultationMedicaleService {
             },
         });
     }
+    async getConsultationCount(patientID) {
+        const count = await this.prisma.consultationMedicale.count({
+            where: {
+                dossier: {
+                    patientID: patientID,
+                },
+            },
+        });
+        return { count };
+    }
 };
 exports.ConsultationMedicaleService = ConsultationMedicaleService;
 exports.ConsultationMedicaleService = ConsultationMedicaleService = __decorate([

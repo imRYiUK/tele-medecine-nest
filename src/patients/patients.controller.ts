@@ -82,7 +82,7 @@ export class PatientsController {
   }
 
   @Post(':id/medical-record')
-  @Roles('ADMINISTRATEUR', 'MEDECIN')
+  @Roles('ADMINISTRATEUR', 'MEDECIN', 'RADIOLOGUE')
   @LogActivity({
     typeAction: 'CREATION_DOSSIER_MEDICAL',
     description: 'Création d\'un dossier médical pour un patient',
@@ -96,13 +96,13 @@ export class PatientsController {
   }
 
   @Get(':id/medical-record')
-  @Roles('ADMINISTRATEUR', 'MEDECIN')
+  @Roles('ADMINISTRATEUR', 'MEDECIN', 'RADIOLOGUE')
   getMedicalRecord(@Param('id') id: string) {
     return this.patientsService.getMedicalRecord(id);
   }
 
   @Patch(':id/medical-record')
-  @Roles('ADMINISTRATEUR', 'MEDECIN')
+  @Roles('ADMINISTRATEUR', 'MEDECIN', 'RADIOLOGUE')
   @LogActivity({
     typeAction: 'MODIFICATION_DOSSIER_MEDICAL',
     description: 'Modification d\'un dossier médical',

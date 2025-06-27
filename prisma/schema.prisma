@@ -129,6 +129,8 @@ model ImageMedicale {
   dateAcquisition   DateTime
   modalite          String
   description       String
+  url               String?              // URL to access the image (WADO, preview, etc.)
+  orthancInstanceId String?              // ID de l'instance Orthanc pour l'accès aux previews
   chatMessages      ChatMessage[]
   collaborations    ImageCollaboration[]
   examen            ExamenMedical        @relation(fields: [examenID], references: [examenID])

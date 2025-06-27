@@ -66,6 +66,80 @@ export class ImageCollaborationService {
     return this.prisma.chatMessage.findMany({
       where: { imageID },
       orderBy: { timestamp: 'asc' },
+      include: {
+        sender: true,
+        image: {
+          include: {
+            examen: {
+              include: {
+                patient: true,
+                typeExamen: true,
+                demandePar: true,
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+
+  async getUserCollaborations(userID: string) {
+    return this.prisma.imageCollaboration.findMany({
+      where: {
+        OR: [
+          { inviterID: userID },
+          { inviteeID: userID },
+        ],
+      },
+      include: {
+        image: {
+          include: {
+            examen: {
+              include: {
+                patient: true,
+                typeExamen: true,
+                demandePar: true,
+              },
+            },
+          },
+        },
+        inviter: true,
+        invitee: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
+
+  async getPendingCollaborations(userID: string) {
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    
+    return this.prisma.imageCollaboration.findMany({
+      where: {
+        inviteeID: userID,
+        createdAt: {
+          gte: twentyFourHoursAgo,
+        },
+      },
+      include: {
+        image: {
+          include: {
+            examen: {
+              include: {
+                patient: true,
+                typeExamen: true,
+                demandePar: true,
+              },
+            },
+          },
+        },
+        inviter: true,
+        invitee: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
     });
   }
 } 

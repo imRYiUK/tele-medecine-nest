@@ -7,4 +7,6 @@ export declare class ImageMedicaleDto {
     dateAcquisition: Date;
     modalite: string;
     description: string;
+    url?: string | null;
+    orthancInstanceId?: string | null;
 }

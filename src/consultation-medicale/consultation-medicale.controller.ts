@@ -6,6 +6,7 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import {UserRole} from '../common/constants/roles';
+import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 @Controller('consultations')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -49,6 +50,14 @@ export class ConsultationMedicaleController {
   @Roles(UserRole.ADMINISTRATEUR, UserRole.SUPER_ADMIN, UserRole.MEDECIN)
   findByPatient(@Param('patientId') patientId: string) {
     return this.consultationMedicaleService.findByPatient(patientId);
+  }
+
+  @Get('patient/:patientId/count')
+  @Roles(UserRole.ADMINISTRATEUR, UserRole.RECEPTIONNISTE, UserRole.MEDECIN, UserRole.RADIOLOGUE)
+  @ApiOperation({ summary: 'Récupérer le nombre de consultations d\'un patient' })
+  @ApiResponse({ status: 200, description: 'Nombre de consultations récupéré avec succès' })
+  getConsultationCount(@Param('patientId') patientId: string) {
+    return this.consultationMedicaleService.getConsultationCount(patientId);
   }
 
   @Get('dossier/:dossierId')

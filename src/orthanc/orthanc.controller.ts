@@ -231,7 +231,19 @@ export class OrthancController {
       
       const userId = this.getUserId(req);
       const result = await this.orthancService.uploadDicomFile(file.buffer, userId);
-      return { success: true, data: result };
+      // result.ID is the instanceId
+      let acquisitionDate: string | null = null;
+      let modality: string | null = null;
+      if (result && result.ID) {
+        try {
+          const tags = await this.orthancService.getDicomTags(result.ID, userId);
+          acquisitionDate = this.orthancService.extractAcquisitionDate(tags);
+          modality = this.orthancService.extractModality(tags);
+        } catch (tagError) {
+          // Optionally log or ignore tag extraction errors
+        }
+      }
+      return { success: true, data: { ...result, acquisitionDate, modality } };
     } catch (error) {
       // Transmettre le code d'erreur d'Orthanc si disponible
       const statusCode = error.response?.status || HttpStatus.INTERNAL_SERVER_ERROR;
