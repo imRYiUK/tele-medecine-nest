@@ -28,11 +28,19 @@ export declare class OrthancService {
     saveImageMetadata(examenId: string, orthancId: string, studyUid: string, modalite: string): Promise<{
         description: string;
         examenID: string;
+        url: string | null;
         imageID: string;
         studyInstanceUID: string;
         seriesInstanceUID: string;
         sopInstanceUID: string;
         dateAcquisition: Date;
         modalite: string;
+    }>;
+    getDicomTags(instanceId: string, userId: string): Promise<any>;
+    extractAcquisitionDate(tags: any): string | null;
+    extractModality(tags: any): string | null;
+    getInstanceAcquisitionAndModality(instanceId: string, userId: string): Promise<{
+        acquisitionDate: string | null;
+        modality: string | null;
     }>;
 }

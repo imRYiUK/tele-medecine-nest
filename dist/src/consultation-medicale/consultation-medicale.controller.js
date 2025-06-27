@@ -20,6 +20,7 @@ const update_consultation_medicale_dto_1 = require("./dto/update-consultation-me
 const jwt_auth_guard_1 = require("../common/guards/jwt-auth.guard");
 const roles_guard_1 = require("../common/guards/roles.guard");
 const roles_decorator_1 = require("../common/decorators/roles.decorator");
+const swagger_1 = require("@nestjs/swagger");
 let ConsultationMedicaleController = class ConsultationMedicaleController {
     consultationMedicaleService;
     constructor(consultationMedicaleService) {
@@ -42,6 +43,9 @@ let ConsultationMedicaleController = class ConsultationMedicaleController {
     }
     findByPatient(patientId) {
         return this.consultationMedicaleService.findByPatient(patientId);
+    }
+    getConsultationCount(patientId) {
+        return this.consultationMedicaleService.getConsultationCount(patientId);
     }
     findByDossier(dossierId) {
         return this.consultationMedicaleService.findByDossier(dossierId);
@@ -100,6 +104,16 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], ConsultationMedicaleController.prototype, "findByPatient", null);
+__decorate([
+    (0, common_1.Get)('patient/:patientId/count'),
+    (0, roles_decorator_1.Roles)("ADMINISTRATEUR", "RECEPTIONNISTE", "MEDECIN", "RADIOLOGUE"),
+    (0, swagger_1.ApiOperation)({ summary: 'Récupérer le nombre de consultations d\'un patient' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Nombre de consultations récupéré avec succès' }),
+    __param(0, (0, common_1.Param)('patientId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], ConsultationMedicaleController.prototype, "getConsultationCount", null);
 __decorate([
     (0, common_1.Get)('dossier/:dossierId'),
     (0, roles_decorator_1.Roles)("ADMINISTRATEUR", "SUPER_ADMIN", "MEDECIN"),

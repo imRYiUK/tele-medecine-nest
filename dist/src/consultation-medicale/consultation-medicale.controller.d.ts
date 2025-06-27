@@ -293,6 +293,9 @@ export declare class ConsultationMedicaleController {
         estTelemedicine: boolean;
         lienVisio: string | null;
     })[]>;
+    getConsultationCount(patientId: string): Promise<{
+        count: number;
+    }>;
     findByDossier(dossierId: string): Promise<({
         dossier: {
             patient: {

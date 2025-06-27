@@ -214,6 +214,34 @@ let OrthancService = class OrthancService {
             throw new common_1.HttpException('Erreur lors de la sauvegarde des métadonnées', common_1.HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+    async getDicomTags(instanceId, userId) {
+        const { url, login, password } = await this.getOrthancConfigForUser(userId);
+        try {
+            const response = await (0, rxjs_1.firstValueFrom)(this.httpService.get(`${url}/instances/${instanceId}/tags?short`, {
+                headers: this.getAuthHeaders(login, password),
+            }));
+            return response.data;
+        }
+        catch (error) {
+            throw new common_1.HttpException('Erreur lors de la récupération des tags DICOM', common_1.HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    extractAcquisitionDate(tags) {
+        const acq = tags['0008,0022'] || tags['0008,0020'];
+        if (!acq)
+            return null;
+        return `${acq.slice(0, 4)}-${acq.slice(4, 6)}-${acq.slice(6, 8)}T00:00:00.000Z`;
+    }
+    extractModality(tags) {
+        return tags['0008,0060'] || null;
+    }
+    async getInstanceAcquisitionAndModality(instanceId, userId) {
+        const tags = await this.getDicomTags(instanceId, userId);
+        return {
+            acquisitionDate: this.extractAcquisitionDate(tags),
+            modality: this.extractModality(tags),
+        };
+    }
 };
 exports.OrthancService = OrthancService;
 exports.OrthancService = OrthancService = __decorate([

@@ -167,7 +167,18 @@ let OrthancController = class OrthancController {
             }
             const userId = this.getUserId(req);
             const result = await this.orthancService.uploadDicomFile(file.buffer, userId);
-            return { success: true, data: result };
+            let acquisitionDate = null;
+            let modality = null;
+            if (result && result.ID) {
+                try {
+                    const tags = await this.orthancService.getDicomTags(result.ID, userId);
+                    acquisitionDate = this.orthancService.extractAcquisitionDate(tags);
+                    modality = this.orthancService.extractModality(tags);
+                }
+                catch (tagError) {
+                }
+            }
+            return { success: true, data: { ...result, acquisitionDate, modality } };
         }
         catch (error) {
             const statusCode = error.response?.status || common_1.HttpStatus.INTERNAL_SERVER_ERROR;

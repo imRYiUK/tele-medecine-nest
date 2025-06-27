@@ -347,4 +347,15 @@ export class ConsultationMedicaleService {
       },
     });
   }
+
+  async getConsultationCount(patientID: string) {
+    const count = await this.prisma.consultationMedicale.count({
+      where: {
+        dossier: {
+          patientID: patientID,
+        },
+      },
+    });
+    return { count };
+  }
 } 
