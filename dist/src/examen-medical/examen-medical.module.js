@@ -10,15 +10,17 @@ exports.ExamenMedicalModule = void 0;
 const common_1 = require("@nestjs/common");
 const examen_medical_service_1 = require("./examen-medical.service");
 const examen_medical_controller_1 = require("./examen-medical.controller");
-const prisma_module_1 = require("../prisma/prisma.module");
+const notifications_module_1 = require("../notifications/notifications.module");
+const image_collaboration_controller_1 = require("./image-collaboration.controller");
+const image_collaboration_service_1 = require("./image-collaboration.service");
 let ExamenMedicalModule = class ExamenMedicalModule {
 };
 exports.ExamenMedicalModule = ExamenMedicalModule;
 exports.ExamenMedicalModule = ExamenMedicalModule = __decorate([
     (0, common_1.Module)({
-        imports: [prisma_module_1.PrismaModule],
-        controllers: [examen_medical_controller_1.ExamenMedicalController],
-        providers: [examen_medical_service_1.ExamenMedicalService],
+        imports: [notifications_module_1.NotificationsModule],
+        controllers: [examen_medical_controller_1.ExamenMedicalController, image_collaboration_controller_1.ImageCollaborationController],
+        providers: [examen_medical_service_1.ExamenMedicalService, image_collaboration_service_1.ImageCollaborationService],
         exports: [examen_medical_service_1.ExamenMedicalService]
     })
 ], ExamenMedicalModule);

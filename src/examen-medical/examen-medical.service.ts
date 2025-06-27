@@ -66,6 +66,9 @@ export class ExamenMedicalService {
             role: true,
           },
         },
+        radiologues: {
+          select: { utilisateurID: true, nom: true, prenom: true, email: true }
+        }
       },
       orderBy: {
         dateExamen: 'desc',
@@ -93,6 +96,9 @@ export class ExamenMedicalService {
           },
         },
         images: true,
+        radiologues: {
+          select: { utilisateurID: true, nom: true, prenom: true, email: true }
+        }
       },
     });
 
@@ -170,6 +176,9 @@ export class ExamenMedicalService {
           },
         },
         images: true,
+        radiologues: {
+          select: { utilisateurID: true, nom: true, prenom: true, email: true }
+        }
       },
       orderBy: {
         dateExamen: 'desc',
@@ -190,10 +199,32 @@ export class ExamenMedicalService {
           },
         },
         images: true,
+        radiologues: {
+          select: { utilisateurID: true, nom: true, prenom: true, email: true }
+        }
       },
       orderBy: {
         dateExamen: 'desc',
       },
+    });
+  }
+
+  async inviteRadiologue(examenID: string, radiologueID: string) {
+    // Vérifier que l'examen existe
+    await this.findOne(examenID);
+    // Associer le radiologue à l'examen
+    return this.prisma.examenMedical.update({
+      where: { examenID },
+      data: {
+        radiologues: {
+          connect: { utilisateurID: radiologueID }
+        }
+      },
+      include: {
+        radiologues: {
+          select: { utilisateurID: true, nom: true, prenom: true, email: true }
+        }
+      }
     });
   }
 } 

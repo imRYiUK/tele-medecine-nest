@@ -23,14 +23,6 @@ export class CreateEtablissementDto {
   @IsEnum(TypeEtablissement)
   type: TypeEtablissement;
 
-  @ApiProperty({ description: 'Latitude de l\'établissement' })
-  @IsNumber()
-  latitude: number;
-
-  @ApiProperty({ description: 'Longitude de l\'établissement' })
-  @IsNumber()
-  longitude: number;
-
   @ApiProperty({ description: 'Région où se trouve l\'établissement' })
   @IsString()
   region: string;
@@ -49,6 +41,21 @@ export class CreateEtablissementDto {
   @IsBoolean()
   @IsOptional()
   estActif?: boolean = true;
+
+  @ApiProperty({ description: "URL d'accès à l'instance Orthanc", required: false })
+  @IsString()
+  @IsOptional()
+  orthancUrl?: string;
+
+  @ApiProperty({ description: "Login pour l'accès à Orthanc", required: false })
+  @IsString()
+  @IsOptional()
+  orthancLogin?: string;
+
+  @ApiProperty({ description: "Mot de passe pour l'accès à Orthanc", required: false })
+  @IsString()
+  @IsOptional()
+  orthancPassword?: string;
 }
 
 export class UpdateEtablissementDto {
@@ -77,16 +84,6 @@ export class UpdateEtablissementDto {
   @IsOptional()
   type?: TypeEtablissement;
 
-  @ApiProperty({ description: 'Latitude de l\'établissement', required: false })
-  @IsNumber()
-  @IsOptional()
-  latitude?: number;
-
-  @ApiProperty({ description: 'Longitude de l\'établissement', required: false })
-  @IsNumber()
-  @IsOptional()
-  longitude?: number;
-
   @ApiProperty({ description: 'Région où se trouve l\'établissement', required: false })
   @IsString()
   @IsOptional()
@@ -106,6 +103,21 @@ export class UpdateEtablissementDto {
   @IsBoolean()
   @IsOptional()
   estActif?: boolean;
+
+  @ApiProperty({ description: "URL d'accès à l'instance Orthanc", required: false })
+  @IsString()
+  @IsOptional()
+  orthancUrl?: string;
+
+  @ApiProperty({ description: "Login pour l'accès à Orthanc", required: false })
+  @IsString()
+  @IsOptional()
+  orthancLogin?: string;
+
+  @ApiProperty({ description: "Mot de passe pour l'accès à Orthanc", required: false })
+  @IsString()
+  @IsOptional()
+  orthancPassword?: string;
 }
 
 export class EtablissementDto {
@@ -127,12 +139,6 @@ export class EtablissementDto {
   @ApiProperty({ description: 'Type d\'établissement', enum: TypeEtablissement })
   type: TypeEtablissement;
 
-  @ApiProperty({ description: 'Latitude de l\'établissement' })
-  latitude: number;
-
-  @ApiProperty({ description: 'Longitude de l\'établissement' })
-  longitude: number;
-
   @ApiProperty({ description: 'Région où se trouve l\'établissement' })
   region: string;
 
@@ -150,4 +156,13 @@ export class EtablissementDto {
 
   @ApiProperty({ description: 'Date de dernière modification' })
   updatedAt: Date;
+
+  @ApiProperty({ description: "URL d'accès à l'instance Orthanc" })
+  orthancUrl?: string;
+
+  @ApiProperty({ description: "Login pour l'accès à Orthanc" })
+  orthancLogin?: string;
+
+  @ApiProperty({ description: "Mot de passe pour l'accès à Orthanc" })
+  orthancPassword?: string;
 } 

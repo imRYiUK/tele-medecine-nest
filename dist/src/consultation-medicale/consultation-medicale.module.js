@@ -10,16 +10,18 @@ exports.ConsultationMedicaleModule = void 0;
 const common_1 = require("@nestjs/common");
 const consultation_medicale_service_1 = require("./consultation-medicale.service");
 const consultation_medicale_controller_1 = require("./consultation-medicale.controller");
-const prisma_module_1 = require("../prisma/prisma.module");
+const medicament_service_1 = require("./medicament.service");
+const medicament_controller_1 = require("./medicament.controller");
+const notifications_module_1 = require("../notifications/notifications.module");
 let ConsultationMedicaleModule = class ConsultationMedicaleModule {
 };
 exports.ConsultationMedicaleModule = ConsultationMedicaleModule;
 exports.ConsultationMedicaleModule = ConsultationMedicaleModule = __decorate([
     (0, common_1.Module)({
-        imports: [prisma_module_1.PrismaModule],
-        controllers: [consultation_medicale_controller_1.ConsultationMedicaleController],
-        providers: [consultation_medicale_service_1.ConsultationMedicaleService],
-        exports: [consultation_medicale_service_1.ConsultationMedicaleService],
+        imports: [notifications_module_1.NotificationsModule],
+        controllers: [consultation_medicale_controller_1.ConsultationMedicaleController, medicament_controller_1.MedicamentController],
+        providers: [consultation_medicale_service_1.ConsultationMedicaleService, medicament_service_1.MedicamentService],
+        exports: [consultation_medicale_service_1.ConsultationMedicaleService, medicament_service_1.MedicamentService],
     })
 ], ConsultationMedicaleModule);
 //# sourceMappingURL=consultation-medicale.module.js.map

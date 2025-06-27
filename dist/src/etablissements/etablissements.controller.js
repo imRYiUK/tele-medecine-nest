@@ -68,11 +68,7 @@ __decorate([
 ], EtablissementsController.prototype, "create", null);
 __decorate([
     (0, common_1.Get)(),
-    (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMIN"),
-    (0, log_activity_decorator_1.LogActivity)({
-        typeAction: 'CONSULTATION_ETABLISSEMENTS',
-        description: 'Consultation de la liste des établissements',
-    }),
+    (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMINISTRATEUR"),
     (0, swagger_1.ApiOperation)({ summary: 'Get all establishments' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Returns all establishments', type: [etablissement_dto_1.EtablissementDto] }),
     __metadata("design:type", Function),
@@ -81,11 +77,7 @@ __decorate([
 ], EtablissementsController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)('region/:region'),
-    (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMIN"),
-    (0, log_activity_decorator_1.LogActivity)({
-        typeAction: 'CONSULTATION_ETABLISSEMENTS_REGION',
-        description: (params) => `Consultation des établissements de la région: ${params.region}`,
-    }),
+    (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMINISTRATEUR"),
     (0, swagger_1.ApiOperation)({ summary: 'Get establishments by region' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Returns establishments in the specified region', type: [etablissement_dto_1.EtablissementDto] }),
     __param(0, (0, common_1.Param)('region')),
@@ -95,11 +87,7 @@ __decorate([
 ], EtablissementsController.prototype, "findByRegion", null);
 __decorate([
     (0, common_1.Get)('type/:type'),
-    (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMIN"),
-    (0, log_activity_decorator_1.LogActivity)({
-        typeAction: 'CONSULTATION_ETABLISSEMENTS_TYPE',
-        description: (params) => `Consultation des établissements de type: ${params.type}`,
-    }),
+    (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMINISTRATEUR"),
     (0, swagger_1.ApiOperation)({ summary: 'Get establishments by type' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Returns establishments of the specified type', type: [etablissement_dto_1.EtablissementDto] }),
     __param(0, (0, common_1.Param)('type')),
@@ -109,11 +97,7 @@ __decorate([
 ], EtablissementsController.prototype, "findByType", null);
 __decorate([
     (0, common_1.Get)(':id'),
-    (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMIN"),
-    (0, log_activity_decorator_1.LogActivity)({
-        typeAction: 'CONSULTATION_ETABLISSEMENT',
-        description: (result) => `Consultation de l'établissement: ${result.nom}`,
-    }),
+    (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMINISTRATEUR"),
     (0, swagger_1.ApiOperation)({ summary: 'Get an establishment by ID' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Returns the establishment', type: etablissement_dto_1.EtablissementDto }),
     (0, swagger_1.ApiResponse)({ status: 404, description: 'Establishment not found' }),

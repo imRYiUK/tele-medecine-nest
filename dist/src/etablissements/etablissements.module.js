@@ -10,13 +10,14 @@ exports.EtablissementsModule = void 0;
 const common_1 = require("@nestjs/common");
 const etablissements_service_1 = require("./etablissements.service");
 const etablissements_controller_1 = require("./etablissements.controller");
-const prisma_module_1 = require("../prisma/prisma.module");
+const notifications_module_1 = require("../notifications/notifications.module");
+const users_module_1 = require("../users/users.module");
 let EtablissementsModule = class EtablissementsModule {
 };
 exports.EtablissementsModule = EtablissementsModule;
 exports.EtablissementsModule = EtablissementsModule = __decorate([
     (0, common_1.Module)({
-        imports: [prisma_module_1.PrismaModule],
+        imports: [notifications_module_1.NotificationsModule, users_module_1.UsersModule],
         controllers: [etablissements_controller_1.EtablissementsController],
         providers: [etablissements_service_1.EtablissementsService],
         exports: [etablissements_service_1.EtablissementsService],

@@ -27,26 +27,10 @@ export declare class PatientsController {
         patientID: string;
         dateNaissance: Date;
         genre: string;
-        assuranceMaladie: string;
         groupeSanguin: string;
         createdBy: string;
     }>;
     findAll(): Promise<({
-        consultations: {
-            createdAt: Date;
-            updatedAt: Date;
-            patientID: string;
-            dossierID: string;
-            consultationID: string;
-            medecinID: string;
-            dateConsultation: Date;
-            motif: string;
-            diagnostics: string;
-            observations: string;
-            traitementPrescrit: string;
-            estTelemedicine: boolean;
-            lienVisio: string | null;
-        }[];
         dossierMedical: {
             createdAt: Date;
             patientID: string;
@@ -78,26 +62,10 @@ export declare class PatientsController {
         patientID: string;
         dateNaissance: Date;
         genre: string;
-        assuranceMaladie: string;
         groupeSanguin: string;
         createdBy: string;
     })[]>;
     findOne(id: string): Promise<{
-        consultations: {
-            createdAt: Date;
-            updatedAt: Date;
-            patientID: string;
-            dossierID: string;
-            consultationID: string;
-            medecinID: string;
-            dateConsultation: Date;
-            motif: string;
-            diagnostics: string;
-            observations: string;
-            traitementPrescrit: string;
-            estTelemedicine: boolean;
-            lienVisio: string | null;
-        }[];
         dossierMedical: {
             createdAt: Date;
             patientID: string;
@@ -129,7 +97,6 @@ export declare class PatientsController {
         patientID: string;
         dateNaissance: Date;
         genre: string;
-        assuranceMaladie: string;
         groupeSanguin: string;
         createdBy: string;
     }>;
@@ -153,7 +120,6 @@ export declare class PatientsController {
         patientID: string;
         dateNaissance: Date;
         genre: string;
-        assuranceMaladie: string;
         groupeSanguin: string;
         createdBy: string;
     }>;

@@ -18,7 +18,6 @@ export declare class CreatePatientDto {
     adresse: string;
     telephone: string;
     email: string;
-    assuranceMaladie: string;
     groupeSanguin: string;
     createdBy: string;
     dossierMedical?: CreateDossierMedicalDto;

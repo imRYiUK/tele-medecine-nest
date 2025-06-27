@@ -18,10 +18,11 @@ let PatientsService = class PatientsService {
         this.prisma = prisma;
     }
     async create(createPatientDto, userId) {
-        const { dossierMedical, ...patientData } = createPatientDto;
+        const { dossierMedical, dateNaissance, ...patientData } = createPatientDto;
         return this.prisma.patient.create({
             data: {
                 ...patientData,
+                dateNaissance: new Date(dateNaissance),
                 createdBy: userId,
                 createdAt: new Date(),
                 updatedAt: new Date(),
@@ -42,7 +43,6 @@ let PatientsService = class PatientsService {
         return this.prisma.patient.findMany({
             include: {
                 dossierMedical: true,
-                consultations: true,
                 examens: true,
             },
         });
@@ -52,7 +52,6 @@ let PatientsService = class PatientsService {
             where: { patientID },
             include: {
                 dossierMedical: true,
-                consultations: true,
                 examens: true,
             },
         });

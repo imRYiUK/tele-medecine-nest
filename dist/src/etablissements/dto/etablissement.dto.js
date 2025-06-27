@@ -19,12 +19,13 @@ class CreateEtablissementDto {
     telephone;
     email;
     type;
-    latitude;
-    longitude;
     region;
     description;
     siteWeb;
     estActif = true;
+    orthancUrl;
+    orthancLogin;
+    orthancPassword;
 }
 exports.CreateEtablissementDto = CreateEtablissementDto;
 __decorate([
@@ -53,16 +54,6 @@ __decorate([
     __metadata("design:type", String)
 ], CreateEtablissementDto.prototype, "type", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Latitude de l\'établissement' }),
-    (0, class_validator_1.IsNumber)(),
-    __metadata("design:type", Number)
-], CreateEtablissementDto.prototype, "latitude", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Longitude de l\'établissement' }),
-    (0, class_validator_1.IsNumber)(),
-    __metadata("design:type", Number)
-], CreateEtablissementDto.prototype, "longitude", void 0);
-__decorate([
     (0, swagger_1.ApiProperty)({ description: 'Région où se trouve l\'établissement' }),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
@@ -85,18 +76,37 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Boolean)
 ], CreateEtablissementDto.prototype, "estActif", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: "URL d'accès à l'instance Orthanc", required: false }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreateEtablissementDto.prototype, "orthancUrl", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: "Login pour l'accès à Orthanc", required: false }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreateEtablissementDto.prototype, "orthancLogin", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: "Mot de passe pour l'accès à Orthanc", required: false }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreateEtablissementDto.prototype, "orthancPassword", void 0);
 class UpdateEtablissementDto {
     nom;
     adresse;
     telephone;
     email;
     type;
-    latitude;
-    longitude;
     region;
     description;
     siteWeb;
     estActif;
+    orthancUrl;
+    orthancLogin;
+    orthancPassword;
 }
 exports.UpdateEtablissementDto = UpdateEtablissementDto;
 __decorate([
@@ -130,18 +140,6 @@ __decorate([
     __metadata("design:type", String)
 ], UpdateEtablissementDto.prototype, "type", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Latitude de l\'établissement', required: false }),
-    (0, class_validator_1.IsNumber)(),
-    (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", Number)
-], UpdateEtablissementDto.prototype, "latitude", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Longitude de l\'établissement', required: false }),
-    (0, class_validator_1.IsNumber)(),
-    (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", Number)
-], UpdateEtablissementDto.prototype, "longitude", void 0);
-__decorate([
     (0, swagger_1.ApiProperty)({ description: 'Région où se trouve l\'établissement', required: false }),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsOptional)(),
@@ -165,6 +163,24 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Boolean)
 ], UpdateEtablissementDto.prototype, "estActif", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: "URL d'accès à l'instance Orthanc", required: false }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], UpdateEtablissementDto.prototype, "orthancUrl", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: "Login pour l'accès à Orthanc", required: false }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], UpdateEtablissementDto.prototype, "orthancLogin", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: "Mot de passe pour l'accès à Orthanc", required: false }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], UpdateEtablissementDto.prototype, "orthancPassword", void 0);
 class EtablissementDto {
     etablissementID;
     nom;
@@ -172,14 +188,15 @@ class EtablissementDto {
     telephone;
     email;
     type;
-    latitude;
-    longitude;
     region;
     description;
     siteWeb;
     estActif;
     createdAt;
     updatedAt;
+    orthancUrl;
+    orthancLogin;
+    orthancPassword;
 }
 exports.EtablissementDto = EtablissementDto;
 __decorate([
@@ -207,14 +224,6 @@ __decorate([
     __metadata("design:type", String)
 ], EtablissementDto.prototype, "type", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Latitude de l\'établissement' }),
-    __metadata("design:type", Number)
-], EtablissementDto.prototype, "latitude", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Longitude de l\'établissement' }),
-    __metadata("design:type", Number)
-], EtablissementDto.prototype, "longitude", void 0);
-__decorate([
     (0, swagger_1.ApiProperty)({ description: 'Région où se trouve l\'établissement' }),
     __metadata("design:type", String)
 ], EtablissementDto.prototype, "region", void 0);
@@ -238,4 +247,16 @@ __decorate([
     (0, swagger_1.ApiProperty)({ description: 'Date de dernière modification' }),
     __metadata("design:type", Date)
 ], EtablissementDto.prototype, "updatedAt", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: "URL d'accès à l'instance Orthanc" }),
+    __metadata("design:type", String)
+], EtablissementDto.prototype, "orthancUrl", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: "Login pour l'accès à Orthanc" }),
+    __metadata("design:type", String)
+], EtablissementDto.prototype, "orthancLogin", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: "Mot de passe pour l'accès à Orthanc" }),
+    __metadata("design:type", String)
+], EtablissementDto.prototype, "orthancPassword", void 0);
 //# sourceMappingURL=etablissement.dto.js.map

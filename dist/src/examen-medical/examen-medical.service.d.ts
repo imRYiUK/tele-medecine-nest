@@ -1,9 +1,11 @@
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateExamenMedicalDto } from './dto/create-examen-medical.dto';
 import { UpdateExamenMedicalDto } from './dto/update-examen-medical.dto';
+import { NotificationsService } from '../notifications/notifications.service';
 export declare class ExamenMedicalService {
     private prisma;
-    constructor(prisma: PrismaService);
+    private notificationsService;
+    constructor(prisma: PrismaService, notificationsService: NotificationsService);
     create(createExamenMedicalDto: CreateExamenMedicalDto, demandeParID: string): Promise<{
         patient: {
             nom: string;
@@ -50,6 +52,12 @@ export declare class ExamenMedicalService {
             prenom: string;
             role: string;
         };
+        radiologues: {
+            nom: string;
+            email: string;
+            utilisateurID: string;
+            prenom: string;
+        }[];
     } & {
         description: string;
         patientID: string;
@@ -88,6 +96,12 @@ export declare class ExamenMedicalService {
             sopInstanceUID: string;
             dateAcquisition: Date;
             modalite: string;
+        }[];
+        radiologues: {
+            nom: string;
+            email: string;
+            utilisateurID: string;
+            prenom: string;
         }[];
     } & {
         description: string;
@@ -164,6 +178,12 @@ export declare class ExamenMedicalService {
             dateAcquisition: Date;
             modalite: string;
         }[];
+        radiologues: {
+            nom: string;
+            email: string;
+            utilisateurID: string;
+            prenom: string;
+        }[];
     } & {
         description: string;
         patientID: string;
@@ -198,6 +218,12 @@ export declare class ExamenMedicalService {
             dateAcquisition: Date;
             modalite: string;
         }[];
+        radiologues: {
+            nom: string;
+            email: string;
+            utilisateurID: string;
+            prenom: string;
+        }[];
     } & {
         description: string;
         patientID: string;
@@ -210,4 +236,23 @@ export declare class ExamenMedicalService {
         resultat: string | null;
         estAnalyse: boolean;
     })[]>;
+    inviteRadiologue(examenID: string, radiologueID: string): Promise<{
+        radiologues: {
+            nom: string;
+            email: string;
+            utilisateurID: string;
+            prenom: string;
+        }[];
+    } & {
+        description: string;
+        patientID: string;
+        dossierID: string;
+        typeExamenID: string;
+        consultationID: string | null;
+        examenID: string;
+        demandeParID: string;
+        dateExamen: Date;
+        resultat: string | null;
+        estAnalyse: boolean;
+    }>;
 }

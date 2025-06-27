@@ -60,10 +60,6 @@ export class UsersController {
 
   @Get()
   @Roles(UserRole.SUPER_ADMIN, UserRole.ADMINISTRATEUR)
-  @LogActivity({
-    typeAction: 'CONSULTATION_UTILISATEURS',
-    description: 'Consultation de la liste des utilisateurs',
-  })
   @ApiOperation({ summary: 'Get all users' })
   @ApiResponse({ status: 200, description: 'Returns all users', type: [UserDto] })
   async findAll(@Req() req: Request) {
@@ -73,10 +69,6 @@ export class UsersController {
 
   @Get(':id')
   @Roles(UserRole.SUPER_ADMIN, UserRole.ADMINISTRATEUR)
-  @LogActivity({
-    typeAction: 'CONSULTATION_UTILISATEUR',
-    description: (result) => `Consultation de l'utilisateur: ${result.email}`,
-  })
   @ApiOperation({ summary: 'Get a user by ID' })
   @ApiResponse({ status: 200, description: 'Returns the user', type: UserDto })
   @ApiResponse({ status: 404, description: 'User not found' })
@@ -136,11 +128,7 @@ export class UsersController {
   }
 
   @Get('profile/me')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMINISTRATEUR, UserRole.RADIOLOGUE, UserRole.MEDECIN, UserRole.PERSONNEL_ADMINISTRATIF, UserRole.TECHNICIEN)
-  @LogActivity({
-    typeAction: 'CONSULTATION_PROFIL',
-    description: 'Consultation du profil utilisateur',
-  })
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMINISTRATEUR, UserRole.RADIOLOGUE, UserRole.MEDECIN, UserRole.RECEPTIONNISTE, UserRole.TECHNICIEN)
   @ApiOperation({ summary: 'Get current user profile' })
   @ApiResponse({ 
     status: 200, 
@@ -157,7 +145,7 @@ export class UsersController {
   }
 
   @Put('profile/me')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMINISTRATEUR, UserRole.RADIOLOGUE, UserRole.MEDECIN, UserRole.PERSONNEL_ADMINISTRATIF, UserRole.TECHNICIEN)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMINISTRATEUR, UserRole.RADIOLOGUE, UserRole.MEDECIN, UserRole.RECEPTIONNISTE, UserRole.TECHNICIEN)
   @LogActivity({
     typeAction: 'MODIFICATION_PROFIL',
     description: 'Modification du profil utilisateur',
@@ -175,5 +163,13 @@ export class UsersController {
   async updateProfile(@Req() req: Request, @Body() updateUserDto: UpdateUserDto) {
     const userId = this.getUserId(req);
     return this.usersService.updateProfile(userId, updateUserDto);
+  }
+
+  @Get('medecins/etablissement/:etablissementID')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMINISTRATEUR, UserRole.RECEPTIONNISTE)
+  @ApiOperation({ summary: 'Get all medecins for a given etablissement' })
+  @ApiResponse({ status: 200, description: 'Returns all medecins for the etablissement', type: [UserDto] })
+  async findMedecinsByEtablissement(@Param('etablissementID') etablissementID: string) {
+    return this.usersService.findMedecinsByEtablissement(etablissementID);
   }
 }

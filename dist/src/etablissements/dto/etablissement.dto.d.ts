@@ -5,12 +5,13 @@ export declare class CreateEtablissementDto {
     telephone: string;
     email: string;
     type: TypeEtablissement;
-    latitude: number;
-    longitude: number;
     region: string;
     description?: string;
     siteWeb?: string;
     estActif?: boolean;
+    orthancUrl?: string;
+    orthancLogin?: string;
+    orthancPassword?: string;
 }
 export declare class UpdateEtablissementDto {
     nom?: string;
@@ -18,12 +19,13 @@ export declare class UpdateEtablissementDto {
     telephone?: string;
     email?: string;
     type?: TypeEtablissement;
-    latitude?: number;
-    longitude?: number;
     region?: string;
     description?: string;
     siteWeb?: string;
     estActif?: boolean;
+    orthancUrl?: string;
+    orthancLogin?: string;
+    orthancPassword?: string;
 }
 export declare class EtablissementDto {
     etablissementID: string;
@@ -32,12 +34,13 @@ export declare class EtablissementDto {
     telephone: string;
     email: string;
     type: TypeEtablissement;
-    latitude: number;
-    longitude: number;
     region: string;
     description?: string;
     siteWeb?: string;
     estActif: boolean;
     createdAt: Date;
     updatedAt: Date;
+    orthancUrl?: string;
+    orthancLogin?: string;
+    orthancPassword?: string;
 }

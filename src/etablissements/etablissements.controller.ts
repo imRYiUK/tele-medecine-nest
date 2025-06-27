@@ -31,10 +31,6 @@ export class EtablissementsController {
 
   @Get()
   @Roles(UserRole.SUPER_ADMIN, UserRole.ADMINISTRATEUR)
-  @LogActivity({
-    typeAction: 'CONSULTATION_ETABLISSEMENTS',
-    description: 'Consultation de la liste des établissements',
-  })
   @ApiOperation({ summary: 'Get all establishments' })
   @ApiResponse({ status: 200, description: 'Returns all establishments', type: [EtablissementDto] })
   async findAll(): Promise<EtablissementDto[]> {
@@ -43,10 +39,6 @@ export class EtablissementsController {
 
   @Get('region/:region')
   @Roles(UserRole.SUPER_ADMIN, UserRole.ADMINISTRATEUR)
-  @LogActivity({
-    typeAction: 'CONSULTATION_ETABLISSEMENTS_REGION',
-    description: (params) => `Consultation des établissements de la région: ${params.region}`,
-  })
   @ApiOperation({ summary: 'Get establishments by region' })
   @ApiResponse({ status: 200, description: 'Returns establishments in the specified region', type: [EtablissementDto] })
   async findByRegion(@Param('region') region: string): Promise<EtablissementDto[]> {
@@ -55,10 +47,6 @@ export class EtablissementsController {
 
   @Get('type/:type')
   @Roles(UserRole.SUPER_ADMIN, UserRole.ADMINISTRATEUR)
-  @LogActivity({
-    typeAction: 'CONSULTATION_ETABLISSEMENTS_TYPE',
-    description: (params) => `Consultation des établissements de type: ${params.type}`,
-  })
   @ApiOperation({ summary: 'Get establishments by type' })
   @ApiResponse({ status: 200, description: 'Returns establishments of the specified type', type: [EtablissementDto] })
   async findByType(@Param('type') type: TypeEtablissement): Promise<EtablissementDto[]> {
@@ -67,10 +55,6 @@ export class EtablissementsController {
 
   @Get(':id')
   @Roles(UserRole.SUPER_ADMIN, UserRole.ADMINISTRATEUR)
-  @LogActivity({
-    typeAction: 'CONSULTATION_ETABLISSEMENT',
-    description: (result) => `Consultation de l'établissement: ${result.nom}`,
-  })
   @ApiOperation({ summary: 'Get an establishment by ID' })
   @ApiResponse({ status: 200, description: 'Returns the establishment', type: EtablissementDto })
   @ApiResponse({ status: 404, description: 'Establishment not found' })

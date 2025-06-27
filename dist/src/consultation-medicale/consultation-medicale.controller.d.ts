@@ -5,10 +5,19 @@ export declare class ConsultationMedicaleController {
     private readonly consultationMedicaleService;
     constructor(consultationMedicaleService: ConsultationMedicaleService);
     create(createConsultationMedicaleDto: CreateConsultationMedicaleDto, req: any): Promise<{
-        patient: {
-            nom: string;
-            prenom: string;
-            dateNaissance: Date;
+        dossier: {
+            patient: {
+                nom: string;
+                prenom: string;
+                dateNaissance: Date;
+            };
+        } & {
+            createdAt: Date;
+            patientID: string;
+            createdBy: string;
+            dossierID: string;
+            dateCreation: Date;
+            etatDossier: string;
         };
         medecin: {
             nom: string;
@@ -19,10 +28,7 @@ export declare class ConsultationMedicaleController {
             prescriptions: ({
                 medicament: {
                     nom: string;
-                    description: string | null;
                     medicamentID: string;
-                    dosage: string;
-                    forme: string;
                 };
             } & {
                 medicamentID: string;
@@ -42,7 +48,6 @@ export declare class ConsultationMedicaleController {
     } & {
         createdAt: Date;
         updatedAt: Date;
-        patientID: string;
         dossierID: string;
         consultationID: string;
         medecinID: string;
@@ -55,10 +60,19 @@ export declare class ConsultationMedicaleController {
         lienVisio: string | null;
     }>;
     findAll(): Promise<({
-        patient: {
-            nom: string;
-            prenom: string;
-            dateNaissance: Date;
+        dossier: {
+            patient: {
+                nom: string;
+                prenom: string;
+                dateNaissance: Date;
+            };
+        } & {
+            createdAt: Date;
+            patientID: string;
+            createdBy: string;
+            dossierID: string;
+            dateCreation: Date;
+            etatDossier: string;
         };
         medecin: {
             nom: string;
@@ -69,10 +83,7 @@ export declare class ConsultationMedicaleController {
             prescriptions: ({
                 medicament: {
                     nom: string;
-                    description: string | null;
                     medicamentID: string;
-                    dosage: string;
-                    forme: string;
                 };
             } & {
                 medicamentID: string;
@@ -92,7 +103,6 @@ export declare class ConsultationMedicaleController {
     } & {
         createdAt: Date;
         updatedAt: Date;
-        patientID: string;
         dossierID: string;
         consultationID: string;
         medecinID: string;
@@ -105,10 +115,19 @@ export declare class ConsultationMedicaleController {
         lienVisio: string | null;
     })[]>;
     findOne(id: string): Promise<{
-        patient: {
-            nom: string;
-            prenom: string;
-            dateNaissance: Date;
+        dossier: {
+            patient: {
+                nom: string;
+                prenom: string;
+                dateNaissance: Date;
+            };
+        } & {
+            createdAt: Date;
+            patientID: string;
+            createdBy: string;
+            dossierID: string;
+            dateCreation: Date;
+            etatDossier: string;
         };
         medecin: {
             nom: string;
@@ -119,10 +138,7 @@ export declare class ConsultationMedicaleController {
             prescriptions: ({
                 medicament: {
                     nom: string;
-                    description: string | null;
                     medicamentID: string;
-                    dosage: string;
-                    forme: string;
                 };
             } & {
                 medicamentID: string;
@@ -142,7 +158,6 @@ export declare class ConsultationMedicaleController {
     } & {
         createdAt: Date;
         updatedAt: Date;
-        patientID: string;
         dossierID: string;
         consultationID: string;
         medecinID: string;
@@ -155,10 +170,19 @@ export declare class ConsultationMedicaleController {
         lienVisio: string | null;
     }>;
     update(id: string, updateConsultationMedicaleDto: UpdateConsultationMedicaleDto): Promise<{
-        patient: {
-            nom: string;
-            prenom: string;
-            dateNaissance: Date;
+        dossier: {
+            patient: {
+                nom: string;
+                prenom: string;
+                dateNaissance: Date;
+            };
+        } & {
+            createdAt: Date;
+            patientID: string;
+            createdBy: string;
+            dossierID: string;
+            dateCreation: Date;
+            etatDossier: string;
         };
         medecin: {
             nom: string;
@@ -169,10 +193,7 @@ export declare class ConsultationMedicaleController {
             prescriptions: ({
                 medicament: {
                     nom: string;
-                    description: string | null;
                     medicamentID: string;
-                    dosage: string;
-                    forme: string;
                 };
             } & {
                 medicamentID: string;
@@ -192,7 +213,6 @@ export declare class ConsultationMedicaleController {
     } & {
         createdAt: Date;
         updatedAt: Date;
-        patientID: string;
         dossierID: string;
         consultationID: string;
         medecinID: string;
@@ -207,7 +227,6 @@ export declare class ConsultationMedicaleController {
     remove(id: string): Promise<{
         createdAt: Date;
         updatedAt: Date;
-        patientID: string;
         dossierID: string;
         consultationID: string;
         medecinID: string;
@@ -220,6 +239,20 @@ export declare class ConsultationMedicaleController {
         lienVisio: string | null;
     }>;
     findByPatient(patientId: string): Promise<({
+        dossier: {
+            patient: {
+                nom: string;
+                prenom: string;
+                dateNaissance: Date;
+            };
+        } & {
+            createdAt: Date;
+            patientID: string;
+            createdBy: string;
+            dossierID: string;
+            dateCreation: Date;
+            etatDossier: string;
+        };
         medecin: {
             nom: string;
             prenom: string;
@@ -229,10 +262,7 @@ export declare class ConsultationMedicaleController {
             prescriptions: ({
                 medicament: {
                     nom: string;
-                    description: string | null;
                     medicamentID: string;
-                    dosage: string;
-                    forme: string;
                 };
             } & {
                 medicamentID: string;
@@ -252,7 +282,6 @@ export declare class ConsultationMedicaleController {
     } & {
         createdAt: Date;
         updatedAt: Date;
-        patientID: string;
         dossierID: string;
         consultationID: string;
         medecinID: string;
@@ -265,6 +294,20 @@ export declare class ConsultationMedicaleController {
         lienVisio: string | null;
     })[]>;
     findByDossier(dossierId: string): Promise<({
+        dossier: {
+            patient: {
+                nom: string;
+                prenom: string;
+                dateNaissance: Date;
+            };
+        } & {
+            createdAt: Date;
+            patientID: string;
+            createdBy: string;
+            dossierID: string;
+            dateCreation: Date;
+            etatDossier: string;
+        };
         medecin: {
             nom: string;
             prenom: string;
@@ -274,10 +317,7 @@ export declare class ConsultationMedicaleController {
             prescriptions: ({
                 medicament: {
                     nom: string;
-                    description: string | null;
                     medicamentID: string;
-                    dosage: string;
-                    forme: string;
                 };
             } & {
                 medicamentID: string;
@@ -297,7 +337,6 @@ export declare class ConsultationMedicaleController {
     } & {
         createdAt: Date;
         updatedAt: Date;
-        patientID: string;
         dossierID: string;
         consultationID: string;
         medecinID: string;
@@ -310,19 +349,25 @@ export declare class ConsultationMedicaleController {
         lienVisio: string | null;
     })[]>;
     findByMedecin(medecinId: string): Promise<({
-        patient: {
-            nom: string;
-            prenom: string;
-            dateNaissance: Date;
+        dossier: {
+            patient: {
+                nom: string;
+                prenom: string;
+                dateNaissance: Date;
+            };
+        } & {
+            createdAt: Date;
+            patientID: string;
+            createdBy: string;
+            dossierID: string;
+            dateCreation: Date;
+            etatDossier: string;
         };
         ordonnances: ({
             prescriptions: ({
                 medicament: {
                     nom: string;
-                    description: string | null;
                     medicamentID: string;
-                    dosage: string;
-                    forme: string;
                 };
             } & {
                 medicamentID: string;
@@ -342,7 +387,6 @@ export declare class ConsultationMedicaleController {
     } & {
         createdAt: Date;
         updatedAt: Date;
-        patientID: string;
         dossierID: string;
         consultationID: string;
         medecinID: string;

@@ -9,7 +9,7 @@ declare class CreateOrdonnanceDto {
 }
 export declare class CreateConsultationMedicaleDto {
     dossierID: string;
-    patientID: string;
+    medecinID: string;
     dateConsultation: Date;
     motif: string;
     diagnostics: string;

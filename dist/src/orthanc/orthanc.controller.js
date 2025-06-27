@@ -219,10 +219,6 @@ exports.OrthancController = OrthancController;
 __decorate([
     (0, common_1.Get)('studies'),
     (0, roles_decorator_1.Roles)("RADIOLOGUE", "MEDECIN"),
-    (0, log_activity_decorator_1.LogActivity)({
-        typeAction: 'CONSULTATION_ETUDES',
-        description: 'Consultation de la liste des études DICOM',
-    }),
     (0, swagger_1.ApiOperation)({ summary: 'Récupérer toutes les études DICOM' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Liste des études récupérée avec succès' }),
     (0, swagger_1.ApiResponse)({ status: 500, description: 'Erreur serveur' }),
@@ -234,10 +230,6 @@ __decorate([
 __decorate([
     (0, common_1.Get)('studies/:id'),
     (0, roles_decorator_1.Roles)("RADIOLOGUE", "MEDECIN"),
-    (0, log_activity_decorator_1.LogActivity)({
-        typeAction: 'CONSULTATION_ETUDE',
-        description: (result) => `Consultation de l'étude DICOM: ${result.StudyInstanceUID}`,
-    }),
     (0, swagger_1.ApiOperation)({ summary: 'Récupérer les détails d\'une étude DICOM' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Détails de l\'étude récupérés avec succès' }),
     __param(0, (0, common_1.Param)('id')),
@@ -260,10 +252,6 @@ __decorate([
 __decorate([
     (0, common_1.Get)('series/:id'),
     (0, roles_decorator_1.Roles)("RADIOLOGUE", "MEDECIN"),
-    (0, log_activity_decorator_1.LogActivity)({
-        typeAction: 'CONSULTATION_SERIE',
-        description: (result) => `Consultation de la série DICOM: ${result.SeriesInstanceUID}`,
-    }),
     (0, swagger_1.ApiOperation)({ summary: 'Récupérer les détails d\'une série DICOM' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Détails de la série récupérés avec succès' }),
     __param(0, (0, common_1.Param)('id')),
@@ -286,10 +274,6 @@ __decorate([
 __decorate([
     (0, common_1.Get)('instances/:id'),
     (0, roles_decorator_1.Roles)("RADIOLOGUE", "MEDECIN"),
-    (0, log_activity_decorator_1.LogActivity)({
-        typeAction: 'CONSULTATION_INSTANCE',
-        description: (result) => `Consultation de l'instance DICOM: ${result.SOPInstanceUID}`,
-    }),
     (0, swagger_1.ApiOperation)({ summary: 'Récupérer les détails d\'une instance DICOM' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Détails de l\'instance récupérés avec succès' }),
     __param(0, (0, common_1.Param)('id')),

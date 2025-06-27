@@ -56,11 +56,6 @@ export class CreatePatientDto {
   @IsNotEmpty()
   email: string;
 
-  @ApiProperty({ description: 'Numéro d\'assurance maladie du patient' })
-  @IsString()
-  @IsNotEmpty()
-  assuranceMaladie: string;
-
   @ApiProperty({ description: 'Groupe sanguin du patient' })
   @IsString()
   @IsNotEmpty()

@@ -21,6 +21,7 @@ const patients_module_1 = require("./patients/patients.module");
 const examen_medical_module_1 = require("./examen-medical/examen-medical.module");
 const consultation_medicale_module_1 = require("./consultation-medicale/consultation-medicale.module");
 const notifications_module_1 = require("./notifications/notifications.module");
+const rendez_vous_module_1 = require("./rendez-vous/rendez-vous.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -40,6 +41,7 @@ exports.AppModule = AppModule = __decorate([
             notifications_module_1.NotificationsModule,
             examen_medical_module_1.ExamenMedicalModule,
             consultation_medicale_module_1.ConsultationMedicaleModule,
+            rendez_vous_module_1.RendezVousModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],

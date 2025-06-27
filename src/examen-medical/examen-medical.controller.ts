@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, Put } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { ExamenMedicalService } from './examen-medical.service';
 import { CreateExamenMedicalDto } from './dto/create-examen-medical.dto';
@@ -69,5 +69,16 @@ export class ExamenMedicalController {
   @ApiResponse({ status: 200, description: 'Liste des examens médicaux du dossier récupérée avec succès' })
   findByDossier(@Param('dossierID') dossierID: string) {
     return this.examenMedicalService.findByDossier(dossierID);
+  }
+
+  @Put(':id/invite-radiologue/:radiologueId')
+  @Roles(UserRole.RADIOLOGUE)
+  @ApiOperation({ summary: "Inviter un radiologue à participer à l'examen" })
+  @ApiResponse({ status: 200, description: "Radiologue invité avec succès" })
+  inviteRadiologue(
+    @Param('id') examenID: string,
+    @Param('radiologueId') radiologueID: string
+  ) {
+    return this.examenMedicalService.inviteRadiologue(examenID, radiologueID);
   }
 } 

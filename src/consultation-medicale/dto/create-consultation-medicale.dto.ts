@@ -4,7 +4,7 @@ import { Type } from 'class-transformer';
 
 class CreatePrescriptionDto {
   @ApiProperty({ description: 'ID du médicament' })
-  @IsUUID()
+  @IsString()
   medicamentID: string;
 
   @ApiProperty({ description: 'Posologie' })
@@ -33,9 +33,9 @@ export class CreateConsultationMedicaleDto {
   @IsUUID()
   dossierID: string;
 
-  @ApiProperty({ description: 'ID du patient' })
+  @ApiProperty({ description: 'ID du médecin' })
   @IsUUID()
-  patientID: string;
+  medecinID: string;
 
   @ApiProperty({ description: 'Date de la consultation' })
   @IsDate()

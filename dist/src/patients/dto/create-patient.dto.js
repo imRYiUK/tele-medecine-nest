@@ -42,7 +42,6 @@ class CreatePatientDto {
     adresse;
     telephone;
     email;
-    assuranceMaladie;
     groupeSanguin;
     createdBy;
     dossierMedical;
@@ -90,12 +89,6 @@ __decorate([
     (0, class_validator_1.IsNotEmpty)(),
     __metadata("design:type", String)
 ], CreatePatientDto.prototype, "email", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Numéro d\'assurance maladie du patient' }),
-    (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsNotEmpty)(),
-    __metadata("design:type", String)
-], CreatePatientDto.prototype, "assuranceMaladie", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({ description: 'Groupe sanguin du patient' }),
     (0, class_validator_1.IsString)(),

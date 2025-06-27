@@ -19,6 +19,7 @@ const login_dto_1 = require("./dto/login.dto");
 const register_dto_1 = require("./dto/register.dto");
 const swagger_1 = require("@nestjs/swagger");
 const log_activity_decorator_1 = require("../common/decorators/log-activity.decorator");
+const public_decorator_1 = require("../common/decorators/public.decorator");
 let AuthController = class AuthController {
     authService;
     constructor(authService) {
@@ -33,6 +34,7 @@ let AuthController = class AuthController {
 };
 exports.AuthController = AuthController;
 __decorate([
+    (0, public_decorator_1.Public)(),
     (0, common_1.Post)('login'),
     (0, log_activity_decorator_1.LogActivity)({
         typeAction: 'CONNEXION',

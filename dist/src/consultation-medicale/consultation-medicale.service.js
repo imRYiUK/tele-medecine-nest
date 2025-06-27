@@ -12,42 +12,58 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ConsultationMedicaleService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
+const notifications_service_1 = require("../notifications/notifications.service");
 let ConsultationMedicaleService = class ConsultationMedicaleService {
     prisma;
-    constructor(prisma) {
+    notificationsService;
+    constructor(prisma, notificationsService) {
         this.prisma = prisma;
+        this.notificationsService = notificationsService;
     }
-    async create(createConsultationMedicaleDto, medecinID) {
-        const { ordonnance, ...consultationData } = createConsultationMedicaleDto;
+    async create(createConsultationMedicaleDto) {
+        const { ordonnance, dossierID, medecinID, ...consultationData } = createConsultationMedicaleDto;
+        if (!dossierID) {
+            throw new Error('dossierID is required');
+        }
+        if (!medecinID) {
+            throw new Error('medecinID is required');
+        }
         const now = new Date();
-        return this.prisma.consultationMedicale.create({
+        const consultation = await this.prisma.consultationMedicale.create({
             data: {
                 ...consultationData,
-                medecinID,
+                dossierID: dossierID,
+                medecinID: medecinID,
                 createdAt: now,
                 updatedAt: now,
-                ordonnances: ordonnance ? {
-                    create: [{
-                            dateEmission: now,
-                            dateExpiration: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000),
-                            estRenouvelable: false,
-                            prescriptions: {
-                                create: ordonnance.prescriptions.map(prescription => ({
-                                    medicamentID: prescription.medicamentID,
-                                    posologie: prescription.posologie,
-                                    duree: prescription.duree,
-                                    instructions: prescription.instructions,
-                                })),
-                            },
-                        }],
-                } : undefined,
+                ...(ordonnance && {
+                    ordonnances: {
+                        create: [{
+                                dateEmission: now,
+                                dateExpiration: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000),
+                                estRenouvelable: false,
+                                prescriptions: {
+                                    create: ordonnance.prescriptions.map(prescription => ({
+                                        medicamentID: prescription.medicamentID,
+                                        posologie: prescription.posologie,
+                                        duree: prescription.duree,
+                                        instructions: prescription.instructions,
+                                    })),
+                                },
+                            }],
+                    },
+                }),
             },
             include: {
-                patient: {
-                    select: {
-                        nom: true,
-                        prenom: true,
-                        dateNaissance: true,
+                dossier: {
+                    include: {
+                        patient: {
+                            select: {
+                                nom: true,
+                                prenom: true,
+                                dateNaissance: true,
+                            },
+                        },
                     },
                 },
                 medecin: {
@@ -68,15 +84,27 @@ let ConsultationMedicaleService = class ConsultationMedicaleService {
                 },
             },
         });
+        await this.notificationsService.create({
+            utilisateurID: medecinID,
+            titre: 'Nouvelle Consultation Créée',
+            message: `Une nouvelle consultation a été créée pour ${consultation.dossier.patient.nom} ${consultation.dossier.patient.prenom}`,
+            type: 'CONSULTATION_CREATED',
+            lien: `/consultations/${consultation.consultationID}`,
+        });
+        return consultation;
     }
     async findAll() {
         return this.prisma.consultationMedicale.findMany({
             include: {
-                patient: {
-                    select: {
-                        nom: true,
-                        prenom: true,
-                        dateNaissance: true,
+                dossier: {
+                    include: {
+                        patient: {
+                            select: {
+                                nom: true,
+                                prenom: true,
+                                dateNaissance: true,
+                            },
+                        },
                     },
                 },
                 medecin: {
@@ -105,11 +133,15 @@ let ConsultationMedicaleService = class ConsultationMedicaleService {
         const consultation = await this.prisma.consultationMedicale.findUnique({
             where: { consultationID },
             include: {
-                patient: {
-                    select: {
-                        nom: true,
-                        prenom: true,
-                        dateNaissance: true,
+                dossier: {
+                    include: {
+                        patient: {
+                            select: {
+                                nom: true,
+                                prenom: true,
+                                dateNaissance: true,
+                            },
+                        },
                     },
                 },
                 medecin: {
@@ -137,15 +169,19 @@ let ConsultationMedicaleService = class ConsultationMedicaleService {
     }
     async update(consultationID, updateConsultationMedicaleDto) {
         const consultation = await this.findOne(consultationID);
-        return this.prisma.consultationMedicale.update({
+        const updatedConsultation = await this.prisma.consultationMedicale.update({
             where: { consultationID },
             data: updateConsultationMedicaleDto,
             include: {
-                patient: {
-                    select: {
-                        nom: true,
-                        prenom: true,
-                        dateNaissance: true,
+                dossier: {
+                    include: {
+                        patient: {
+                            select: {
+                                nom: true,
+                                prenom: true,
+                                dateNaissance: true,
+                            },
+                        },
                     },
                 },
                 medecin: {
@@ -166,17 +202,47 @@ let ConsultationMedicaleService = class ConsultationMedicaleService {
                 },
             },
         });
+        await this.notificationsService.create({
+            utilisateurID: consultation.medecinID,
+            titre: 'Consultation Mise à Jour',
+            message: `La consultation pour ${consultation.dossier.patient.nom} ${consultation.dossier.patient.prenom} a été mise à jour`,
+            type: 'CONSULTATION_UPDATED',
+            lien: `/consultations/${consultationID}`,
+        });
+        return updatedConsultation;
     }
     async remove(consultationID) {
-        await this.findOne(consultationID);
+        const consultation = await this.findOne(consultationID);
+        await this.notificationsService.create({
+            utilisateurID: consultation.medecinID,
+            titre: 'Consultation Supprimée',
+            message: `La consultation pour ${consultation.dossier.patient.nom} ${consultation.dossier.patient.prenom} a été supprimée`,
+            type: 'CONSULTATION_DELETED',
+            lien: '/consultations',
+        });
         return this.prisma.consultationMedicale.delete({
             where: { consultationID },
         });
     }
     async findByPatient(patientID) {
         return this.prisma.consultationMedicale.findMany({
-            where: { patientID },
+            where: {
+                dossier: {
+                    patientID: patientID,
+                },
+            },
             include: {
+                dossier: {
+                    include: {
+                        patient: {
+                            select: {
+                                nom: true,
+                                prenom: true,
+                                dateNaissance: true,
+                            },
+                        },
+                    },
+                },
                 medecin: {
                     select: {
                         nom: true,
@@ -203,6 +269,17 @@ let ConsultationMedicaleService = class ConsultationMedicaleService {
         return this.prisma.consultationMedicale.findMany({
             where: { dossierID },
             include: {
+                dossier: {
+                    include: {
+                        patient: {
+                            select: {
+                                nom: true,
+                                prenom: true,
+                                dateNaissance: true,
+                            },
+                        },
+                    },
+                },
                 medecin: {
                     select: {
                         nom: true,
@@ -229,11 +306,15 @@ let ConsultationMedicaleService = class ConsultationMedicaleService {
         return this.prisma.consultationMedicale.findMany({
             where: { medecinID },
             include: {
-                patient: {
-                    select: {
-                        nom: true,
-                        prenom: true,
-                        dateNaissance: true,
+                dossier: {
+                    include: {
+                        patient: {
+                            select: {
+                                nom: true,
+                                prenom: true,
+                                dateNaissance: true,
+                            },
+                        },
                     },
                 },
                 ordonnances: {
@@ -255,6 +336,7 @@ let ConsultationMedicaleService = class ConsultationMedicaleService {
 exports.ConsultationMedicaleService = ConsultationMedicaleService;
 exports.ConsultationMedicaleService = ConsultationMedicaleService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        notifications_service_1.NotificationsService])
 ], ConsultationMedicaleService);
 //# sourceMappingURL=consultation-medicale.service.js.map

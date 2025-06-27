@@ -9,11 +9,12 @@ export class PatientsService {
   constructor(private prisma: PrismaService) {}
 
   async create(createPatientDto: CreatePatientDto, userId: string) {
-    const { dossierMedical, ...patientData } = createPatientDto;
+    const { dossierMedical, dateNaissance, ...patientData } = createPatientDto;
 
     return this.prisma.patient.create({
       data: {
         ...patientData,
+        dateNaissance: new Date(dateNaissance),
         createdBy: userId,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -35,7 +36,6 @@ export class PatientsService {
     return this.prisma.patient.findMany({
       include: {
         dossierMedical: true,
-        consultations: true,
         examens: true,
       },
     });
@@ -46,7 +46,6 @@ export class PatientsService {
       where: { patientID },
       include: {
         dossierMedical: true,
-        consultations: true,
         examens: true,
       },
     });

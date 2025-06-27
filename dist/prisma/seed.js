@@ -15,8 +15,6 @@ async function main() {
             telephone: '+221338675309',
             email: 'contact@sunusante.sn',
             type: 'HOPITAL',
-            latitude: 14.7167,
-            longitude: -17.4677,
             region: 'Dakar'
         },
     });
@@ -64,7 +62,6 @@ async function main() {
             adresse: '123 Rue Test, Dakar',
             telephone: '+221711111111',
             email: 'patient@example.com',
-            assuranceMaladie: 'ASN123456',
             groupeSanguin: 'O+',
             createdBy: adminUser.utilisateurID,
             createdAt: new Date(),
@@ -99,7 +96,6 @@ async function main() {
         create: {
             consultationID: 'test-consultation-id',
             dossierID: dossierMedical.dossierID,
-            patientID: patient.patientID,
             medecinID: medecinUser.utilisateurID,
             dateConsultation: new Date(),
             motif: 'Douleur thoracique',
@@ -134,9 +130,6 @@ async function main() {
         create: {
             medicamentID: 'test-medicament-id',
             nom: 'Amoxicilline',
-            dosage: '500mg',
-            forme: 'Comprimé',
-            description: 'Antibiotique à large spectre'
         },
     });
     const ordonnance = await prisma.ordonnance.upsert({

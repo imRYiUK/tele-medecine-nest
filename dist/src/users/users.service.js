@@ -22,7 +22,7 @@ let UsersService = class UsersService {
         if (requesterRole === "SUPER_ADMIN") {
             return true;
         }
-        if (requesterRole === "ADMIN" && targetRole !== "SUPER_ADMIN") {
+        if (requesterRole === "ADMINISTRATEUR" && targetRole !== "SUPER_ADMIN") {
             return true;
         }
         return false;
@@ -183,6 +183,30 @@ let UsersService = class UsersService {
             },
         });
         return updatedUser;
+    }
+    async findMedecinsByEtablissement(etablissementID) {
+        return this.prisma.utilisateur.findMany({
+            where: {
+                role: "MEDECIN",
+                etablissementID,
+            },
+            select: {
+                utilisateurID: true,
+                nom: true,
+                prenom: true,
+                email: true,
+                username: true,
+                telephone: true,
+                role: true,
+                estActif: true,
+                etablissement: {
+                    select: {
+                        etablissementID: true,
+                        nom: true,
+                    },
+                },
+            },
+        });
     }
 };
 exports.UsersService = UsersService;
