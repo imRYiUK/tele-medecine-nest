@@ -28,6 +28,12 @@ let ImageCollaborationController = class ImageCollaborationController {
     async invite(imageID, inviteeID, req) {
         return this.collaborationService.inviteRadiologistToImage(imageID, req.user.utilisateurID, inviteeID);
     }
+    async acceptCollaboration(collaborationId, req) {
+        return this.collaborationService.acceptCollaboration(collaborationId, req.user.utilisateurID);
+    }
+    async rejectCollaboration(collaborationId, req) {
+        return this.collaborationService.rejectCollaboration(collaborationId, req.user.utilisateurID);
+    }
     async collaborators(imageID) {
         return this.collaborationService.listCollaborators(imageID);
     }
@@ -43,6 +49,9 @@ let ImageCollaborationController = class ImageCollaborationController {
     async getPendingCollaborations(req) {
         return this.collaborationService.getPendingCollaborations(req.user.utilisateurID);
     }
+    async getSentInvitations(req) {
+        return this.collaborationService.getSentInvitations(req.user.utilisateurID);
+    }
 };
 exports.ImageCollaborationController = ImageCollaborationController;
 __decorate([
@@ -57,6 +66,28 @@ __decorate([
     __metadata("design:paramtypes", [String, String, Object]),
     __metadata("design:returntype", Promise)
 ], ImageCollaborationController.prototype, "invite", null);
+__decorate([
+    (0, common_1.Post)('collaborations/:collaborationId/accept'),
+    (0, roles_decorator_1.Roles)("RADIOLOGUE"),
+    (0, swagger_1.ApiOperation)({ summary: 'Accepter une invitation de collaboration' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Invitation acceptée avec succès' }),
+    __param(0, (0, common_1.Param)('collaborationId')),
+    __param(1, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], ImageCollaborationController.prototype, "acceptCollaboration", null);
+__decorate([
+    (0, common_1.Post)('collaborations/:collaborationId/reject'),
+    (0, roles_decorator_1.Roles)("RADIOLOGUE"),
+    (0, swagger_1.ApiOperation)({ summary: 'Rejeter une invitation de collaboration' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Invitation rejetée avec succès' }),
+    __param(0, (0, common_1.Param)('collaborationId')),
+    __param(1, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], ImageCollaborationController.prototype, "rejectCollaboration", null);
 __decorate([
     (0, common_1.Get)(':imageID/collaborators'),
     (0, roles_decorator_1.Roles)("RADIOLOGUE"),
@@ -109,6 +140,16 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], ImageCollaborationController.prototype, "getPendingCollaborations", null);
+__decorate([
+    (0, common_1.Get)('user/sent-invitations'),
+    (0, roles_decorator_1.Roles)("RADIOLOGUE"),
+    (0, swagger_1.ApiOperation)({ summary: 'Récupérer les invitations envoyées par un utilisateur' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Invitations envoyées récupérées' }),
+    __param(0, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], ImageCollaborationController.prototype, "getSentInvitations", null);
 exports.ImageCollaborationController = ImageCollaborationController = __decorate([
     (0, common_1.Controller)('examen-medical/images'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),

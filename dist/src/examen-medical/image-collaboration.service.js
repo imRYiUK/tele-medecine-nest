@@ -21,7 +21,13 @@ let ImageCollaborationService = class ImageCollaborationService {
         const image = await this.prisma.imageMedicale.findUnique({
             where: { imageID },
             include: {
-                collaborations: true,
+                collaborations: {
+                    where: {
+                        status: {
+                            in: ['ACCEPTED']
+                        }
+                    }
+                },
             },
         });
         if (!image)
@@ -29,20 +35,116 @@ let ImageCollaborationService = class ImageCollaborationService {
         const isCollaborator = image.collaborations.some((c) => c.inviterID === inviterID || c.inviteeID === inviterID);
         if (!isCollaborator)
             throw new common_1.ForbiddenException('You do not have access to invite on this image');
-        const alreadyInvited = image.collaborations.some((c) => c.inviteeID === inviteeID);
-        if (alreadyInvited)
-            throw new common_1.ForbiddenException('This radiologist is already a collaborator');
+        const existingCollaboration = await this.prisma.imageCollaboration.findFirst({
+            where: {
+                imageID,
+                inviteeID,
+                status: {
+                    in: ['PENDING', 'ACCEPTED']
+                }
+            }
+        });
+        if (existingCollaboration) {
+            if (existingCollaboration.status === 'ACCEPTED') {
+                throw new common_1.ForbiddenException('This radiologist is already a collaborator');
+            }
+            else {
+                throw new common_1.ForbiddenException('An invitation is already pending for this radiologist');
+            }
+        }
         return this.prisma.imageCollaboration.create({
             data: {
                 imageID,
                 inviterID,
                 inviteeID,
+                status: 'PENDING',
+            },
+            include: {
+                inviter: true,
+                invitee: true,
+                image: {
+                    include: {
+                        examen: {
+                            include: {
+                                patient: true,
+                                typeExamen: true,
+                            },
+                        },
+                    },
+                },
+            },
+        });
+    }
+    async acceptCollaboration(collaborationId, inviteeID) {
+        const collaboration = await this.prisma.imageCollaboration.findUnique({
+            where: { id: collaborationId },
+        });
+        if (!collaboration) {
+            throw new common_1.NotFoundException('Collaboration not found');
+        }
+        if (collaboration.inviteeID !== inviteeID) {
+            throw new common_1.ForbiddenException('You can only accept invitations sent to you');
+        }
+        if (collaboration.status !== 'PENDING') {
+            throw new common_1.ForbiddenException('This invitation cannot be accepted');
+        }
+        return this.prisma.imageCollaboration.update({
+            where: { id: collaborationId },
+            data: { status: 'ACCEPTED' },
+            include: {
+                inviter: true,
+                invitee: true,
+                image: {
+                    include: {
+                        examen: {
+                            include: {
+                                patient: true,
+                                typeExamen: true,
+                            },
+                        },
+                    },
+                },
+            },
+        });
+    }
+    async rejectCollaboration(collaborationId, inviteeID) {
+        const collaboration = await this.prisma.imageCollaboration.findUnique({
+            where: { id: collaborationId },
+        });
+        if (!collaboration) {
+            throw new common_1.NotFoundException('Collaboration not found');
+        }
+        if (collaboration.inviteeID !== inviteeID) {
+            throw new common_1.ForbiddenException('You can only reject invitations sent to you');
+        }
+        if (collaboration.status !== 'PENDING') {
+            throw new common_1.ForbiddenException('This invitation cannot be rejected');
+        }
+        return this.prisma.imageCollaboration.update({
+            where: { id: collaborationId },
+            data: { status: 'REJECTED' },
+            include: {
+                inviter: true,
+                invitee: true,
+                image: {
+                    include: {
+                        examen: {
+                            include: {
+                                patient: true,
+                                typeExamen: true,
+                            },
+                        },
+                    },
+                },
             },
         });
     }
     async listCollaborators(imageID) {
         const collaborations = await this.prisma.imageCollaboration.findMany({
-            where: { imageID },
+            where: {
+                imageID,
+                status: 'ACCEPTED'
+            },
             include: {
                 invitee: true,
             },
@@ -51,7 +153,10 @@ let ImageCollaborationService = class ImageCollaborationService {
     }
     async sendMessage(imageID, senderID, content) {
         const collaborations = await this.prisma.imageCollaboration.findMany({
-            where: { imageID },
+            where: {
+                imageID,
+                status: 'ACCEPTED'
+            },
         });
         const isCollaborator = collaborations.some((c) => c.inviterID === senderID || c.inviteeID === senderID);
         if (!isCollaborator)
@@ -61,6 +166,9 @@ let ImageCollaborationService = class ImageCollaborationService {
                 imageID,
                 senderID,
                 content,
+            },
+            include: {
+                sender: true,
             },
         });
     }
@@ -91,6 +199,7 @@ let ImageCollaborationService = class ImageCollaborationService {
                     { inviterID: userID },
                     { inviteeID: userID },
                 ],
+                status: 'ACCEPTED',
             },
             include: {
                 image: {
@@ -117,9 +226,36 @@ let ImageCollaborationService = class ImageCollaborationService {
         return this.prisma.imageCollaboration.findMany({
             where: {
                 inviteeID: userID,
+                status: 'PENDING',
                 createdAt: {
                     gte: twentyFourHoursAgo,
                 },
+            },
+            include: {
+                image: {
+                    include: {
+                        examen: {
+                            include: {
+                                patient: true,
+                                typeExamen: true,
+                                demandePar: true,
+                            },
+                        },
+                    },
+                },
+                inviter: true,
+                invitee: true,
+            },
+            orderBy: {
+                createdAt: 'desc',
+            },
+        });
+    }
+    async getSentInvitations(userID) {
+        return this.prisma.imageCollaboration.findMany({
+            where: {
+                inviterID: userID,
+                status: 'PENDING',
             },
             include: {
                 image: {

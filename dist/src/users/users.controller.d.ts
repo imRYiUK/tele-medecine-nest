@@ -9,6 +9,7 @@ export declare class UsersController {
     private validateRoleHierarchy;
     create(createUserDto: CreateUserDto, req: Request): Promise<UserDto>;
     findAll(req: Request): Promise<UserDto[]>;
+    searchUsers(query: string, req: Request): Promise<UserDto[]>;
     findOne(id: string, req: Request): Promise<UserDto>;
     update(id: string, updateUserDto: UpdateUserDto, req: Request): Promise<{
         etablissement: {

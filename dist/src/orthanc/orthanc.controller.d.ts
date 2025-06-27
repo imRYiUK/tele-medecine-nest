@@ -86,6 +86,7 @@ export declare class OrthancController {
             sopInstanceUID: string;
             dateAcquisition: Date;
             modalite: string;
+            orthancInstanceId: string | null;
         };
         message?: undefined;
         error?: undefined;

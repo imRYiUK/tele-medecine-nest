@@ -1,0 +1,43 @@
+version: "3.8"
+
+services:
+  orthanc1:
+    image: jodogne/orthanc
+    container_name: orthanc1
+    ports:
+      - "8041:8042"  # Host port 8041 -> Container port 8042
+      - "4241:4242"  # Host port 4241 -> Container port 4242
+    volumes:
+      - orthanc1_data:/var/lib/orthanc/db
+    environment:
+      ORTHANC__AUTHENTICATION_ENABLED: "true"
+      ORTHANC__REGISTERED_USERS: '{"orthanc": "orthanc"}'
+
+  orthanc2:
+    image: jodogne/orthanc
+    container_name: orthanc2
+    ports:
+      - "8044:8042"  # Host port 8044 -> Container port 8042 (changed from 8042 to avoid conflict)
+      - "4244:4242"  # Host port 4244 -> Container port 4242 (changed from 4242 to avoid conflict)
+    volumes:
+      - orthanc2_data:/var/lib/orthanc/db
+    environment:
+      ORTHANC__AUTHENTICATION_ENABLED: "true"
+      ORTHANC__REGISTERED_USERS: '{"orthanc": "orthanc"}'
+
+  orthanc3:
+    image: jodogne/orthanc
+    container_name: orthanc3
+    ports:
+      - "8045:8042"  # Host port 8045 -> Container port 8042 (changed from 8043 to avoid conflict)
+      - "4245:4242"  # Host port 4245 -> Container port 4242 (changed from 4243 to avoid conflict)
+    volumes:
+      - orthanc3_data:/var/lib/orthanc/db
+    environment:
+      ORTHANC__AUTHENTICATION_ENABLED: "true"
+      ORTHANC__REGISTERED_USERS: '{"orthanc": "orthanc"}'
+
+volumes:
+  orthanc1_data:
+  orthanc2_data:
+  orthanc3_data: 

@@ -52,6 +52,18 @@ export class ExamenMedicalController {
     return this.examenMedicalService.getTypeExamens();
   }
 
+  @Get(':id/can-edit')
+  @Roles(UserRole.RADIOLOGUE)
+  @ApiOperation({ summary: 'Vérifier si le radiologue peut éditer cet examen' })
+  @ApiResponse({ status: 200, description: 'Permission vérifiée', schema: { type: 'object', properties: { canEdit: { type: 'boolean' } } } })
+  canEditExam(
+    @Param('id') examenID: string,
+    @Request() req: any
+  ) {
+    const radiologistID = req.user.utilisateurID;
+    return this.examenMedicalService.canRadiologistEditExam(examenID, radiologistID);
+  }
+
   @Get(':id')
   @Roles(UserRole.MEDECIN, UserRole.RADIOLOGUE, UserRole.TECHNICIEN)
   @ApiOperation({ summary: 'Récupérer un examen médical par son ID' })
@@ -64,8 +76,14 @@ export class ExamenMedicalController {
   @Roles(UserRole.MEDECIN, UserRole.RADIOLOGUE)
   @ApiOperation({ summary: 'Mettre à jour un examen médical' })
   @ApiResponse({ status: 200, description: 'L\'examen médical a été mis à jour avec succès' })
-  update(@Param('id') id: string, @Body() updateExamenMedicalDto: UpdateExamenMedicalDto) {
-    return this.examenMedicalService.update(id, updateExamenMedicalDto);
+  @ApiResponse({ status: 403, description: 'Permission refusée - établissement différent et non invité' })
+  update(
+    @Param('id') id: string, 
+    @Body() updateExamenMedicalDto: UpdateExamenMedicalDto,
+    @Request() req: any
+  ) {
+    const radiologistID = req.user.role === 'RADIOLOGUE' ? req.user.utilisateurID : undefined;
+    return this.examenMedicalService.update(id, updateExamenMedicalDto, radiologistID);
   }
 
   @Delete(':id')
@@ -123,8 +141,14 @@ export class ExamenMedicalController {
   @Roles(UserRole.RADIOLOGUE)
   @ApiOperation({ summary: 'Marquer un examen comme analysé' })
   @ApiResponse({ status: 200, description: 'Examen marqué comme analysé' })
-  markAsAnalyzed(@Param('id') examenID: string, @Body() resultat: { resultat: string }) {
-    return this.examenMedicalService.markAsAnalyzed(examenID, resultat.resultat);
+  @ApiResponse({ status: 403, description: 'Permission refusée - établissement différent et non invité' })
+  markAsAnalyzed(
+    @Param('id') examenID: string, 
+    @Body() resultat: { resultat: string },
+    @Request() req: any
+  ) {
+    const radiologistID = req.user.utilisateurID;
+    return this.examenMedicalService.markAsAnalyzed(examenID, resultat.resultat, radiologistID);
   }
 
   // Image Management Endpoints
@@ -148,23 +172,39 @@ export class ExamenMedicalController {
   @Roles(UserRole.RADIOLOGUE, UserRole.TECHNICIEN)
   @ApiOperation({ summary: 'Ajouter une nouvelle image à un examen médical' })
   @ApiResponse({ status: 201, description: 'Image ajoutée avec succès' })
-  createImage(@Body() createImageDto: CreateImageMedicaleDto) {
-    return this.examenMedicalService.createImage(createImageDto);
+  @ApiResponse({ status: 403, description: 'Permission refusée - établissement différent et non invité' })
+  createImage(
+    @Body() createImageDto: CreateImageMedicaleDto,
+    @Request() req: any
+  ) {
+    const radiologistID = req.user.role === 'RADIOLOGUE' ? req.user.utilisateurID : undefined;
+    return this.examenMedicalService.createImage(createImageDto, radiologistID);
   }
 
   @Patch('images/:imageId')
   @Roles(UserRole.RADIOLOGUE, UserRole.TECHNICIEN)
   @ApiOperation({ summary: 'Mettre à jour une image médicale' })
   @ApiResponse({ status: 200, description: 'Image mise à jour avec succès' })
-  updateImage(@Param('imageId') imageID: string, @Body() updateImageDto: UpdateImageMedicaleDto) {
-    return this.examenMedicalService.updateImage(imageID, updateImageDto);
+  @ApiResponse({ status: 403, description: 'Permission refusée - établissement différent et non invité' })
+  updateImage(
+    @Param('imageId') imageID: string, 
+    @Body() updateImageDto: UpdateImageMedicaleDto,
+    @Request() req: any
+  ) {
+    const radiologistID = req.user.role === 'RADIOLOGUE' ? req.user.utilisateurID : undefined;
+    return this.examenMedicalService.updateImage(imageID, updateImageDto, radiologistID);
   }
 
   @Delete('images/:imageId')
   @Roles(UserRole.RADIOLOGUE, UserRole.TECHNICIEN)
   @ApiOperation({ summary: 'Supprimer une image médicale' })
   @ApiResponse({ status: 200, description: 'Image supprimée avec succès' })
-  deleteImage(@Param('imageId') imageID: string) {
-    return this.examenMedicalService.deleteImage(imageID);
+  @ApiResponse({ status: 403, description: 'Permission refusée - établissement différent et non invité' })
+  deleteImage(
+    @Param('imageId') imageID: string,
+    @Request() req: any
+  ) {
+    const radiologistID = req.user.role === 'RADIOLOGUE' ? req.user.utilisateurID : undefined;
+    return this.examenMedicalService.deleteImage(imageID, radiologistID);
   }
 } 

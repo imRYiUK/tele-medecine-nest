@@ -35,6 +35,7 @@ export declare class OrthancService {
         sopInstanceUID: string;
         dateAcquisition: Date;
         modalite: string;
+        orthancInstanceId: string | null;
     }>;
     getDicomTags(instanceId: string, userId: string): Promise<any>;
     extractAcquisitionDate(tags: any): string | null;

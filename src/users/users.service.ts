@@ -153,8 +153,74 @@ export class UsersService {
     // Check if user exists
     const user = await this.findOne(utilisateurID);
 
-    await this.prisma.utilisateur.delete({
-      where: { utilisateurID },
+    // Use a transaction to handle foreign key constraints
+    await this.prisma.$transaction(async (prisma) => {
+      // Delete related records in the correct order to avoid foreign key violations
+      
+      // Delete chat messages sent by the user
+      await prisma.chatMessage.deleteMany({
+        where: { senderID: utilisateurID }
+      });
+
+      // Delete image collaborations where user is inviter or invitee
+      await prisma.imageCollaboration.deleteMany({
+        where: {
+          OR: [
+            { inviterID: utilisateurID },
+            { inviteeID: utilisateurID }
+          ]
+        }
+      });
+
+      // Delete notifications for the user
+      await prisma.notification.deleteMany({
+        where: { utilisateurID }
+      });
+
+      // Delete journal activities for the user
+      await prisma.journalActivite.deleteMany({
+        where: { utilisateurID }
+      });
+
+      // Delete doctor schedules
+      await prisma.horaireMedecin.deleteMany({
+        where: { medecinID: utilisateurID }
+      });
+
+      // Delete appointments where user is creator or doctor
+      await prisma.rendezVous.deleteMany({
+        where: {
+          OR: [
+            { createdByID: utilisateurID },
+            { medecinID: utilisateurID }
+          ]
+        }
+      });
+
+      // Delete medical consultations where user is doctor
+      await prisma.consultationMedicale.deleteMany({
+        where: { medecinID: utilisateurID }
+      });
+
+      // Delete medical exams ordered by the user
+      await prisma.examenMedical.deleteMany({
+        where: { demandeParID: utilisateurID }
+      });
+
+      // Delete medical records created by the user
+      await prisma.dossierMedical.deleteMany({
+        where: { createdBy: utilisateurID }
+      });
+
+      // Delete patients created by the user
+      await prisma.patient.deleteMany({
+        where: { createdBy: utilisateurID }
+      });
+
+      // Now delete the user
+      await prisma.utilisateur.delete({
+        where: { utilisateurID },
+      });
     });
   }
 
@@ -234,5 +300,44 @@ export class UsersService {
         },
       },
     });
+  }
+
+  /**
+   * Search users by email, name, or username
+   */
+  async searchUsers(query: string, requesterRole?: string): Promise<UserDto[]> {
+    const users = await this.prisma.utilisateur.findMany({
+      where: {
+        OR: [
+          { email: { contains: query } },
+          { nom: { contains: query } },
+          { prenom: { contains: query } },
+          { username: { contains: query } },
+        ],
+      },
+      select: {
+        utilisateurID: true,
+        nom: true,
+        prenom: true,
+        email: true,
+        username: true,
+        telephone: true,
+        role: true,
+        estActif: true,
+        etablissement: {
+          select: {
+            etablissementID: true,
+            nom: true,
+          },
+        },
+      },
+    });
+
+    // If requesterRole is provided, filter users based on role hierarchy
+    if (requesterRole) {
+      return users.filter(user => this.validateRoleHierarchy(requesterRole, user.role));
+    }
+
+    return users;
   }
 }

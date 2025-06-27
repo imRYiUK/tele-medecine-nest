@@ -31,6 +31,34 @@ export class ImageCollaborationController {
     );
   }
 
+  @Post('collaborations/:collaborationId/accept')
+  @Roles(UserRole.RADIOLOGUE)
+  @ApiOperation({ summary: 'Accepter une invitation de collaboration' })
+  @ApiResponse({ status: 200, description: 'Invitation acceptée avec succès' })
+  async acceptCollaboration(
+    @Param('collaborationId') collaborationId: string,
+    @Req() req: any
+  ) {
+    return this.collaborationService.acceptCollaboration(
+      collaborationId,
+      req.user.utilisateurID
+    );
+  }
+
+  @Post('collaborations/:collaborationId/reject')
+  @Roles(UserRole.RADIOLOGUE)
+  @ApiOperation({ summary: 'Rejeter une invitation de collaboration' })
+  @ApiResponse({ status: 200, description: 'Invitation rejetée avec succès' })
+  async rejectCollaboration(
+    @Param('collaborationId') collaborationId: string,
+    @Req() req: any
+  ) {
+    return this.collaborationService.rejectCollaboration(
+      collaborationId,
+      req.user.utilisateurID
+    );
+  }
+
   @Get(':imageID/collaborators')
   @Roles(UserRole.RADIOLOGUE)
   @ApiOperation({ summary: 'Lister les collaborateurs d\'une image' })
@@ -77,5 +105,13 @@ export class ImageCollaborationController {
   @ApiResponse({ status: 200, description: 'Collaborations en attente récupérées' })
   async getPendingCollaborations(@Req() req: any) {
     return this.collaborationService.getPendingCollaborations(req.user.utilisateurID);
+  }
+
+  @Get('user/sent-invitations')
+  @Roles(UserRole.RADIOLOGUE)
+  @ApiOperation({ summary: 'Récupérer les invitations envoyées par un utilisateur' })
+  @ApiResponse({ status: 200, description: 'Invitations envoyées récupérées' })
+  async getSentInvitations(@Req() req: any) {
+    return this.collaborationService.getSentInvitations(req.user.utilisateurID);
   }
 } 

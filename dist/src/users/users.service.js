@@ -137,8 +137,50 @@ let UsersService = class UsersService {
     }
     async remove(utilisateurID, adminId) {
         const user = await this.findOne(utilisateurID);
-        await this.prisma.utilisateur.delete({
-            where: { utilisateurID },
+        await this.prisma.$transaction(async (prisma) => {
+            await prisma.chatMessage.deleteMany({
+                where: { senderID: utilisateurID }
+            });
+            await prisma.imageCollaboration.deleteMany({
+                where: {
+                    OR: [
+                        { inviterID: utilisateurID },
+                        { inviteeID: utilisateurID }
+                    ]
+                }
+            });
+            await prisma.notification.deleteMany({
+                where: { utilisateurID }
+            });
+            await prisma.journalActivite.deleteMany({
+                where: { utilisateurID }
+            });
+            await prisma.horaireMedecin.deleteMany({
+                where: { medecinID: utilisateurID }
+            });
+            await prisma.rendezVous.deleteMany({
+                where: {
+                    OR: [
+                        { createdByID: utilisateurID },
+                        { medecinID: utilisateurID }
+                    ]
+                }
+            });
+            await prisma.consultationMedicale.deleteMany({
+                where: { medecinID: utilisateurID }
+            });
+            await prisma.examenMedical.deleteMany({
+                where: { demandeParID: utilisateurID }
+            });
+            await prisma.dossierMedical.deleteMany({
+                where: { createdBy: utilisateurID }
+            });
+            await prisma.patient.deleteMany({
+                where: { createdBy: utilisateurID }
+            });
+            await prisma.utilisateur.delete({
+                where: { utilisateurID },
+            });
         });
     }
     async getProfile(userId) {
@@ -207,6 +249,38 @@ let UsersService = class UsersService {
                 },
             },
         });
+    }
+    async searchUsers(query, requesterRole) {
+        const users = await this.prisma.utilisateur.findMany({
+            where: {
+                OR: [
+                    { email: { contains: query } },
+                    { nom: { contains: query } },
+                    { prenom: { contains: query } },
+                    { username: { contains: query } },
+                ],
+            },
+            select: {
+                utilisateurID: true,
+                nom: true,
+                prenom: true,
+                email: true,
+                username: true,
+                telephone: true,
+                role: true,
+                estActif: true,
+                etablissement: {
+                    select: {
+                        etablissementID: true,
+                        nom: true,
+                    },
+                },
+            },
+        });
+        if (requesterRole) {
+            return users.filter(user => this.validateRoleHierarchy(requesterRole, user.role));
+        }
+        return users;
     }
 };
 exports.UsersService = UsersService;

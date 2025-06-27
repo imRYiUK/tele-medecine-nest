@@ -194,7 +194,7 @@ let EtablissementsService = class EtablissementsService {
     }
     mapToDto(etablissement) {
         const { _count, ...rest } = etablissement;
-        const { orthancLogin, orthancPassword, ...etablissementData } = rest;
+        const { orthancPassword, ...etablissementData } = rest;
         return {
             ...etablissementData,
             type: etablissementData.type,
@@ -203,6 +203,8 @@ let EtablissementsService = class EtablissementsService {
             updatedAt: etablissementData.updatedAt,
             description: etablissementData.description ?? undefined,
             siteWeb: etablissementData.siteWeb ?? undefined,
+            orthancUrl: etablissementData.orthancUrl ?? undefined,
+            orthancLogin: etablissementData.orthancLogin ?? undefined,
         };
     }
     async notifySuperAdmins(notification) {

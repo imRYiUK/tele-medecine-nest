@@ -105,19 +105,29 @@ model TypeExamen {
   @@map("types_examens")
 }
 
+enum CollaborationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  EXPIRED
+}
+
 model ImageCollaboration {
-  id        String        @id @default(uuid())
+  id        String              @id @default(uuid())
   imageID   String
   inviterID String
   inviteeID String
-  createdAt DateTime      @default(now())
-  image     ImageMedicale @relation(fields: [imageID], references: [imageID])
-  invitee   Utilisateur   @relation("Invitee", fields: [inviteeID], references: [utilisateurID])
-  inviter   Utilisateur   @relation("Inviter", fields: [inviterID], references: [utilisateurID])
+  status    CollaborationStatus @default(PENDING)
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+  image     ImageMedicale       @relation(fields: [imageID], references: [imageID])
+  invitee   Utilisateur         @relation("Invitee", fields: [inviteeID], references: [utilisateurID])
+  inviter   Utilisateur         @relation("Inviter", fields: [inviterID], references: [utilisateurID])
 
   @@index([imageID], map: "ImageCollaboration_imageID_fkey")
   @@index([inviteeID], map: "ImageCollaboration_inviteeID_fkey")
   @@index([inviterID], map: "ImageCollaboration_inviterID_fkey")
+  @@index([status], map: "ImageCollaboration_status_fkey")
 }
 
 model ImageMedicale {

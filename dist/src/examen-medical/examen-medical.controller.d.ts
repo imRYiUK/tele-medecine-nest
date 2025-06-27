@@ -76,6 +76,7 @@ export declare class ExamenMedicalController {
             sopInstanceUID: string;
             dateAcquisition: Date;
             modalite: string;
+            orthancInstanceId: string | null;
         }[];
         radiologues: {
             etablissementID: string | null;
@@ -107,6 +108,7 @@ export declare class ExamenMedicalController {
         nomType: string;
         categorie: string;
     }[]>;
+    canEditExam(examenID: string, req: any): Promise<boolean>;
     findOne(id: string): Promise<{
         patient: {
             nom: string;
@@ -134,6 +136,7 @@ export declare class ExamenMedicalController {
             sopInstanceUID: string;
             dateAcquisition: Date;
             modalite: string;
+            orthancInstanceId: string | null;
         }[];
         radiologues: {
             nom: string;
@@ -153,7 +156,7 @@ export declare class ExamenMedicalController {
         resultat: string | null;
         estAnalyse: boolean;
     }>;
-    update(id: string, updateExamenMedicalDto: UpdateExamenMedicalDto): Promise<{
+    update(id: string, updateExamenMedicalDto: UpdateExamenMedicalDto, req: any): Promise<{
         patient: {
             nom: string;
             prenom: string;
@@ -216,6 +219,7 @@ export declare class ExamenMedicalController {
             sopInstanceUID: string;
             dateAcquisition: Date;
             modalite: string;
+            orthancInstanceId: string | null;
         }[];
         radiologues: {
             nom: string;
@@ -257,6 +261,7 @@ export declare class ExamenMedicalController {
             sopInstanceUID: string;
             dateAcquisition: Date;
             modalite: string;
+            orthancInstanceId: string | null;
         }[];
         radiologues: {
             nom: string;
@@ -344,6 +349,7 @@ export declare class ExamenMedicalController {
             sopInstanceUID: string;
             dateAcquisition: Date;
             modalite: string;
+            orthancInstanceId: string | null;
         }[];
         radiologues: {
             etablissementID: string | null;
@@ -371,7 +377,7 @@ export declare class ExamenMedicalController {
     })[]>;
     markAsAnalyzed(examenID: string, resultat: {
         resultat: string;
-    }): Promise<{
+    }, req: any): Promise<{
         patient: {
             nom: string;
             adresse: string;
@@ -414,6 +420,7 @@ export declare class ExamenMedicalController {
             sopInstanceUID: string;
             dateAcquisition: Date;
             modalite: string;
+            orthancInstanceId: string | null;
         }[];
         radiologues: {
             etablissementID: string | null;
@@ -441,7 +448,7 @@ export declare class ExamenMedicalController {
     }>;
     getImagesByExam(examenID: string): Promise<import("./dto").ImageMedicaleDto[]>;
     getImageCountByExam(examenID: string): Promise<number>;
-    createImage(createImageDto: CreateImageMedicaleDto): Promise<import("./dto").ImageMedicaleDto>;
-    updateImage(imageID: string, updateImageDto: UpdateImageMedicaleDto): Promise<import("./dto").ImageMedicaleDto>;
-    deleteImage(imageID: string): Promise<void>;
+    createImage(createImageDto: CreateImageMedicaleDto, req: any): Promise<import("./dto").ImageMedicaleDto>;
+    updateImage(imageID: string, updateImageDto: UpdateImageMedicaleDto, req: any): Promise<import("./dto").ImageMedicaleDto>;
+    deleteImage(imageID: string, req: any): Promise<void>;
 }

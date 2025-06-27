@@ -59,6 +59,13 @@ let UsersController = class UsersController {
         const requesterRole = this.getUserRole(req);
         return this.usersService.findAll(requesterRole);
     }
+    async searchUsers(query, req) {
+        const requesterRole = this.getUserRole(req);
+        if (!query) {
+            return [];
+        }
+        return this.usersService.searchUsers(query, requesterRole);
+    }
     async findOne(id, req) {
         const requesterRole = this.getUserRole(req);
         const user = await this.usersService.findOne(id);
@@ -128,6 +135,17 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], UsersController.prototype, "findAll", null);
+__decorate([
+    (0, common_1.Get)('search'),
+    (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMINISTRATEUR", "RADIOLOGUE"),
+    (0, swagger_1.ApiOperation)({ summary: 'Search users by email, name, or username' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Returns matching users', type: [user_dto_1.UserDto] }),
+    __param(0, (0, common_1.Query)('q')),
+    __param(1, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], UsersController.prototype, "searchUsers", null);
 __decorate([
     (0, common_1.Get)(':id'),
     (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMINISTRATEUR"),

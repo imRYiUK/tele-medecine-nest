@@ -155,8 +155,11 @@ let ExamenMedicalService = class ExamenMedicalService {
         }
         return examen;
     }
-    async update(examenID, updateExamenMedicalDto) {
+    async update(examenID, updateExamenMedicalDto, radiologistID) {
         const examen = await this.findOne(examenID);
+        if (radiologistID) {
+            await this.checkRadiologistPermissions(examenID, radiologistID);
+        }
         const updateData = { ...updateExamenMedicalDto };
         if (updateData.dateExamen) {
             updateData.dateExamen = new Date(updateData.dateExamen);
@@ -324,7 +327,8 @@ let ExamenMedicalService = class ExamenMedicalService {
             take: 10,
         });
     }
-    async markAsAnalyzed(examenID, resultat) {
+    async markAsAnalyzed(examenID, resultat, radiologistID) {
+        await this.checkRadiologistPermissions(examenID, radiologistID);
         return this.prisma.examenMedical.update({
             where: { examenID },
             data: {
@@ -347,12 +351,15 @@ let ExamenMedicalService = class ExamenMedicalService {
             },
         });
     }
-    async createImage(createImageDto) {
+    async createImage(createImageDto, radiologistID) {
         const exam = await this.prisma.examenMedical.findUnique({
             where: { examenID: createImageDto.examenID },
         });
         if (!exam) {
             throw new common_1.NotFoundException(`Examen médical avec l'ID ${createImageDto.examenID} non trouvé`);
+        }
+        if (radiologistID) {
+            await this.checkRadiologistPermissions(createImageDto.examenID, radiologistID);
         }
         let url = createImageDto.url;
         if (!url && createImageDto.sopInstanceUID) {
@@ -397,7 +404,7 @@ let ExamenMedicalService = class ExamenMedicalService {
             orderBy: { dateAcquisition: 'desc' },
         });
     }
-    async updateImage(imageID, updateImageDto) {
+    async updateImage(imageID, updateImageDto, radiologistID) {
         const image = await this.prisma.imageMedicale.findUnique({
             where: { imageID },
             include: {
@@ -410,6 +417,9 @@ let ExamenMedicalService = class ExamenMedicalService {
         });
         if (!image) {
             throw new common_1.NotFoundException(`Image médicale avec l'ID ${imageID} non trouvée`);
+        }
+        if (radiologistID) {
+            await this.checkRadiologistPermissions(image.examenID, radiologistID);
         }
         const updatedImage = await this.prisma.imageMedicale.update({
             where: { imageID },
@@ -424,7 +434,7 @@ let ExamenMedicalService = class ExamenMedicalService {
         });
         return updatedImage;
     }
-    async deleteImage(imageID) {
+    async deleteImage(imageID, radiologistID) {
         const image = await this.prisma.imageMedicale.findUnique({
             where: { imageID },
             include: {
@@ -437,6 +447,9 @@ let ExamenMedicalService = class ExamenMedicalService {
         });
         if (!image) {
             throw new common_1.NotFoundException(`Image médicale avec l'ID ${imageID} non trouvée`);
+        }
+        if (radiologistID) {
+            await this.checkRadiologistPermissions(image.examenID, radiologistID);
         }
         await this.prisma.imageMedicale.delete({
             where: { imageID },
@@ -506,6 +519,46 @@ let ExamenMedicalService = class ExamenMedicalService {
             nombreImages: exam._count.images,
             nombreRadiologues: exam._count.radiologues,
         }));
+    }
+    async canRadiologistEditExam(examenID, radiologistID) {
+        const exam = await this.prisma.examenMedical.findUnique({
+            where: { examenID },
+            select: {
+                demandePar: {
+                    select: {
+                        etablissementID: true,
+                    },
+                },
+                radiologues: {
+                    select: {
+                        utilisateurID: true,
+                    },
+                },
+            },
+        });
+        if (!exam) {
+            return false;
+        }
+        const isInvited = exam.radiologues.some(rad => rad.utilisateurID === radiologistID);
+        if (isInvited) {
+            return true;
+        }
+        const radiologist = await this.prisma.utilisateur.findUnique({
+            where: { utilisateurID: radiologistID },
+            select: { etablissementID: true },
+        });
+        if (!radiologist) {
+            return false;
+        }
+        return radiologist.etablissementID === exam.demandePar.etablissementID;
+    }
+    async checkRadiologistPermissions(examenID, radiologistID) {
+        const canEdit = await this.canRadiologistEditExam(examenID, radiologistID);
+        if (!canEdit) {
+            throw new common_1.ForbiddenException('Vous n\'avez pas la permission d\'éditer cet examen. ' +
+                'Vous devez soit appartenir au même établissement que le médecin demandeur, ' +
+                'soit être invité à collaborer sur cet examen.');
+        }
     }
 };
 exports.ExamenMedicalService = ExamenMedicalService;

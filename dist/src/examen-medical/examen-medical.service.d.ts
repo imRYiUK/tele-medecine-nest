@@ -77,6 +77,7 @@ export declare class ExamenMedicalService {
             sopInstanceUID: string;
             dateAcquisition: Date;
             modalite: string;
+            orthancInstanceId: string | null;
         }[];
         radiologues: {
             etablissementID: string | null;
@@ -129,6 +130,7 @@ export declare class ExamenMedicalService {
             sopInstanceUID: string;
             dateAcquisition: Date;
             modalite: string;
+            orthancInstanceId: string | null;
         }[];
         radiologues: {
             nom: string;
@@ -148,7 +150,7 @@ export declare class ExamenMedicalService {
         resultat: string | null;
         estAnalyse: boolean;
     }>;
-    update(examenID: string, updateExamenMedicalDto: UpdateExamenMedicalDto): Promise<{
+    update(examenID: string, updateExamenMedicalDto: UpdateExamenMedicalDto, radiologistID?: string): Promise<{
         patient: {
             nom: string;
             prenom: string;
@@ -211,6 +213,7 @@ export declare class ExamenMedicalService {
             sopInstanceUID: string;
             dateAcquisition: Date;
             modalite: string;
+            orthancInstanceId: string | null;
         }[];
         radiologues: {
             nom: string;
@@ -252,6 +255,7 @@ export declare class ExamenMedicalService {
             sopInstanceUID: string;
             dateAcquisition: Date;
             modalite: string;
+            orthancInstanceId: string | null;
         }[];
         radiologues: {
             nom: string;
@@ -339,6 +343,7 @@ export declare class ExamenMedicalService {
             sopInstanceUID: string;
             dateAcquisition: Date;
             modalite: string;
+            orthancInstanceId: string | null;
         }[];
         radiologues: {
             etablissementID: string | null;
@@ -364,7 +369,7 @@ export declare class ExamenMedicalService {
         resultat: string | null;
         estAnalyse: boolean;
     })[]>;
-    markAsAnalyzed(examenID: string, resultat: string): Promise<{
+    markAsAnalyzed(examenID: string, resultat: string, radiologistID: string): Promise<{
         patient: {
             nom: string;
             adresse: string;
@@ -407,6 +412,7 @@ export declare class ExamenMedicalService {
             sopInstanceUID: string;
             dateAcquisition: Date;
             modalite: string;
+            orthancInstanceId: string | null;
         }[];
         radiologues: {
             etablissementID: string | null;
@@ -438,10 +444,12 @@ export declare class ExamenMedicalService {
         nomType: string;
         categorie: string;
     }[]>;
-    createImage(createImageDto: CreateImageMedicaleDto): Promise<ImageMedicaleDto>;
+    createImage(createImageDto: CreateImageMedicaleDto, radiologistID?: string): Promise<ImageMedicaleDto>;
     getImagesByExam(examenID: string): Promise<ImageMedicaleDto[]>;
-    updateImage(imageID: string, updateImageDto: UpdateImageMedicaleDto): Promise<ImageMedicaleDto>;
-    deleteImage(imageID: string): Promise<void>;
+    updateImage(imageID: string, updateImageDto: UpdateImageMedicaleDto, radiologistID?: string): Promise<ImageMedicaleDto>;
+    deleteImage(imageID: string, radiologistID?: string): Promise<void>;
     getImageCountByExam(examenID: string): Promise<number>;
     getExamsWithImageCounts(etablissementID?: string): Promise<ExamenMedicalListDto[]>;
+    canRadiologistEditExam(examenID: string, radiologistID: string): Promise<boolean>;
+    checkRadiologistPermissions(examenID: string, radiologistID: string): Promise<void>;
 }

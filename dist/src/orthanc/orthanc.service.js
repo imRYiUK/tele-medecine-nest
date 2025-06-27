@@ -31,18 +31,58 @@ let OrthancService = class OrthancService {
         this.orthancPassword = this.configService.get('ORTHANC_PASSWORD') || 'orthanc';
     }
     async getOrthancConfigForUser(userId) {
-        const user = await this.prisma.utilisateur.findUnique({
-            where: { utilisateurID: userId },
-            select: {
-                utilisateurID: true,
-                etablissement: true,
-            },
-        });
-        const etab = user?.etablissement;
-        const url = etab?.orthancUrl || this.orthancUrl;
-        const login = etab?.orthancLogin || this.orthancUsername;
-        const password = etab?.orthancPassword || this.orthancPassword;
-        return { url, login, password };
+        try {
+            const user = await this.prisma.utilisateur.findUnique({
+                where: { utilisateurID: userId },
+                select: {
+                    utilisateurID: true,
+                    etablissement: {
+                        select: {
+                            orthancUrl: true,
+                            orthancLogin: true,
+                            orthancPassword: true,
+                        },
+                    },
+                },
+            });
+            if (!user) {
+                console.warn(`[OrthancService] User ${userId} not found, using global config`);
+                return {
+                    url: this.orthancUrl,
+                    login: this.orthancUsername,
+                    password: this.orthancPassword,
+                };
+            }
+            const etab = user.etablissement;
+            console.log(`[OrthancService] User ${userId} establishment config:`, {
+                hasEstablishment: !!etab,
+                orthancUrl: etab?.orthancUrl,
+                orthancLogin: etab?.orthancLogin,
+                hasOrthancPassword: !!etab?.orthancPassword,
+            });
+            const hasEstablishmentConfig = etab && (etab.orthancUrl || etab.orthancLogin || etab.orthancPassword);
+            if (!hasEstablishmentConfig) {
+                console.log(`[OrthancService] User ${userId} has no establishment Orthanc config, using global config`);
+            }
+            const url = etab?.orthancUrl || this.orthancUrl;
+            const login = etab?.orthancLogin || this.orthancUsername;
+            const password = etab?.orthancPassword || this.orthancPassword;
+            console.log(`[OrthancService] Using Orthanc config:`, {
+                url,
+                login,
+                hasPassword: !!password,
+                isUsingEstablishmentConfig: hasEstablishmentConfig,
+            });
+            return { url, login, password };
+        }
+        catch (error) {
+            console.error(`[OrthancService] Error getting Orthanc config for user ${userId}:`, error);
+            return {
+                url: this.orthancUrl,
+                login: this.orthancUsername,
+                password: this.orthancPassword,
+            };
+        }
     }
     getAuthHeaders(login, password) {
         return {

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, Req, UnauthorizedException, ForbiddenException } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, Req, UnauthorizedException, ForbiddenException, Query } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { Request } from 'express';
 import { CreateUserDto, UpdateUserDto, UserDto } from '../common/dto/user.dto';
@@ -65,6 +65,20 @@ export class UsersController {
   async findAll(@Req() req: Request) {
     const requesterRole = this.getUserRole(req);
     return this.usersService.findAll(requesterRole);
+  }
+
+  @Get('search')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMINISTRATEUR, UserRole.RADIOLOGUE)
+  @ApiOperation({ summary: 'Search users by email, name, or username' })
+  @ApiResponse({ status: 200, description: 'Returns matching users', type: [UserDto] })
+  async searchUsers(@Query('q') query: string, @Req() req: Request) {
+    const requesterRole = this.getUserRole(req);
+    
+    if (!query) {
+      return [];
+    }
+    
+    return this.usersService.searchUsers(query, requesterRole);
   }
 
   @Get(':id')
