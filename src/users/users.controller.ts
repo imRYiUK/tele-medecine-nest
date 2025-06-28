@@ -234,4 +234,12 @@ export class UsersController {
   async findMedecinsByEtablissement(@Param('etablissementID') etablissementID: string) {
     return this.usersService.findMedecinsByEtablissement(etablissementID);
   }
+
+  @Get('radiologues/etablissement/:etablissementID')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMINISTRATEUR, UserRole.RECEPTIONNISTE)
+  @ApiOperation({ summary: 'Get all radiologues for a given etablissement' })
+  @ApiResponse({ status: 200, description: 'Returns all radiologues for the etablissement', type: [UserDto] })
+  async findRadiologuesByEtablissement(@Param('etablissementID') etablissementID: string) {
+    return this.usersService.findRadiologuesByEtablissement(etablissementID);
+  }
 }

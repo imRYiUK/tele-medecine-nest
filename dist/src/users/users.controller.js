@@ -144,6 +144,9 @@ let UsersController = UsersController_1 = class UsersController {
     async findMedecinsByEtablissement(etablissementID) {
         return this.usersService.findMedecinsByEtablissement(etablissementID);
     }
+    async findRadiologuesByEtablissement(etablissementID) {
+        return this.usersService.findRadiologuesByEtablissement(etablissementID);
+    }
 };
 exports.UsersController = UsersController;
 __decorate([
@@ -291,6 +294,16 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], UsersController.prototype, "findMedecinsByEtablissement", null);
+__decorate([
+    (0, common_1.Get)('radiologues/etablissement/:etablissementID'),
+    (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMINISTRATEUR", "RECEPTIONNISTE"),
+    (0, swagger_1.ApiOperation)({ summary: 'Get all radiologues for a given etablissement' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Returns all radiologues for the etablissement', type: [user_dto_1.UserDto] }),
+    __param(0, (0, common_1.Param)('etablissementID')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], UsersController.prototype, "findRadiologuesByEtablissement", null);
 exports.UsersController = UsersController = UsersController_1 = __decorate([
     (0, swagger_1.ApiTags)('users'),
     (0, common_1.Controller)('users'),

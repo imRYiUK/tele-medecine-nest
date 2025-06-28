@@ -44,4 +44,5 @@ export declare class UsersController {
         } | null;
     }>;
     findMedecinsByEtablissement(etablissementID: string): Promise<UserDto[]>;
+    findRadiologuesByEtablissement(etablissementID: string): Promise<UserDto[]>;
 }

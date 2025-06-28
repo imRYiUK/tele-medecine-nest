@@ -319,6 +319,31 @@ export class UsersService {
     });
   }
 
+  async findRadiologuesByEtablissement(etablissementID: string): Promise<UserDto[]> {
+    return this.prisma.utilisateur.findMany({
+      where: {
+        role: UserRole.RADIOLOGUE,
+        etablissementID,
+      },
+      select: {
+        utilisateurID: true,
+        nom: true,
+        prenom: true,
+        email: true,
+        username: true,
+        telephone: true,
+        role: true,
+        estActif: true,
+        etablissement: {
+          select: {
+            etablissementID: true,
+            nom: true,
+          },
+        },
+      },
+    });
+  }
+
   /**
    * Search users by email, name, or username
    */

@@ -39,5 +39,6 @@ export declare class UsersService {
         } | null;
     }>;
     findMedecinsByEtablissement(etablissementID: string): Promise<UserDto[]>;
+    findRadiologuesByEtablissement(etablissementID: string): Promise<UserDto[]>;
     searchUsers(query: string, requesterRole?: string): Promise<UserDto | UserDto[] | null>;
 }

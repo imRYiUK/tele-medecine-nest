@@ -262,6 +262,30 @@ let UsersService = class UsersService {
             },
         });
     }
+    async findRadiologuesByEtablissement(etablissementID) {
+        return this.prisma.utilisateur.findMany({
+            where: {
+                role: "RADIOLOGUE",
+                etablissementID,
+            },
+            select: {
+                utilisateurID: true,
+                nom: true,
+                prenom: true,
+                email: true,
+                username: true,
+                telephone: true,
+                role: true,
+                estActif: true,
+                etablissement: {
+                    select: {
+                        etablissementID: true,
+                        nom: true,
+                    },
+                },
+            },
+        });
+    }
     async searchUsers(query, requesterRole) {
         const isEmailSearch = query.includes('@');
         if (isEmailSearch) {
