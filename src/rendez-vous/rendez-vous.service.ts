@@ -2,10 +2,14 @@ import { Injectable, BadRequestException, NotFoundException } from '@nestjs/comm
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma } from '@prisma/client';
 import { RendezVousDto } from './dto/rendez-vous.dto';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class RendezVousService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notificationsService: NotificationsService,
+  ) {}
 
   async create(data: {
     date: string;
@@ -37,6 +41,21 @@ export class RendezVousService {
         medecin: { select: { utilisateurID: true, nom: true, prenom: true } },
       },
     });
+
+    // Create notification for the medecin/radiologue
+    try {
+      await this.notificationsService.create({
+        destinataires: [data.medecinID],
+        titre: 'Nouveau Rendez-vous',
+        message: `Un nouveau rendez-vous a été créé pour ${created.patient.nom} ${created.patient.prenom} le ${data.date} de ${data.debutTime} à ${data.endTime}. Motif: ${data.motif || 'Non spécifié'}`,
+        type: 'RENDEZ_VOUS_CREATED',
+        lien: `/rendez-vous`,
+      }, data.createdByID);
+    } catch (error) {
+      // Log the error but don't fail the rendez-vous creation
+      console.error('Failed to create notification:', error);
+    }
+
     return new RendezVousDto(created);
   }
 
@@ -118,10 +137,38 @@ export class RendezVousService {
         medecin: { select: { utilisateurID: true, nom: true, prenom: true } },
       },
     });
+
+    // Create notification for the medecin/radiologue about the update
+    try {
+      await this.notificationsService.create({
+        destinataires: [newMedecinID],
+        titre: 'Rendez-vous Modifié',
+        message: `Le rendez-vous pour ${updated.patient.nom} ${updated.patient.prenom} a été modifié. Nouvelle date: ${newDate} de ${newDebutTime} à ${newEndTime}. Motif: ${data.motif || updated.motif || 'Non spécifié'}`,
+        type: 'RENDEZ_VOUS_UPDATED',
+        lien: `/rendez-vous`,
+      }, 'system'); // Using 'system' as createdByID for updates
+    } catch (error) {
+      // Log the error but don't fail the rendez-vous update
+      console.error('Failed to create update notification:', error);
+    }
+
     return new RendezVousDto(updated);
   }
 
   async remove(id: string) {
+    // Get the rendez-vous details before deletion for notification
+    const rendezVous = await this.prisma.rendezVous.findUnique({
+      where: { rendezVousID: id },
+      include: {
+        patient: { select: { patientID: true, nom: true, prenom: true } },
+        medecin: { select: { utilisateurID: true, nom: true, prenom: true } },
+      },
+    });
+
+    if (!rendezVous) {
+      throw new NotFoundException('Rendez-vous non trouvé');
+    }
+
     const deleted = await this.prisma.rendezVous.delete({
       where: { rendezVousID: id },
       include: {
@@ -129,6 +176,21 @@ export class RendezVousService {
         medecin: { select: { utilisateurID: true, nom: true, prenom: true } },
       },
     });
+
+    // Create notification for the medecin/radiologue about the deletion
+    try {
+      await this.notificationsService.create({
+        destinataires: [deleted.medecin.utilisateurID],
+        titre: 'Rendez-vous Annulé',
+        message: `Le rendez-vous pour ${deleted.patient.nom} ${deleted.patient.prenom} prévu le ${deleted.date} de ${deleted.debutTime} à ${deleted.endTime} a été annulé.`,
+        type: 'RENDEZ_VOUS_CANCELLED',
+        lien: `/rendez-vous`,
+      }, 'system'); // Using 'system' as createdByID for deletions
+    } catch (error) {
+      // Log the error but don't fail the rendez-vous deletion
+      console.error('Failed to create deletion notification:', error);
+    }
+
     return new RendezVousDto(deleted);
   }
 } 

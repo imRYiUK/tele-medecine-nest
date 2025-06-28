@@ -13,10 +13,13 @@ exports.RendezVousService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
 const rendez_vous_dto_1 = require("./dto/rendez-vous.dto");
+const notifications_service_1 = require("../notifications/notifications.service");
 let RendezVousService = class RendezVousService {
     prisma;
-    constructor(prisma) {
+    notificationsService;
+    constructor(prisma, notificationsService) {
         this.prisma = prisma;
+        this.notificationsService = notificationsService;
     }
     async create(data) {
         const conflits = await this.prisma.rendezVous.findFirst({
@@ -39,6 +42,18 @@ let RendezVousService = class RendezVousService {
                 medecin: { select: { utilisateurID: true, nom: true, prenom: true } },
             },
         });
+        try {
+            await this.notificationsService.create({
+                destinataires: [data.medecinID],
+                titre: 'Nouveau Rendez-vous',
+                message: `Un nouveau rendez-vous a été créé pour ${created.patient.nom} ${created.patient.prenom} le ${data.date} de ${data.debutTime} à ${data.endTime}. Motif: ${data.motif || 'Non spécifié'}`,
+                type: 'RENDEZ_VOUS_CREATED',
+                lien: `/rendez-vous`,
+            }, data.createdByID);
+        }
+        catch (error) {
+            console.error('Failed to create notification:', error);
+        }
         return new rendez_vous_dto_1.RendezVousDto(created);
     }
     async findAll() {
@@ -116,9 +131,31 @@ let RendezVousService = class RendezVousService {
                 medecin: { select: { utilisateurID: true, nom: true, prenom: true } },
             },
         });
+        try {
+            await this.notificationsService.create({
+                destinataires: [newMedecinID],
+                titre: 'Rendez-vous Modifié',
+                message: `Le rendez-vous pour ${updated.patient.nom} ${updated.patient.prenom} a été modifié. Nouvelle date: ${newDate} de ${newDebutTime} à ${newEndTime}. Motif: ${data.motif || updated.motif || 'Non spécifié'}`,
+                type: 'RENDEZ_VOUS_UPDATED',
+                lien: `/rendez-vous`,
+            }, 'system');
+        }
+        catch (error) {
+            console.error('Failed to create update notification:', error);
+        }
         return new rendez_vous_dto_1.RendezVousDto(updated);
     }
     async remove(id) {
+        const rendezVous = await this.prisma.rendezVous.findUnique({
+            where: { rendezVousID: id },
+            include: {
+                patient: { select: { patientID: true, nom: true, prenom: true } },
+                medecin: { select: { utilisateurID: true, nom: true, prenom: true } },
+            },
+        });
+        if (!rendezVous) {
+            throw new common_1.NotFoundException('Rendez-vous non trouvé');
+        }
         const deleted = await this.prisma.rendezVous.delete({
             where: { rendezVousID: id },
             include: {
@@ -126,12 +163,25 @@ let RendezVousService = class RendezVousService {
                 medecin: { select: { utilisateurID: true, nom: true, prenom: true } },
             },
         });
+        try {
+            await this.notificationsService.create({
+                destinataires: [deleted.medecin.utilisateurID],
+                titre: 'Rendez-vous Annulé',
+                message: `Le rendez-vous pour ${deleted.patient.nom} ${deleted.patient.prenom} prévu le ${deleted.date} de ${deleted.debutTime} à ${deleted.endTime} a été annulé.`,
+                type: 'RENDEZ_VOUS_CANCELLED',
+                lien: `/rendez-vous`,
+            }, 'system');
+        }
+        catch (error) {
+            console.error('Failed to create deletion notification:', error);
+        }
         return new rendez_vous_dto_1.RendezVousDto(deleted);
     }
 };
 exports.RendezVousService = RendezVousService;
 exports.RendezVousService = RendezVousService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        notifications_service_1.NotificationsService])
 ], RendezVousService);
 //# sourceMappingURL=rendez-vous.service.js.map
