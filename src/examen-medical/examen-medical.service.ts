@@ -300,6 +300,16 @@ export class ExamenMedicalService {
   }
 
   async getRadiologistStats(radiologueID: string) {
+    // Récupérer l'établissement du radiologue connecté
+    const radiologue = await this.prisma.utilisateur.findUnique({
+      where: { utilisateurID: radiologueID },
+      select: { etablissementID: true }
+    });
+
+    if (!radiologue || !radiologue.etablissementID) {
+      throw new ForbiddenException('Radiologue non trouvé ou non assigné à un établissement');
+    }
+
     const [
       examensEnAttente,
       examensEnCours,
@@ -311,7 +321,8 @@ export class ExamenMedicalService {
           estAnalyse: false,
           radiologues: {
             some: { utilisateurID: radiologueID }
-          }
+          },
+          demandePar: { etablissementID: radiologue.etablissementID }
         }
       }),
       this.prisma.examenMedical.count({
@@ -319,7 +330,8 @@ export class ExamenMedicalService {
           estAnalyse: false,
           radiologues: {
             some: { utilisateurID: radiologueID }
-          }
+          },
+          demandePar: { etablissementID: radiologue.etablissementID }
         }
       }),
       this.prisma.examenMedical.count({
@@ -327,7 +339,8 @@ export class ExamenMedicalService {
           estAnalyse: true,
           radiologues: {
             some: { utilisateurID: radiologueID }
-          }
+          },
+          demandePar: { etablissementID: radiologue.etablissementID }
         }
       }),
       this.prisma.examenMedical.count({
@@ -335,6 +348,7 @@ export class ExamenMedicalService {
           radiologues: {
             some: { utilisateurID: radiologueID }
           },
+          demandePar: { etablissementID: radiologue.etablissementID },
           OR: [
             { description: { contains: 'urgent' } },
             { description: { contains: 'critique' } }
@@ -352,9 +366,21 @@ export class ExamenMedicalService {
   }
 
   async getRecentExams(radiologueID: string) {
+    // Récupérer l'établissement du radiologue connecté
+    const radiologue = await this.prisma.utilisateur.findUnique({
+      where: { utilisateurID: radiologueID },
+      select: { etablissementID: true }
+    });
+
+    if (!radiologue || !radiologue.etablissementID) {
+      throw new ForbiddenException('Radiologue non trouvé ou non assigné à un établissement');
+    }
+
     return this.prisma.examenMedical.findMany({
       where: {
-        radiologues: { some: { utilisateurID: radiologueID } }
+        radiologues: { some: { utilisateurID: radiologueID } },
+        // Filtrer par l'établissement du radiologue connecté
+        demandePar: { etablissementID: radiologue.etablissementID }
       },
       include: {
         patient: true,
@@ -629,14 +655,22 @@ export class ExamenMedicalService {
     }));
   }
 
-  async getRadiologistExamsWithImageCounts(radiologueID: string, etablissementID?: string): Promise<ExamenMedicalListDto[]> {
-    const where: any = {
-      radiologues: { some: { utilisateurID: radiologueID } }
-    };
-    
-    if (etablissementID) {
-      where.demandePar = { etablissementID };
+  async getRadiologistExamsWithImageCounts(radiologueID: string): Promise<ExamenMedicalListDto[]> {
+    // Récupérer l'établissement du radiologue connecté
+    const radiologue = await this.prisma.utilisateur.findUnique({
+      where: { utilisateurID: radiologueID },
+      select: { etablissementID: true }
+    });
+
+    if (!radiologue || !radiologue.etablissementID) {
+      throw new ForbiddenException('Radiologue non trouvé ou non assigné à un établissement');
     }
+
+    const where: any = {
+      radiologues: { some: { utilisateurID: radiologueID } },
+      // Filtrer par l'établissement du radiologue connecté
+      demandePar: { etablissementID: radiologue.etablissementID }
+    };
     
     const exams = await this.prisma.examenMedical.findMany({
       where,

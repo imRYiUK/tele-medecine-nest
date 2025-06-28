@@ -34,7 +34,7 @@ export declare class ExamenMedicalController {
         consultationID: string | null;
     }>;
     getExamsWithImageCounts(etablissementID?: string): Promise<ExamenMedicalListDto[]>;
-    getRadiologistExamsWithImageCounts(etablissementID?: string, req?: any): Promise<ExamenMedicalListDto[]>;
+    getRadiologistExamsWithImageCounts(req?: any): Promise<ExamenMedicalListDto[]>;
     findAll(status?: string, category?: string, search?: string): Promise<({
         typeExamen: {
             typeExamenID: string;

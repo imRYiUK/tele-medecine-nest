@@ -270,13 +270,21 @@ let ExamenMedicalService = ExamenMedicalService_1 = class ExamenMedicalService {
         });
     }
     async getRadiologistStats(radiologueID) {
+        const radiologue = await this.prisma.utilisateur.findUnique({
+            where: { utilisateurID: radiologueID },
+            select: { etablissementID: true }
+        });
+        if (!radiologue || !radiologue.etablissementID) {
+            throw new common_1.ForbiddenException('Radiologue non trouvé ou non assigné à un établissement');
+        }
         const [examensEnAttente, examensEnCours, examensTermines, examensUrgents] = await Promise.all([
             this.prisma.examenMedical.count({
                 where: {
                     estAnalyse: false,
                     radiologues: {
                         some: { utilisateurID: radiologueID }
-                    }
+                    },
+                    demandePar: { etablissementID: radiologue.etablissementID }
                 }
             }),
             this.prisma.examenMedical.count({
@@ -284,7 +292,8 @@ let ExamenMedicalService = ExamenMedicalService_1 = class ExamenMedicalService {
                     estAnalyse: false,
                     radiologues: {
                         some: { utilisateurID: radiologueID }
-                    }
+                    },
+                    demandePar: { etablissementID: radiologue.etablissementID }
                 }
             }),
             this.prisma.examenMedical.count({
@@ -292,7 +301,8 @@ let ExamenMedicalService = ExamenMedicalService_1 = class ExamenMedicalService {
                     estAnalyse: true,
                     radiologues: {
                         some: { utilisateurID: radiologueID }
-                    }
+                    },
+                    demandePar: { etablissementID: radiologue.etablissementID }
                 }
             }),
             this.prisma.examenMedical.count({
@@ -300,6 +310,7 @@ let ExamenMedicalService = ExamenMedicalService_1 = class ExamenMedicalService {
                     radiologues: {
                         some: { utilisateurID: radiologueID }
                     },
+                    demandePar: { etablissementID: radiologue.etablissementID },
                     OR: [
                         { description: { contains: 'urgent' } },
                         { description: { contains: 'critique' } }
@@ -315,9 +326,17 @@ let ExamenMedicalService = ExamenMedicalService_1 = class ExamenMedicalService {
         };
     }
     async getRecentExams(radiologueID) {
+        const radiologue = await this.prisma.utilisateur.findUnique({
+            where: { utilisateurID: radiologueID },
+            select: { etablissementID: true }
+        });
+        if (!radiologue || !radiologue.etablissementID) {
+            throw new common_1.ForbiddenException('Radiologue non trouvé ou non assigné à un établissement');
+        }
         return this.prisma.examenMedical.findMany({
             where: {
-                radiologues: { some: { utilisateurID: radiologueID } }
+                radiologues: { some: { utilisateurID: radiologueID } },
+                demandePar: { etablissementID: radiologue.etablissementID }
             },
             include: {
                 patient: true,
@@ -542,13 +561,18 @@ let ExamenMedicalService = ExamenMedicalService_1 = class ExamenMedicalService {
             nombreRadiologues: exam._count.radiologues,
         }));
     }
-    async getRadiologistExamsWithImageCounts(radiologueID, etablissementID) {
-        const where = {
-            radiologues: { some: { utilisateurID: radiologueID } }
-        };
-        if (etablissementID) {
-            where.demandePar = { etablissementID };
+    async getRadiologistExamsWithImageCounts(radiologueID) {
+        const radiologue = await this.prisma.utilisateur.findUnique({
+            where: { utilisateurID: radiologueID },
+            select: { etablissementID: true }
+        });
+        if (!radiologue || !radiologue.etablissementID) {
+            throw new common_1.ForbiddenException('Radiologue non trouvé ou non assigné à un établissement');
         }
+        const where = {
+            radiologues: { some: { utilisateurID: radiologueID } },
+            demandePar: { etablissementID: radiologue.etablissementID }
+        };
         const exams = await this.prisma.examenMedical.findMany({
             where,
             include: {
