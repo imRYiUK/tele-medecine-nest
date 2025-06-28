@@ -16,6 +16,32 @@ export class ImageCollaborationController {
 
   constructor(private readonly collaborationService: ImageCollaborationService) {}
 
+  // ===== USER-CENTRIC ENDPOINTS (All Images) =====
+
+  @Get('user/received-invitations')
+  @Roles(UserRole.RADIOLOGUE)
+  @ApiOperation({ summary: 'Récupérer toutes les invitations reçues par l\'utilisateur (Invitee)' })
+  @ApiResponse({ status: 200, description: 'Invitations reçues récupérées' })
+  async getReceivedInvitations(@Req() req: any) {
+    return this.collaborationService.getPendingCollaborations(req.user.utilisateurID);
+  }
+
+  @Get('user/sent-invitations')
+  @Roles(UserRole.RADIOLOGUE)
+  @ApiOperation({ summary: 'Récupérer toutes les invitations envoyées par l\'utilisateur (Inviter)' })
+  @ApiResponse({ status: 200, description: 'Invitations envoyées récupérées' })
+  async getSentInvitations(@Req() req: any) {
+    return this.collaborationService.getSentInvitations(req.user.utilisateurID);
+  }
+
+  @Get('user/active-collaborations')
+  @Roles(UserRole.RADIOLOGUE)
+  @ApiOperation({ summary: 'Récupérer toutes les collaborations actives de l\'utilisateur' })
+  @ApiResponse({ status: 200, description: 'Collaborations actives récupérées' })
+  async getActiveCollaborations(@Req() req: any) {
+    return this.collaborationService.getUserCollaborations(req.user.utilisateurID);
+  }
+
   // ===== INVITATION MANAGEMENT (Inviter Perspective) =====
   
   @Post(':imageID/invite')
@@ -121,6 +147,23 @@ export class ImageCollaborationController {
     return result;
   }
 
+  @Get('sop/:sopInstanceUID/pending-collaborations')
+  @Roles(UserRole.RADIOLOGUE)
+  @ApiOperation({ summary: 'Lister les collaborations en attente d\'une image par SOP Instance UID' })
+  @ApiResponse({ status: 200, description: 'Liste des collaborations en attente récupérée' })
+  @ApiResponse({ status: 404, description: 'Image not found' })
+  async getPendingCollaborationsBySopInstanceUID(@Param('sopInstanceUID') sopInstanceUID: string) {
+    this.logger.log(`SOP Pending Collaborations request - sopInstanceUID: ${sopInstanceUID}`);
+    
+    const image = await this.collaborationService.findImageBySopInstanceUID(sopInstanceUID);
+    this.logger.log(`Found image by SOP Instance UID - imageID: ${image.imageID}`);
+    
+    const result = await this.collaborationService.getAllPendingCollaborationsForImage(image.imageID);
+    
+    this.logger.log(`SOP Pending Collaborations request completed successfully`);
+    return result;
+  }
+
   // ===== CHAT MESSAGES =====
 
   @Post(':imageID/messages')
@@ -145,31 +188,5 @@ export class ImageCollaborationController {
   @ApiResponse({ status: 200, description: 'Messages récupérés avec succès', type: [ChatMessageDto] })
   async getImageMessages(@Param('imageID') imageID: string) {
     return this.collaborationService.getMessages(imageID);
-  }
-
-  // ===== USER-CENTRIC ENDPOINTS (All Images) =====
-
-  @Get('user/received-invitations')
-  @Roles(UserRole.RADIOLOGUE)
-  @ApiOperation({ summary: 'Récupérer toutes les invitations reçues par l\'utilisateur (Invitee)' })
-  @ApiResponse({ status: 200, description: 'Invitations reçues récupérées' })
-  async getReceivedInvitations(@Req() req: any) {
-    return this.collaborationService.getPendingCollaborations(req.user.utilisateurID);
-  }
-
-  @Get('user/sent-invitations')
-  @Roles(UserRole.RADIOLOGUE)
-  @ApiOperation({ summary: 'Récupérer toutes les invitations envoyées par l\'utilisateur (Inviter)' })
-  @ApiResponse({ status: 200, description: 'Invitations envoyées récupérées' })
-  async getSentInvitations(@Req() req: any) {
-    return this.collaborationService.getSentInvitations(req.user.utilisateurID);
-  }
-
-  @Get('user/active-collaborations')
-  @Roles(UserRole.RADIOLOGUE)
-  @ApiOperation({ summary: 'Récupérer toutes les collaborations actives de l\'utilisateur' })
-  @ApiResponse({ status: 200, description: 'Collaborations actives récupérées' })
-  async getActiveCollaborations(@Req() req: any) {
-    return this.collaborationService.getUserCollaborations(req.user.utilisateurID);
   }
 } 

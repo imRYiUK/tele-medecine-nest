@@ -40,6 +40,17 @@ export class ExamenMedicalController {
     return this.examenMedicalService.getExamsWithImageCounts(etablissementID);
   }
 
+  @Get('radiologue/liste-avec-images')
+  @Roles(UserRole.RADIOLOGUE)
+  @ApiOperation({ summary: 'Récupérer la liste des examens du radiologue avec le nombre d\'images' })
+  @ApiResponse({ status: 200, description: 'Liste des examens du radiologue avec compteurs d\'images récupérée avec succès', type: [ExamenMedicalListDto] })
+  getRadiologistExamsWithImageCounts(
+    @Query('etablissementID') etablissementID?: string,
+    @Request() req?: any
+  ) {
+    return this.examenMedicalService.getRadiologistExamsWithImageCounts(req.user.utilisateurID, etablissementID);
+  }
+
   @Get()
   @Roles(UserRole.MEDECIN, UserRole.RADIOLOGUE, UserRole.TECHNICIEN)
   @ApiOperation({ summary: 'Récupérer tous les examens médicaux' })

@@ -452,6 +452,7 @@ export declare class ExamenMedicalService {
     getImageCountByExam(examenID: string): Promise<number>;
     findImageBySopInstanceUID(sopInstanceUID: string): Promise<ImageMedicaleDto>;
     getExamsWithImageCounts(etablissementID?: string): Promise<ExamenMedicalListDto[]>;
+    getRadiologistExamsWithImageCounts(radiologueID: string, etablissementID?: string): Promise<ExamenMedicalListDto[]>;
     canRadiologistEditExam(examenID: string, radiologistID: string): Promise<boolean>;
     checkRadiologistPermissions(examenID: string, radiologistID: string): Promise<void>;
 }

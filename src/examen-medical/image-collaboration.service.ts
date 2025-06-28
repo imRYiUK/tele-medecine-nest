@@ -446,6 +446,38 @@ export class ImageCollaborationService {
     });
   }
 
+  async getAllPendingCollaborationsForImage(imageID: string) {
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+    return this.prisma.imageCollaboration.findMany({
+      where: {
+        imageID,
+        status: 'PENDING',
+        createdAt: {
+          gte: twentyFourHoursAgo,
+        },
+      },
+      include: {
+        image: {
+          include: {
+            examen: {
+              include: {
+                patient: true,
+                typeExamen: true,
+                demandePar: true,
+              },
+            },
+          },
+        },
+        inviter: true,
+        invitee: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
+
   async getSentInvitations(userID: string) {
     console.log('getSentInvitations', userID);
     return this.prisma.imageCollaboration.findMany({

@@ -34,6 +34,7 @@ export declare class ExamenMedicalController {
         estAnalyse: boolean;
     }>;
     getExamsWithImageCounts(etablissementID?: string): Promise<ExamenMedicalListDto[]>;
+    getRadiologistExamsWithImageCounts(etablissementID?: string, req?: any): Promise<ExamenMedicalListDto[]>;
     findAll(status?: string, category?: string, search?: string): Promise<({
         patient: {
             nom: string;

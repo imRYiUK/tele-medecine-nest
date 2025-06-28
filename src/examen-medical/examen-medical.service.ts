@@ -310,7 +310,7 @@ export class ExamenMedicalService {
         where: {
           estAnalyse: false,
           radiologues: {
-            none: {}
+            some: { utilisateurID: radiologueID }
           }
         }
       }),
@@ -318,17 +318,23 @@ export class ExamenMedicalService {
         where: {
           estAnalyse: false,
           radiologues: {
-            some: {}
+            some: { utilisateurID: radiologueID }
           }
         }
       }),
       this.prisma.examenMedical.count({
         where: {
-          estAnalyse: true
+          estAnalyse: true,
+          radiologues: {
+            some: { utilisateurID: radiologueID }
+          }
         }
       }),
       this.prisma.examenMedical.count({
         where: {
+          radiologues: {
+            some: { utilisateurID: radiologueID }
+          },
           OR: [
             { description: { contains: 'urgent' } },
             { description: { contains: 'critique' } }
@@ -348,10 +354,7 @@ export class ExamenMedicalService {
   async getRecentExams(radiologueID: string) {
     return this.prisma.examenMedical.findMany({
       where: {
-        OR: [
-          { radiologues: { some: { utilisateurID: radiologueID } } },
-          { estAnalyse: false }
-        ]
+        radiologues: { some: { utilisateurID: radiologueID } }
       },
       include: {
         patient: true,
@@ -572,6 +575,65 @@ export class ExamenMedicalService {
 
   async getExamsWithImageCounts(etablissementID?: string): Promise<ExamenMedicalListDto[]> {
     const where: any = {};
+    if (etablissementID) {
+      where.demandePar = { etablissementID };
+    }
+    
+    const exams = await this.prisma.examenMedical.findMany({
+      where,
+      include: {
+        patient: {
+          select: {
+            nom: true,
+            prenom: true,
+          },
+        },
+        typeExamen: {
+          select: {
+            nomType: true,
+            categorie: true,
+          },
+        },
+        demandePar: {
+          select: {
+            nom: true,
+            prenom: true,
+            etablissementID: true,
+          },
+        },
+        _count: {
+          select: {
+            images: true,
+            radiologues: true,
+          },
+        },
+      },
+      orderBy: {
+        dateExamen: 'desc',
+      },
+    });
+
+    return exams.map(exam => ({
+      examenID: exam.examenID,
+      dateExamen: exam.dateExamen,
+      description: exam.description,
+      estAnalyse: exam.estAnalyse,
+      patientNom: exam.patient.nom,
+      patientPrenom: exam.patient.prenom,
+      typeExamenNom: exam.typeExamen.nomType,
+      typeExamenCategorie: exam.typeExamen.categorie,
+      demandeParNom: exam.demandePar.nom,
+      demandeParPrenom: exam.demandePar.prenom,
+      nombreImages: exam._count.images,
+      nombreRadiologues: exam._count.radiologues,
+    }));
+  }
+
+  async getRadiologistExamsWithImageCounts(radiologueID: string, etablissementID?: string): Promise<ExamenMedicalListDto[]> {
+    const where: any = {
+      radiologues: { some: { utilisateurID: radiologueID } }
+    };
+    
     if (etablissementID) {
       where.demandePar = { etablissementID };
     }
