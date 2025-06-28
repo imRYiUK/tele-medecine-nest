@@ -190,7 +190,7 @@ export class UsersService {
       });
 
       // Delete notifications for the user
-      await prisma.notification.deleteMany({
+      await prisma.notificationRecipient.deleteMany({
         where: { utilisateurID }
       });
 

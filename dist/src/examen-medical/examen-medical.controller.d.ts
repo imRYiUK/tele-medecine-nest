@@ -5,16 +5,16 @@ export declare class ExamenMedicalController {
     private readonly logger;
     constructor(examenMedicalService: ExamenMedicalService);
     create(createExamenMedicalDto: CreateExamenMedicalDto, req: any): Promise<{
+        typeExamen: {
+            typeExamenID: string;
+            nomType: string;
+            description: string;
+            categorie: string;
+        };
         patient: {
             nom: string;
             prenom: string;
             dateNaissance: Date;
-        };
-        typeExamen: {
-            description: string;
-            typeExamenID: string;
-            nomType: string;
-            categorie: string;
         };
         demandePar: {
             nom: string;
@@ -22,20 +22,26 @@ export declare class ExamenMedicalController {
             role: string;
         };
     } & {
-        description: string;
-        patientID: string;
-        dossierID: string;
         typeExamenID: string;
-        consultationID: string | null;
-        examenID: string;
+        description: string;
         demandeParID: string;
+        examenID: string;
+        dossierID: string;
+        patientID: string;
         dateExamen: Date;
         resultat: string | null;
         estAnalyse: boolean;
+        consultationID: string | null;
     }>;
     getExamsWithImageCounts(etablissementID?: string): Promise<ExamenMedicalListDto[]>;
     getRadiologistExamsWithImageCounts(etablissementID?: string, req?: any): Promise<ExamenMedicalListDto[]>;
     findAll(status?: string, category?: string, search?: string): Promise<({
+        typeExamen: {
+            typeExamenID: string;
+            nomType: string;
+            description: string;
+            categorie: string;
+        };
         patient: {
             nom: string;
             adresse: string;
@@ -44,17 +50,11 @@ export declare class ExamenMedicalController {
             createdAt: Date;
             updatedAt: Date;
             prenom: string;
+            createdBy: string;
             patientID: string;
             dateNaissance: Date;
             genre: string;
             groupeSanguin: string;
-            createdBy: string;
-        };
-        typeExamen: {
-            description: string;
-            typeExamenID: string;
-            nomType: string;
-            categorie: string;
         };
         demandePar: {
             etablissementID: string | null;
@@ -68,18 +68,6 @@ export declare class ExamenMedicalController {
             password: string;
             role: string;
         };
-        images: {
-            description: string;
-            examenID: string;
-            url: string | null;
-            imageID: string;
-            studyInstanceUID: string;
-            seriesInstanceUID: string;
-            sopInstanceUID: string;
-            dateAcquisition: Date;
-            modalite: string;
-            orthancInstanceId: string | null;
-        }[];
         radiologues: {
             etablissementID: string | null;
             nom: string;
@@ -92,47 +80,65 @@ export declare class ExamenMedicalController {
             password: string;
             role: string;
         }[];
+        images: {
+            description: string;
+            url: string | null;
+            imageID: string;
+            examenID: string;
+            studyInstanceUID: string;
+            seriesInstanceUID: string;
+            sopInstanceUID: string;
+            dateAcquisition: Date;
+            modalite: string;
+            orthancInstanceId: string | null;
+        }[];
     } & {
-        description: string;
-        patientID: string;
-        dossierID: string;
         typeExamenID: string;
-        consultationID: string | null;
-        examenID: string;
+        description: string;
         demandeParID: string;
+        examenID: string;
+        dossierID: string;
+        patientID: string;
         dateExamen: Date;
         resultat: string | null;
         estAnalyse: boolean;
+        consultationID: string | null;
     })[]>;
     getTypeExamens(): Promise<{
-        description: string;
         typeExamenID: string;
         nomType: string;
+        description: string;
         categorie: string;
     }[]>;
     canEditExam(examenID: string, req: any): Promise<boolean>;
     findOne(id: string): Promise<{
+        typeExamen: {
+            typeExamenID: string;
+            nomType: string;
+            description: string;
+            categorie: string;
+        };
         patient: {
             nom: string;
             prenom: string;
             dateNaissance: Date;
-        };
-        typeExamen: {
-            description: string;
-            typeExamenID: string;
-            nomType: string;
-            categorie: string;
         };
         demandePar: {
             nom: string;
             prenom: string;
             role: string;
         };
+        radiologues: {
+            nom: string;
+            email: string;
+            utilisateurID: string;
+            prenom: string;
+        }[];
         images: {
             description: string;
-            examenID: string;
             url: string | null;
             imageID: string;
+            examenID: string;
             studyInstanceUID: string;
             seriesInstanceUID: string;
             sopInstanceUID: string;
@@ -140,35 +146,29 @@ export declare class ExamenMedicalController {
             modalite: string;
             orthancInstanceId: string | null;
         }[];
-        radiologues: {
-            nom: string;
-            email: string;
-            utilisateurID: string;
-            prenom: string;
-        }[];
     } & {
-        description: string;
-        patientID: string;
-        dossierID: string;
         typeExamenID: string;
-        consultationID: string | null;
-        examenID: string;
+        description: string;
         demandeParID: string;
+        examenID: string;
+        dossierID: string;
+        patientID: string;
         dateExamen: Date;
         resultat: string | null;
         estAnalyse: boolean;
+        consultationID: string | null;
     }>;
     update(id: string, updateExamenMedicalDto: UpdateExamenMedicalDto, req: any): Promise<{
+        typeExamen: {
+            typeExamenID: string;
+            nomType: string;
+            description: string;
+            categorie: string;
+        };
         patient: {
             nom: string;
             prenom: string;
             dateNaissance: Date;
-        };
-        typeExamen: {
-            description: string;
-            typeExamenID: string;
-            nomType: string;
-            categorie: string;
         };
         demandePar: {
             nom: string;
@@ -176,34 +176,34 @@ export declare class ExamenMedicalController {
             role: string;
         };
     } & {
-        description: string;
-        patientID: string;
-        dossierID: string;
         typeExamenID: string;
-        consultationID: string | null;
-        examenID: string;
+        description: string;
         demandeParID: string;
+        examenID: string;
+        dossierID: string;
+        patientID: string;
         dateExamen: Date;
         resultat: string | null;
         estAnalyse: boolean;
+        consultationID: string | null;
     }>;
     remove(id: string): Promise<{
-        description: string;
-        patientID: string;
-        dossierID: string;
         typeExamenID: string;
-        consultationID: string | null;
-        examenID: string;
+        description: string;
         demandeParID: string;
+        examenID: string;
+        dossierID: string;
+        patientID: string;
         dateExamen: Date;
         resultat: string | null;
         estAnalyse: boolean;
+        consultationID: string | null;
     }>;
     findByPatient(patientID: string): Promise<({
         typeExamen: {
-            description: string;
             typeExamenID: string;
             nomType: string;
+            description: string;
             categorie: string;
         };
         demandePar: {
@@ -211,11 +211,17 @@ export declare class ExamenMedicalController {
             prenom: string;
             role: string;
         };
+        radiologues: {
+            nom: string;
+            email: string;
+            utilisateurID: string;
+            prenom: string;
+        }[];
         images: {
             description: string;
-            examenID: string;
             url: string | null;
             imageID: string;
+            examenID: string;
             studyInstanceUID: string;
             seriesInstanceUID: string;
             sopInstanceUID: string;
@@ -223,29 +229,23 @@ export declare class ExamenMedicalController {
             modalite: string;
             orthancInstanceId: string | null;
         }[];
-        radiologues: {
-            nom: string;
-            email: string;
-            utilisateurID: string;
-            prenom: string;
-        }[];
     } & {
-        description: string;
-        patientID: string;
-        dossierID: string;
         typeExamenID: string;
-        consultationID: string | null;
-        examenID: string;
+        description: string;
         demandeParID: string;
+        examenID: string;
+        dossierID: string;
+        patientID: string;
         dateExamen: Date;
         resultat: string | null;
         estAnalyse: boolean;
+        consultationID: string | null;
     })[]>;
     findByDossier(dossierID: string): Promise<({
         typeExamen: {
-            description: string;
             typeExamenID: string;
             nomType: string;
+            description: string;
             categorie: string;
         };
         demandePar: {
@@ -253,11 +253,17 @@ export declare class ExamenMedicalController {
             prenom: string;
             role: string;
         };
+        radiologues: {
+            nom: string;
+            email: string;
+            utilisateurID: string;
+            prenom: string;
+        }[];
         images: {
             description: string;
-            examenID: string;
             url: string | null;
             imageID: string;
+            examenID: string;
             studyInstanceUID: string;
             seriesInstanceUID: string;
             sopInstanceUID: string;
@@ -265,23 +271,17 @@ export declare class ExamenMedicalController {
             modalite: string;
             orthancInstanceId: string | null;
         }[];
-        radiologues: {
-            nom: string;
-            email: string;
-            utilisateurID: string;
-            prenom: string;
-        }[];
     } & {
-        description: string;
-        patientID: string;
-        dossierID: string;
         typeExamenID: string;
-        consultationID: string | null;
-        examenID: string;
+        description: string;
         demandeParID: string;
+        examenID: string;
+        dossierID: string;
+        patientID: string;
         dateExamen: Date;
         resultat: string | null;
         estAnalyse: boolean;
+        consultationID: string | null;
     })[]>;
     inviteRadiologue(examenID: string, radiologueID: string): Promise<{
         radiologues: {
@@ -291,16 +291,16 @@ export declare class ExamenMedicalController {
             prenom: string;
         }[];
     } & {
-        description: string;
-        patientID: string;
-        dossierID: string;
         typeExamenID: string;
-        consultationID: string | null;
-        examenID: string;
+        description: string;
         demandeParID: string;
+        examenID: string;
+        dossierID: string;
+        patientID: string;
         dateExamen: Date;
         resultat: string | null;
         estAnalyse: boolean;
+        consultationID: string | null;
     }>;
     getRadiologistStats(req: any): Promise<{
         examensEnAttente: number;
@@ -309,6 +309,12 @@ export declare class ExamenMedicalController {
         examensUrgents: number;
     }>;
     getRecentExams(req: any): Promise<({
+        typeExamen: {
+            typeExamenID: string;
+            nomType: string;
+            description: string;
+            categorie: string;
+        };
         patient: {
             nom: string;
             adresse: string;
@@ -317,17 +323,11 @@ export declare class ExamenMedicalController {
             createdAt: Date;
             updatedAt: Date;
             prenom: string;
+            createdBy: string;
             patientID: string;
             dateNaissance: Date;
             genre: string;
             groupeSanguin: string;
-            createdBy: string;
-        };
-        typeExamen: {
-            description: string;
-            typeExamenID: string;
-            nomType: string;
-            categorie: string;
         };
         demandePar: {
             etablissementID: string | null;
@@ -341,18 +341,6 @@ export declare class ExamenMedicalController {
             password: string;
             role: string;
         };
-        images: {
-            description: string;
-            examenID: string;
-            url: string | null;
-            imageID: string;
-            studyInstanceUID: string;
-            seriesInstanceUID: string;
-            sopInstanceUID: string;
-            dateAcquisition: Date;
-            modalite: string;
-            orthancInstanceId: string | null;
-        }[];
         radiologues: {
             etablissementID: string | null;
             nom: string;
@@ -365,21 +353,39 @@ export declare class ExamenMedicalController {
             password: string;
             role: string;
         }[];
+        images: {
+            description: string;
+            url: string | null;
+            imageID: string;
+            examenID: string;
+            studyInstanceUID: string;
+            seriesInstanceUID: string;
+            sopInstanceUID: string;
+            dateAcquisition: Date;
+            modalite: string;
+            orthancInstanceId: string | null;
+        }[];
     } & {
-        description: string;
-        patientID: string;
-        dossierID: string;
         typeExamenID: string;
-        consultationID: string | null;
-        examenID: string;
+        description: string;
         demandeParID: string;
+        examenID: string;
+        dossierID: string;
+        patientID: string;
         dateExamen: Date;
         resultat: string | null;
         estAnalyse: boolean;
+        consultationID: string | null;
     })[]>;
     markAsAnalyzed(examenID: string, resultat: {
         resultat: string;
     }, req: any): Promise<{
+        typeExamen: {
+            typeExamenID: string;
+            nomType: string;
+            description: string;
+            categorie: string;
+        };
         patient: {
             nom: string;
             adresse: string;
@@ -388,17 +394,11 @@ export declare class ExamenMedicalController {
             createdAt: Date;
             updatedAt: Date;
             prenom: string;
+            createdBy: string;
             patientID: string;
             dateNaissance: Date;
             genre: string;
             groupeSanguin: string;
-            createdBy: string;
-        };
-        typeExamen: {
-            description: string;
-            typeExamenID: string;
-            nomType: string;
-            categorie: string;
         };
         demandePar: {
             etablissementID: string | null;
@@ -412,18 +412,6 @@ export declare class ExamenMedicalController {
             password: string;
             role: string;
         };
-        images: {
-            description: string;
-            examenID: string;
-            url: string | null;
-            imageID: string;
-            studyInstanceUID: string;
-            seriesInstanceUID: string;
-            sopInstanceUID: string;
-            dateAcquisition: Date;
-            modalite: string;
-            orthancInstanceId: string | null;
-        }[];
         radiologues: {
             etablissementID: string | null;
             nom: string;
@@ -436,17 +424,29 @@ export declare class ExamenMedicalController {
             password: string;
             role: string;
         }[];
+        images: {
+            description: string;
+            url: string | null;
+            imageID: string;
+            examenID: string;
+            studyInstanceUID: string;
+            seriesInstanceUID: string;
+            sopInstanceUID: string;
+            dateAcquisition: Date;
+            modalite: string;
+            orthancInstanceId: string | null;
+        }[];
     } & {
-        description: string;
-        patientID: string;
-        dossierID: string;
         typeExamenID: string;
-        consultationID: string | null;
-        examenID: string;
+        description: string;
         demandeParID: string;
+        examenID: string;
+        dossierID: string;
+        patientID: string;
         dateExamen: Date;
         resultat: string | null;
         estAnalyse: boolean;
+        consultationID: string | null;
     }>;
     getImagesByExam(examenID: string): Promise<ImageMedicaleDto[]>;
     getImageCountByExam(examenID: string): Promise<number>;

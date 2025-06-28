@@ -31,6 +31,12 @@ export declare class ImageCollaborationController {
         };
         image: {
             examen: {
+                typeExamen: {
+                    typeExamenID: string;
+                    nomType: string;
+                    description: string;
+                    categorie: string;
+                };
                 patient: {
                     nom: string;
                     adresse: string;
@@ -39,17 +45,11 @@ export declare class ImageCollaborationController {
                     createdAt: Date;
                     updatedAt: Date;
                     prenom: string;
+                    createdBy: string;
                     patientID: string;
                     dateNaissance: Date;
                     genre: string;
                     groupeSanguin: string;
-                    createdBy: string;
-                };
-                typeExamen: {
-                    description: string;
-                    typeExamenID: string;
-                    nomType: string;
-                    categorie: string;
                 };
                 demandePar: {
                     etablissementID: string | null;
@@ -64,22 +64,22 @@ export declare class ImageCollaborationController {
                     role: string;
                 };
             } & {
-                description: string;
-                patientID: string;
-                dossierID: string;
                 typeExamenID: string;
-                consultationID: string | null;
-                examenID: string;
+                description: string;
                 demandeParID: string;
+                examenID: string;
+                dossierID: string;
+                patientID: string;
                 dateExamen: Date;
                 resultat: string | null;
                 estAnalyse: boolean;
+                consultationID: string | null;
             };
         } & {
             description: string;
-            examenID: string;
             url: string | null;
             imageID: string;
+            examenID: string;
             studyInstanceUID: string;
             seriesInstanceUID: string;
             sopInstanceUID: string;
@@ -123,6 +123,12 @@ export declare class ImageCollaborationController {
         };
         image: {
             examen: {
+                typeExamen: {
+                    typeExamenID: string;
+                    nomType: string;
+                    description: string;
+                    categorie: string;
+                };
                 patient: {
                     nom: string;
                     adresse: string;
@@ -131,17 +137,11 @@ export declare class ImageCollaborationController {
                     createdAt: Date;
                     updatedAt: Date;
                     prenom: string;
+                    createdBy: string;
                     patientID: string;
                     dateNaissance: Date;
                     genre: string;
                     groupeSanguin: string;
-                    createdBy: string;
-                };
-                typeExamen: {
-                    description: string;
-                    typeExamenID: string;
-                    nomType: string;
-                    categorie: string;
                 };
                 demandePar: {
                     etablissementID: string | null;
@@ -156,22 +156,22 @@ export declare class ImageCollaborationController {
                     role: string;
                 };
             } & {
-                description: string;
-                patientID: string;
-                dossierID: string;
                 typeExamenID: string;
-                consultationID: string | null;
-                examenID: string;
+                description: string;
                 demandeParID: string;
+                examenID: string;
+                dossierID: string;
+                patientID: string;
                 dateExamen: Date;
                 resultat: string | null;
                 estAnalyse: boolean;
+                consultationID: string | null;
             };
         } & {
             description: string;
-            examenID: string;
             url: string | null;
             imageID: string;
+            examenID: string;
             studyInstanceUID: string;
             seriesInstanceUID: string;
             sopInstanceUID: string;
@@ -215,6 +215,12 @@ export declare class ImageCollaborationController {
         };
         image: {
             examen: {
+                typeExamen: {
+                    typeExamenID: string;
+                    nomType: string;
+                    description: string;
+                    categorie: string;
+                };
                 patient: {
                     nom: string;
                     adresse: string;
@@ -223,17 +229,11 @@ export declare class ImageCollaborationController {
                     createdAt: Date;
                     updatedAt: Date;
                     prenom: string;
+                    createdBy: string;
                     patientID: string;
                     dateNaissance: Date;
                     genre: string;
                     groupeSanguin: string;
-                    createdBy: string;
-                };
-                typeExamen: {
-                    description: string;
-                    typeExamenID: string;
-                    nomType: string;
-                    categorie: string;
                 };
                 demandePar: {
                     etablissementID: string | null;
@@ -248,22 +248,22 @@ export declare class ImageCollaborationController {
                     role: string;
                 };
             } & {
-                description: string;
-                patientID: string;
-                dossierID: string;
                 typeExamenID: string;
-                consultationID: string | null;
-                examenID: string;
+                description: string;
                 demandeParID: string;
+                examenID: string;
+                dossierID: string;
+                patientID: string;
                 dateExamen: Date;
                 resultat: string | null;
                 estAnalyse: boolean;
+                consultationID: string | null;
             };
         } & {
             description: string;
-            examenID: string;
             url: string | null;
             imageID: string;
+            examenID: string;
             studyInstanceUID: string;
             seriesInstanceUID: string;
             sopInstanceUID: string;
@@ -295,30 +295,30 @@ export declare class ImageCollaborationController {
         };
         image: {
             examen: {
+                typeExamen: {
+                    nomType: string;
+                };
                 patient: {
                     nom: string;
                     prenom: string;
                 };
-                typeExamen: {
-                    nomType: string;
-                };
             } & {
-                description: string;
-                patientID: string;
-                dossierID: string;
                 typeExamenID: string;
-                consultationID: string | null;
-                examenID: string;
+                description: string;
                 demandeParID: string;
+                examenID: string;
+                dossierID: string;
+                patientID: string;
                 dateExamen: Date;
                 resultat: string | null;
                 estAnalyse: boolean;
+                consultationID: string | null;
             };
         } & {
             description: string;
-            examenID: string;
             url: string | null;
             imageID: string;
+            examenID: string;
             studyInstanceUID: string;
             seriesInstanceUID: string;
             sopInstanceUID: string;
@@ -350,30 +350,30 @@ export declare class ImageCollaborationController {
         };
         image: {
             examen: {
+                typeExamen: {
+                    nomType: string;
+                };
                 patient: {
                     nom: string;
                     prenom: string;
                 };
-                typeExamen: {
-                    nomType: string;
-                };
             } & {
-                description: string;
-                patientID: string;
-                dossierID: string;
                 typeExamenID: string;
-                consultationID: string | null;
-                examenID: string;
+                description: string;
                 demandeParID: string;
+                examenID: string;
+                dossierID: string;
+                patientID: string;
                 dateExamen: Date;
                 resultat: string | null;
                 estAnalyse: boolean;
+                consultationID: string | null;
             };
         } & {
             description: string;
-            examenID: string;
             url: string | null;
             imageID: string;
+            examenID: string;
             studyInstanceUID: string;
             seriesInstanceUID: string;
             sopInstanceUID: string;
@@ -417,6 +417,12 @@ export declare class ImageCollaborationController {
         };
         image: {
             examen: {
+                typeExamen: {
+                    typeExamenID: string;
+                    nomType: string;
+                    description: string;
+                    categorie: string;
+                };
                 patient: {
                     nom: string;
                     adresse: string;
@@ -425,35 +431,29 @@ export declare class ImageCollaborationController {
                     createdAt: Date;
                     updatedAt: Date;
                     prenom: string;
+                    createdBy: string;
                     patientID: string;
                     dateNaissance: Date;
                     genre: string;
                     groupeSanguin: string;
-                    createdBy: string;
-                };
-                typeExamen: {
-                    description: string;
-                    typeExamenID: string;
-                    nomType: string;
-                    categorie: string;
                 };
             } & {
-                description: string;
-                patientID: string;
-                dossierID: string;
                 typeExamenID: string;
-                consultationID: string | null;
-                examenID: string;
+                description: string;
                 demandeParID: string;
+                examenID: string;
+                dossierID: string;
+                patientID: string;
                 dateExamen: Date;
                 resultat: string | null;
                 estAnalyse: boolean;
+                consultationID: string | null;
             };
         } & {
             description: string;
-            examenID: string;
             url: string | null;
             imageID: string;
+            examenID: string;
             studyInstanceUID: string;
             seriesInstanceUID: string;
             sopInstanceUID: string;
@@ -497,6 +497,12 @@ export declare class ImageCollaborationController {
         };
         image: {
             examen: {
+                typeExamen: {
+                    typeExamenID: string;
+                    nomType: string;
+                    description: string;
+                    categorie: string;
+                };
                 patient: {
                     nom: string;
                     adresse: string;
@@ -505,35 +511,29 @@ export declare class ImageCollaborationController {
                     createdAt: Date;
                     updatedAt: Date;
                     prenom: string;
+                    createdBy: string;
                     patientID: string;
                     dateNaissance: Date;
                     genre: string;
                     groupeSanguin: string;
-                    createdBy: string;
-                };
-                typeExamen: {
-                    description: string;
-                    typeExamenID: string;
-                    nomType: string;
-                    categorie: string;
                 };
             } & {
-                description: string;
-                patientID: string;
-                dossierID: string;
                 typeExamenID: string;
-                consultationID: string | null;
-                examenID: string;
+                description: string;
                 demandeParID: string;
+                examenID: string;
+                dossierID: string;
+                patientID: string;
                 dateExamen: Date;
                 resultat: string | null;
                 estAnalyse: boolean;
+                consultationID: string | null;
             };
         } & {
             description: string;
-            examenID: string;
             url: string | null;
             imageID: string;
+            examenID: string;
             studyInstanceUID: string;
             seriesInstanceUID: string;
             sopInstanceUID: string;
@@ -579,6 +579,12 @@ export declare class ImageCollaborationController {
         };
         image: {
             examen: {
+                typeExamen: {
+                    typeExamenID: string;
+                    nomType: string;
+                    description: string;
+                    categorie: string;
+                };
                 patient: {
                     nom: string;
                     adresse: string;
@@ -587,17 +593,11 @@ export declare class ImageCollaborationController {
                     createdAt: Date;
                     updatedAt: Date;
                     prenom: string;
+                    createdBy: string;
                     patientID: string;
                     dateNaissance: Date;
                     genre: string;
                     groupeSanguin: string;
-                    createdBy: string;
-                };
-                typeExamen: {
-                    description: string;
-                    typeExamenID: string;
-                    nomType: string;
-                    categorie: string;
                 };
                 demandePar: {
                     etablissementID: string | null;
@@ -612,22 +612,22 @@ export declare class ImageCollaborationController {
                     role: string;
                 };
             } & {
-                description: string;
-                patientID: string;
-                dossierID: string;
                 typeExamenID: string;
-                consultationID: string | null;
-                examenID: string;
+                description: string;
                 demandeParID: string;
+                examenID: string;
+                dossierID: string;
+                patientID: string;
                 dateExamen: Date;
                 resultat: string | null;
                 estAnalyse: boolean;
+                consultationID: string | null;
             };
         } & {
             description: string;
-            examenID: string;
             url: string | null;
             imageID: string;
+            examenID: string;
             studyInstanceUID: string;
             seriesInstanceUID: string;
             sopInstanceUID: string;
@@ -667,6 +667,12 @@ export declare class ImageCollaborationController {
     getImageMessages(imageID: string): Promise<({
         image: {
             examen: {
+                typeExamen: {
+                    typeExamenID: string;
+                    nomType: string;
+                    description: string;
+                    categorie: string;
+                };
                 patient: {
                     nom: string;
                     adresse: string;
@@ -675,17 +681,11 @@ export declare class ImageCollaborationController {
                     createdAt: Date;
                     updatedAt: Date;
                     prenom: string;
+                    createdBy: string;
                     patientID: string;
                     dateNaissance: Date;
                     genre: string;
                     groupeSanguin: string;
-                    createdBy: string;
-                };
-                typeExamen: {
-                    description: string;
-                    typeExamenID: string;
-                    nomType: string;
-                    categorie: string;
                 };
                 demandePar: {
                     etablissementID: string | null;
@@ -700,22 +700,22 @@ export declare class ImageCollaborationController {
                     role: string;
                 };
             } & {
-                description: string;
-                patientID: string;
-                dossierID: string;
                 typeExamenID: string;
-                consultationID: string | null;
-                examenID: string;
+                description: string;
                 demandeParID: string;
+                examenID: string;
+                dossierID: string;
+                patientID: string;
                 dateExamen: Date;
                 resultat: string | null;
                 estAnalyse: boolean;
+                consultationID: string | null;
             };
         } & {
             description: string;
-            examenID: string;
             url: string | null;
             imageID: string;
+            examenID: string;
             studyInstanceUID: string;
             seriesInstanceUID: string;
             sopInstanceUID: string;

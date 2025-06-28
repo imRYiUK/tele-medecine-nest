@@ -161,7 +161,7 @@ let UsersService = class UsersService {
                     ]
                 }
             });
-            await prisma.notification.deleteMany({
+            await prisma.notificationRecipient.deleteMany({
                 where: { utilisateurID }
             });
             await prisma.journalActivite.deleteMany({

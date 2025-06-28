@@ -20,62 +20,155 @@ let NotificationsService = class NotificationsService {
         this.prisma = prisma;
         this.notificationsGateway = notificationsGateway;
     }
-    async create(createNotificationDto) {
+    async create(createNotificationDto, createdByID) {
+        const filteredDestinataires = createNotificationDto.destinataires.filter(destinataire => String(destinataire).trim() !== String(createdByID).trim());
+        if (filteredDestinataires.length === 0) {
+            return null;
+        }
         const notification = await this.prisma.notification.create({
             data: {
-                ...createNotificationDto,
+                titre: createNotificationDto.titre,
+                message: createNotificationDto.message,
+                type: createNotificationDto.type,
+                lien: createNotificationDto.lien,
                 dateCreation: new Date(),
-                estLu: false,
+                createdByID: createdByID,
             },
         });
-        await this.notificationsGateway.sendNotificationToUser(createNotificationDto.utilisateurID, notification);
-        return notification;
+        const recipients = await Promise.all(filteredDestinataires.map(async (utilisateurID) => {
+            return this.prisma.notificationRecipient.create({
+                data: {
+                    notificationID: notification.notificationID,
+                    utilisateurID: utilisateurID,
+                    estLu: false,
+                },
+            });
+        }));
+        await Promise.all(filteredDestinataires.map(async (utilisateurID) => {
+            await this.notificationsGateway.sendNotificationToUser(utilisateurID, {
+                ...notification,
+                estLu: false,
+                utilisateurID: utilisateurID,
+            });
+        }));
+        return {
+            ...notification,
+            recipients: recipients,
+        };
     }
     async findAll(userId) {
-        return this.prisma.notification.findMany({
+        const allRecipients = await this.prisma.notificationRecipient.findMany({
             where: {
                 utilisateurID: userId,
             },
+            include: {
+                notification: {
+                    include: {
+                        createdBy: {
+                            select: {
+                                utilisateurID: true,
+                                nom: true,
+                                prenom: true,
+                                email: true,
+                            },
+                        },
+                    },
+                },
+            },
             orderBy: {
-                dateCreation: 'desc',
+                notification: {
+                    dateCreation: 'desc',
+                },
             },
         });
+        const filteredRecipients = allRecipients.filter(recipient => recipient.notification.createdByID !== userId);
+        return filteredRecipients;
     }
     async findUnread(userId) {
-        return this.prisma.notification.findMany({
+        return this.prisma.notificationRecipient.findMany({
             where: {
                 utilisateurID: userId,
                 estLu: false,
+            },
+            include: {
+                notification: {
+                    include: {
+                        createdBy: {
+                            select: {
+                                utilisateurID: true,
+                                nom: true,
+                                prenom: true,
+                                email: true,
+                            },
+                        },
+                    },
+                },
             },
             orderBy: {
-                dateCreation: 'desc',
+                notification: {
+                    dateCreation: 'desc',
+                },
             },
         });
     }
-    async markAsRead(notificationId) {
-        const notification = await this.prisma.notification.update({
-            where: { notificationID: notificationId },
-            data: { estLu: true },
+    async markAsRead(notificationId, userId) {
+        const notificationRecipient = await this.prisma.notificationRecipient.findFirst({
+            where: {
+                notificationID: notificationId,
+                utilisateurID: userId,
+            },
         });
-        await this.notificationsGateway.sendNotificationToUser(notification.utilisateurID, { type: 'notification_read', notificationId });
-        return notification;
+        if (!notificationRecipient) {
+            throw new common_1.NotFoundException('Notification not found or access denied');
+        }
+        const updatedRecipient = await this.prisma.notificationRecipient.update({
+            where: {
+                notificationID_utilisateurID: {
+                    notificationID: notificationId,
+                    utilisateurID: userId,
+                }
+            },
+            data: {
+                estLu: true,
+                dateLecture: new Date(),
+            },
+        });
+        await this.notificationsGateway.sendNotificationToUser(userId, { type: 'notification_read', notificationId });
+        return updatedRecipient;
     }
     async markAllAsRead(userId) {
-        const result = await this.prisma.notification.updateMany({
+        const result = await this.prisma.notificationRecipient.updateMany({
             where: {
                 utilisateurID: userId,
                 estLu: false,
             },
-            data: { estLu: true },
+            data: {
+                estLu: true,
+                dateLecture: new Date(),
+            },
         });
         await this.notificationsGateway.sendNotificationToUser(userId, {
             type: 'all_notifications_read',
         });
         return result;
     }
-    async remove(notificationId) {
-        return this.prisma.notification.delete({
-            where: { notificationID: notificationId },
+    async remove(notificationId, userId) {
+        const notificationRecipient = await this.prisma.notificationRecipient.findFirst({
+            where: {
+                notificationID: notificationId,
+                utilisateurID: userId,
+            },
+        });
+        if (!notificationRecipient) {
+            throw new common_1.NotFoundException('Notification not found or access denied');
+        }
+        return this.prisma.notificationRecipient.delete({
+            where: {
+                notificationID_utilisateurID: {
+                    notificationID: notificationId,
+                    utilisateurID: userId,
+                }
+            },
         });
     }
 };

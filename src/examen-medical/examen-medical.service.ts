@@ -53,12 +53,12 @@ export class ExamenMedicalService {
 
     // Notifier le demandeur
     await this.notificationsService.create({
-      utilisateurID: demandeParID,
+      destinataires: [demandeParID],
       titre: 'Nouvel examen médical créé',
       message: `Un nouvel examen médical a été créé pour le patient ${examen.patient.prenom} ${examen.patient.nom}`,
       type: 'EXAMEN_CREATED',
       lien: `/examens/${examen.examenID}`,
-    });
+    }, demandeParID);
 
     return examen;
   }
@@ -207,12 +207,12 @@ export class ExamenMedicalService {
 
     // Notifier le demandeur
     await this.notificationsService.create({
-      utilisateurID: examen.demandeParID,
+      destinataires: [examen.demandeParID],
       titre: 'Examen médical mis à jour',
       message: `L'examen médical du patient ${updatedExamen.patient.prenom} ${updatedExamen.patient.nom} a été mis à jour`,
       type: 'EXAMEN_UPDATED',
       lien: `/examens/${examenID}`,
-    });
+    }, examen.demandeParID);
 
     return updatedExamen;
   }
@@ -222,12 +222,12 @@ export class ExamenMedicalService {
 
     // Notifier le demandeur avant la suppression
     await this.notificationsService.create({
-      utilisateurID: examen.demandeParID,
+      destinataires: [examen.demandeParID],
       titre: 'Examen médical supprimé',
       message: `L'examen médical du patient ${examen.patient.prenom} ${examen.patient.nom} a été supprimé`,
       type: 'EXAMEN_DELETED',
       lien: '/examens',
-    });
+    }, examen.demandeParID);
 
     return this.prisma.examenMedical.delete({
       where: { examenID },
@@ -446,12 +446,12 @@ export class ExamenMedicalService {
 
     // Notify the exam requester about the new image
     await this.notificationsService.create({
-      utilisateurID: exam.demandeParID,
+      destinataires: [exam.demandeParID],
       titre: 'Nouvelle image ajoutée',
       message: `Une nouvelle image a été ajoutée à l'examen médical du patient`,
       type: 'IMAGE_ADDED',
       lien: `/examens/${exam.examenID}`,
-    });
+    }, exam.demandeParID);
 
     return image;
   }
@@ -500,12 +500,12 @@ export class ExamenMedicalService {
 
     // Notify about image update
     await this.notificationsService.create({
-      utilisateurID: image.examen.demandeParID,
+      destinataires: [image.examen.demandeParID],
       titre: 'Image médicale mise à jour',
       message: `Une image de l'examen du patient ${image.examen.patient.prenom} ${image.examen.patient.nom} a été mise à jour`,
       type: 'IMAGE_UPDATED',
       lien: `/examens/${image.examenID}`,
-    });
+    }, image.examen.demandeParID);
 
     return updatedImage;
   }
@@ -537,12 +537,12 @@ export class ExamenMedicalService {
 
     // Notify about image deletion
     await this.notificationsService.create({
-      utilisateurID: image.examen.demandeParID,
+      destinataires: [image.examen.demandeParID],
       titre: 'Image médicale supprimée',
       message: `Une image de l'examen du patient ${image.examen.patient.prenom} ${image.examen.patient.nom} a été supprimée`,
       type: 'IMAGE_DELETED',
       lien: `/examens/${image.examenID}`,
-    });
+    }, image.examen.demandeParID);
   }
 
   async getImageCountByExam(examenID: string): Promise<number> {

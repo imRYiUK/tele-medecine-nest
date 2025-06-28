@@ -12,8 +12,8 @@ export declare class JournalService {
             role: string;
         };
     } & {
-        etablissementID: string | null;
         description: string;
+        etablissementID: string | null;
         utilisateurID: string;
         journalID: string;
         dateAction: Date;
@@ -29,8 +29,8 @@ export declare class JournalService {
             role: string;
         };
     } & {
-        etablissementID: string | null;
         description: string;
+        etablissementID: string | null;
         utilisateurID: string;
         journalID: string;
         dateAction: Date;
@@ -46,8 +46,8 @@ export declare class JournalService {
             role: string;
         };
     } & {
-        etablissementID: string | null;
         description: string;
+        etablissementID: string | null;
         utilisateurID: string;
         journalID: string;
         dateAction: Date;
@@ -63,8 +63,8 @@ export declare class JournalService {
             role: string;
         };
     } & {
-        etablissementID: string | null;
         description: string;
+        etablissementID: string | null;
         utilisateurID: string;
         journalID: string;
         dateAction: Date;

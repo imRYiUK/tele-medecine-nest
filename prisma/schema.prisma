@@ -164,7 +164,8 @@ model Utilisateur {
   HoraireMedecin        HoraireMedecin[]
   invitedCollaborations ImageCollaboration[]   @relation("Invitee")
   sentInvitations       ImageCollaboration[]   @relation("Inviter")
-  Notification          Notification[]
+  notificationsCreated  Notification[]         @relation("NotificationCreator")
+  notificationRecipients NotificationRecipient[]
   rendezVousCrees       RendezVous[]           @relation("CreateurRendezVous")
   rendezVousMedecin     RendezVous[]           @relation("MedecinRendezVous")
   consultations         ConsultationMedicale[]
@@ -254,16 +255,30 @@ model JournalActivite {
 }
 
 model Notification {
-  notificationID String      @id @default(uuid())
-  utilisateurID  String
+  notificationID String                    @id @default(uuid())
   titre          String
   message        String
   type           String?
   lien           String?
-  dateCreation   DateTime    @default(now())
-  estLu          Boolean     @default(false)
-  utilisateur    Utilisateur @relation(fields: [utilisateurID], references: [utilisateurID])
+  dateCreation   DateTime                  @default(now())
+  createdByID    String
+  createdBy      Utilisateur               @relation("NotificationCreator", fields: [createdByID], references: [utilisateurID])
+  recipients     NotificationRecipient[]
 
+  @@index([createdByID])
+}
+
+model NotificationRecipient {
+  id             String      @id @default(uuid())
+  notificationID String
+  utilisateurID  String
+  estLu          Boolean     @default(false)
+  dateLecture    DateTime?
+  notification   Notification @relation(fields: [notificationID], references: [notificationID], onDelete: Cascade)
+  utilisateur    Utilisateur @relation(fields: [utilisateurID], references: [utilisateurID], onDelete: Cascade)
+
+  @@unique([notificationID, utilisateurID])
+  @@index([notificationID])
   @@index([utilisateurID])
 }
 

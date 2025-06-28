@@ -13,11 +13,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ImageCollaborationService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
+const notifications_service_1 = require("../notifications/notifications.service");
 let ImageCollaborationService = ImageCollaborationService_1 = class ImageCollaborationService {
     prisma;
+    notificationsService;
     logger = new common_1.Logger(ImageCollaborationService_1.name);
-    constructor(prisma) {
+    constructor(prisma, notificationsService) {
         this.prisma = prisma;
+        this.notificationsService = notificationsService;
     }
     async inviteRadiologistToImage(imageID, inviterID, inviteeID) {
         if (!inviteeID) {
@@ -264,16 +267,32 @@ let ImageCollaborationService = ImageCollaborationService_1 = class ImageCollabo
         return Array.from(collaborators.values());
     }
     async sendMessage(imageID, senderID, content) {
-        const collaborations = await this.prisma.imageCollaboration.findMany({
-            where: {
-                imageID,
-                status: 'ACCEPTED'
+        const image = await this.prisma.imageMedicale.findUnique({
+            where: { imageID },
+            include: {
+                examen: {
+                    include: {
+                        demandePar: true,
+                        radiologues: true,
+                    },
+                },
+                collaborations: {
+                    where: {
+                        status: 'ACCEPTED'
+                    },
+                },
             },
         });
-        const isCollaborator = collaborations.some((c) => c.inviterID === senderID || c.inviteeID === senderID);
-        if (!isCollaborator)
-            throw new common_1.ForbiddenException('You are not a collaborator on this image');
-        return this.prisma.chatMessage.create({
+        if (!image) {
+            throw new common_1.NotFoundException('Image not found');
+        }
+        const isExamRequester = image.examen.demandeParID === senderID;
+        const isAssignedRadiologist = image.examen.radiologues.some(r => r.utilisateurID === senderID);
+        const isCollaborator = image.collaborations.some((c) => c.inviterID === senderID || c.inviteeID === senderID);
+        if (!isExamRequester && !isAssignedRadiologist && !isCollaborator) {
+            throw new common_1.ForbiddenException('You do not have access to this image');
+        }
+        const message = await this.prisma.chatMessage.create({
             data: {
                 imageID,
                 senderID,
@@ -283,6 +302,38 @@ let ImageCollaborationService = ImageCollaborationService_1 = class ImageCollabo
                 sender: true,
             },
         });
+        const collaborators = await this.listCollaborators(imageID);
+        const sender = await this.prisma.utilisateur.findUnique({
+            where: { utilisateurID: senderID },
+            select: { nom: true, prenom: true }
+        });
+        const imageForLink = await this.prisma.imageMedicale.findUnique({
+            where: { imageID },
+            select: { sopInstanceUID: true }
+        });
+        const recipients = collaborators
+            .filter(collaborator => {
+            const isSender = String(collaborator.utilisateurID).trim() === String(senderID).trim();
+            if (isSender) {
+                this.logger.log(`Excluding sender from notifications: ${collaborator.utilisateurID} (${collaborator.prenom} ${collaborator.nom})`);
+            }
+            return !isSender;
+        })
+            .map(collaborator => collaborator.utilisateurID);
+        if (recipients.length > 0) {
+            this.logger.log(`Sending notifications to ${recipients.length} recipients: ${recipients.join(', ')}`);
+            await this.notificationsService.create({
+                destinataires: recipients,
+                titre: 'Nouveau message',
+                message: `Nouveau message de ${sender?.prenom} ${sender?.nom} sur l'image médicale`,
+                type: 'CHAT_MESSAGE',
+                lien: `/radiologue/dicom/image/${imageForLink?.sopInstanceUID}`,
+            }, senderID);
+        }
+        else {
+            this.logger.log(`No recipients found for notification from sender: ${senderID}`);
+        }
+        return message;
     }
     async getMessages(imageID) {
         return this.prisma.chatMessage.findMany({
@@ -503,6 +554,7 @@ let ImageCollaborationService = ImageCollaborationService_1 = class ImageCollabo
 exports.ImageCollaborationService = ImageCollaborationService;
 exports.ImageCollaborationService = ImageCollaborationService = ImageCollaborationService_1 = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        notifications_service_1.NotificationsService])
 ], ImageCollaborationService);
 //# sourceMappingURL=image-collaboration.service.js.map

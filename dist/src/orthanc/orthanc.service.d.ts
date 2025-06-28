@@ -27,9 +27,9 @@ export declare class OrthancService {
     }>;
     saveImageMetadata(examenId: string, orthancId: string, studyUid: string, modalite: string): Promise<{
         description: string;
-        examenID: string;
         url: string | null;
         imageID: string;
+        examenID: string;
         studyInstanceUID: string;
         seriesInstanceUID: string;
         sopInstanceUID: string;

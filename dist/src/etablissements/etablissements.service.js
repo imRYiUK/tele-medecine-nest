@@ -217,9 +217,9 @@ let EtablissementsService = class EtablissementsService {
         });
         for (const admin of superAdmins) {
             await this.notificationsService.create({
-                utilisateurID: admin.utilisateurID,
+                destinataires: [admin.utilisateurID],
                 ...notification,
-            });
+            }, admin.utilisateurID);
         }
     }
 };

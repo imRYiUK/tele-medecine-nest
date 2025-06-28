@@ -17,13 +17,33 @@ const common_1 = require("@nestjs/common");
 const notifications_service_1 = require("./notifications.service");
 const create_notification_dto_1 = require("./dto/create-notification.dto");
 const jwt_auth_guard_1 = require("../common/guards/jwt-auth.guard");
+const swagger_1 = require("@nestjs/swagger");
+const prisma_service_1 = require("../prisma/prisma.service");
 let NotificationsController = class NotificationsController {
     notificationsService;
-    constructor(notificationsService) {
+    prisma;
+    constructor(notificationsService, prisma) {
         this.notificationsService = notificationsService;
+        this.prisma = prisma;
     }
-    create(createNotificationDto) {
-        return this.notificationsService.create(createNotificationDto);
+    create(createNotificationDto, req) {
+        const isAdmin = req.user.role === 'ADMINISTRATEUR' || req.user.role === 'SUPER_ADMIN';
+        const isCreatingForSelf = createNotificationDto.destinataires.length === 1 &&
+            createNotificationDto.destinataires[0] === req.user.userId;
+        if (!isAdmin && !isCreatingForSelf) {
+            throw new common_1.HttpException('Unauthorized: You can only create notifications for yourself', common_1.HttpStatus.FORBIDDEN);
+        }
+        return this.notificationsService.create(createNotificationDto, req.user.userId);
+    }
+    async createTestNotification(req) {
+        const testNotification = {
+            destinataires: [req.user.userId],
+            titre: 'Test Notification',
+            message: 'Ceci est une notification de test pour vérifier le système de notifications en temps réel.',
+            type: 'system',
+            lien: undefined,
+        };
+        return this.notificationsService.create(testNotification, req.user.userId);
     }
     findAll(req) {
         return this.notificationsService.findAll(req.user.userId);
@@ -31,24 +51,137 @@ let NotificationsController = class NotificationsController {
     findUnread(req) {
         return this.notificationsService.findUnread(req.user.userId);
     }
-    markAsRead(id) {
-        return this.notificationsService.markAsRead(id);
+    async markAsRead(id, req) {
+        try {
+            return await this.notificationsService.markAsRead(id, req.user.userId);
+        }
+        catch (error) {
+            throw new common_1.HttpException(error.message, common_1.HttpStatus.NOT_FOUND);
+        }
     }
     markAllAsRead(req) {
         return this.notificationsService.markAllAsRead(req.user.userId);
     }
-    remove(id) {
-        return this.notificationsService.remove(id);
+    async remove(id, req) {
+        try {
+            return await this.notificationsService.remove(id, req.user.userId);
+        }
+        catch (error) {
+            throw new common_1.HttpException(error.message, common_1.HttpStatus.NOT_FOUND);
+        }
+    }
+    async testChatNotification(req, body) {
+        const { imageID, message } = body;
+        const senderID = req.user.utilisateurID;
+        const image = await this.prisma.imageMedicale.findUnique({
+            where: { imageID },
+            include: {
+                examen: {
+                    include: {
+                        demandePar: true,
+                        radiologues: true,
+                    },
+                },
+                collaborations: {
+                    where: {
+                        status: 'ACCEPTED'
+                    },
+                },
+            },
+        });
+        if (!image) {
+            throw new common_1.NotFoundException('Image not found');
+        }
+        const collaborators = new Map();
+        collaborators.set(image.examen.demandePar.utilisateurID, {
+            utilisateurID: image.examen.demandePar.utilisateurID,
+            nom: image.examen.demandePar.nom,
+            prenom: image.examen.demandePar.prenom,
+            email: image.examen.demandePar.email,
+            role: 'Exam Requester',
+        });
+        image.examen.radiologues.forEach(radiologist => {
+            collaborators.set(radiologist.utilisateurID, {
+                utilisateurID: radiologist.utilisateurID,
+                nom: radiologist.nom,
+                prenom: radiologist.prenom,
+                email: radiologist.email,
+                role: 'Assigned Radiologist',
+            });
+        });
+        image.collaborations.forEach(collaboration => {
+            collaborators.set(collaboration.inviteeID, {
+                utilisateurID: collaboration.inviteeID,
+                nom: 'Unknown',
+                prenom: 'Unknown',
+                email: 'unknown@example.com',
+                role: 'Collaborator',
+            });
+        });
+        const collaboratorsList = Array.from(collaborators.values());
+        const sender = await this.prisma.utilisateur.findUnique({
+            where: { utilisateurID: senderID },
+            select: { nom: true, prenom: true }
+        });
+        const imageForLink = await this.prisma.imageMedicale.findUnique({
+            where: { imageID },
+            select: { sopInstanceUID: true }
+        });
+        const notificationsSent = [];
+        const notificationsSkipped = [];
+        for (const collaborator of collaboratorsList) {
+            if (collaborator.utilisateurID !== senderID) {
+                notificationsSent.push({
+                    recipient: collaborator,
+                    reason: 'Different from sender'
+                });
+                await this.notificationsService.create({
+                    destinataires: [collaborator.utilisateurID],
+                    titre: 'Test - Nouveau message',
+                    message: `Test: ${message} de ${sender?.prenom} ${sender?.nom} sur l'image médicale`,
+                    type: 'CHAT_MESSAGE',
+                    lien: `/radiologue/dicom/image/${imageForLink?.sopInstanceUID}`,
+                }, senderID);
+            }
+            else {
+                notificationsSkipped.push({
+                    recipient: collaborator,
+                    reason: 'Same as sender'
+                });
+            }
+        }
+        return {
+            message: 'Test notification completed',
+            sender: {
+                id: senderID,
+                name: `${sender?.prenom} ${sender?.nom}`
+            },
+            totalCollaborators: collaboratorsList.length,
+            notificationsSent: notificationsSent.length,
+            notificationsSkipped: notificationsSkipped.length,
+            details: {
+                sent: notificationsSent,
+                skipped: notificationsSkipped
+            }
+        };
     }
 };
 exports.NotificationsController = NotificationsController;
 __decorate([
     (0, common_1.Post)(),
     __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Request)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [create_notification_dto_1.CreateNotificationDto]),
+    __metadata("design:paramtypes", [create_notification_dto_1.CreateNotificationDto, Object]),
     __metadata("design:returntype", void 0)
 ], NotificationsController.prototype, "create", null);
+__decorate([
+    (0, common_1.Post)('test'),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], NotificationsController.prototype, "createTestNotification", null);
 __decorate([
     (0, common_1.Get)(),
     __param(0, (0, common_1.Request)()),
@@ -66,9 +199,10 @@ __decorate([
 __decorate([
     (0, common_1.Post)(':id/read'),
     __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Request)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
-    __metadata("design:returntype", void 0)
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
 ], NotificationsController.prototype, "markAsRead", null);
 __decorate([
     (0, common_1.Post)('read-all'),
@@ -80,13 +214,25 @@ __decorate([
 __decorate([
     (0, common_1.Delete)(':id'),
     __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Request)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
-    __metadata("design:returntype", void 0)
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
 ], NotificationsController.prototype, "remove", null);
+__decorate([
+    (0, common_1.Post)('test-chat-notification'),
+    (0, swagger_1.ApiOperation)({ summary: 'Test chat notification system' }),
+    (0, swagger_1.ApiResponse)({ status: 201, description: 'Test notification created' }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], NotificationsController.prototype, "testChatNotification", null);
 exports.NotificationsController = NotificationsController = __decorate([
     (0, common_1.Controller)('notifications'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    __metadata("design:paramtypes", [notifications_service_1.NotificationsService])
+    __metadata("design:paramtypes", [notifications_service_1.NotificationsService,
+        prisma_service_1.PrismaService])
 ], NotificationsController);
 //# sourceMappingURL=notifications.controller.js.map

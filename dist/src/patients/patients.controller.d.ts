@@ -10,10 +10,10 @@ export declare class PatientsController {
     create(createPatientDto: CreatePatientDto, req: Request): Promise<{
         dossierMedical: {
             createdAt: Date;
-            patientID: string;
             createdBy: string;
-            dossierID: string;
             dateCreation: Date;
+            dossierID: string;
+            patientID: string;
             etatDossier: string;
         } | null;
     } & {
@@ -24,33 +24,33 @@ export declare class PatientsController {
         createdAt: Date;
         updatedAt: Date;
         prenom: string;
+        createdBy: string;
         patientID: string;
         dateNaissance: Date;
         genre: string;
         groupeSanguin: string;
-        createdBy: string;
     }>;
     findAll(): Promise<({
-        dossierMedical: {
-            createdAt: Date;
-            patientID: string;
-            createdBy: string;
-            dossierID: string;
-            dateCreation: Date;
-            etatDossier: string;
-        } | null;
         examens: {
-            description: string;
-            patientID: string;
-            dossierID: string;
             typeExamenID: string;
-            consultationID: string | null;
-            examenID: string;
+            description: string;
             demandeParID: string;
+            examenID: string;
+            dossierID: string;
+            patientID: string;
             dateExamen: Date;
             resultat: string | null;
             estAnalyse: boolean;
+            consultationID: string | null;
         }[];
+        dossierMedical: {
+            createdAt: Date;
+            createdBy: string;
+            dateCreation: Date;
+            dossierID: string;
+            patientID: string;
+            etatDossier: string;
+        } | null;
     } & {
         nom: string;
         adresse: string;
@@ -59,33 +59,33 @@ export declare class PatientsController {
         createdAt: Date;
         updatedAt: Date;
         prenom: string;
+        createdBy: string;
         patientID: string;
         dateNaissance: Date;
         genre: string;
         groupeSanguin: string;
-        createdBy: string;
     })[]>;
     findOne(id: string): Promise<{
-        dossierMedical: {
-            createdAt: Date;
-            patientID: string;
-            createdBy: string;
-            dossierID: string;
-            dateCreation: Date;
-            etatDossier: string;
-        } | null;
         examens: {
-            description: string;
-            patientID: string;
-            dossierID: string;
             typeExamenID: string;
-            consultationID: string | null;
-            examenID: string;
+            description: string;
             demandeParID: string;
+            examenID: string;
+            dossierID: string;
+            patientID: string;
             dateExamen: Date;
             resultat: string | null;
             estAnalyse: boolean;
+            consultationID: string | null;
         }[];
+        dossierMedical: {
+            createdAt: Date;
+            createdBy: string;
+            dateCreation: Date;
+            dossierID: string;
+            patientID: string;
+            etatDossier: string;
+        } | null;
     } & {
         nom: string;
         adresse: string;
@@ -94,19 +94,19 @@ export declare class PatientsController {
         createdAt: Date;
         updatedAt: Date;
         prenom: string;
+        createdBy: string;
         patientID: string;
         dateNaissance: Date;
         genre: string;
         groupeSanguin: string;
-        createdBy: string;
     }>;
     update(id: string, updatePatientDto: UpdatePatientDto, req: Request): Promise<{
         dossierMedical: {
             createdAt: Date;
-            patientID: string;
             createdBy: string;
-            dossierID: string;
             dateCreation: Date;
+            dossierID: string;
+            patientID: string;
             etatDossier: string;
         } | null;
     } & {
@@ -117,35 +117,35 @@ export declare class PatientsController {
         createdAt: Date;
         updatedAt: Date;
         prenom: string;
+        createdBy: string;
         patientID: string;
         dateNaissance: Date;
         genre: string;
         groupeSanguin: string;
-        createdBy: string;
     }>;
     remove(id: string): Promise<void>;
     createMedicalRecord(id: string, createMedicalRecordDto: CreateMedicalRecordDto, req: any): Promise<{
         createdAt: Date;
-        patientID: string;
         createdBy: string;
-        dossierID: string;
         dateCreation: Date;
+        dossierID: string;
+        patientID: string;
         etatDossier: string;
     }>;
     getMedicalRecord(id: string): Promise<{
         createdAt: Date;
-        patientID: string;
         createdBy: string;
-        dossierID: string;
         dateCreation: Date;
+        dossierID: string;
+        patientID: string;
         etatDossier: string;
     } | null>;
     updateMedicalRecord(id: string, updateMedicalRecordDto: CreateMedicalRecordDto): Promise<{
         createdAt: Date;
-        patientID: string;
         createdBy: string;
-        dossierID: string;
         dateCreation: Date;
+        dossierID: string;
+        patientID: string;
         etatDossier: string;
     }>;
 }

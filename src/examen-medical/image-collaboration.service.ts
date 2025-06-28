@@ -1,11 +1,15 @@
 import { Injectable, NotFoundException, ForbiddenException, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class ImageCollaborationService {
   private readonly logger = new Logger(ImageCollaborationService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationsService: NotificationsService,
+  ) {}
 
   async inviteRadiologistToImage(imageID: string, inviterID: string, inviteeID: string) {
     if (!inviteeID) {
@@ -303,20 +307,41 @@ export class ImageCollaborationService {
   }
 
   async sendMessage(imageID: string, senderID: string, content: string) {
-    // Check if sender is an accepted collaborator on this image
-    const collaborations = await this.prisma.imageCollaboration.findMany({
-      where: { 
-        imageID,
-        status: 'ACCEPTED'
+    // Check if sender has access to this image (exam requester, assigned radiologist, or accepted collaborator)
+    const image = await this.prisma.imageMedicale.findUnique({
+      where: { imageID },
+      include: {
+        examen: {
+          include: {
+            demandePar: true,
+            radiologues: true,
+          },
+        },
+        collaborations: {
+          where: {
+            status: 'ACCEPTED'
+          },
+        },
       },
     });
-    const isCollaborator = collaborations.some(
+
+    if (!image) {
+      throw new NotFoundException('Image not found');
+    }
+
+    // Check if sender has access
+    const isExamRequester = image.examen.demandeParID === senderID;
+    const isAssignedRadiologist = image.examen.radiologues.some(r => r.utilisateurID === senderID);
+    const isCollaborator = image.collaborations.some(
       (c) => c.inviterID === senderID || c.inviteeID === senderID
     );
-    if (!isCollaborator) throw new ForbiddenException('You are not a collaborator on this image');
+
+    if (!isExamRequester && !isAssignedRadiologist && !isCollaborator) {
+      throw new ForbiddenException('You do not have access to this image');
+    }
     
     // Create chat message
-    return this.prisma.chatMessage.create({
+    const message = await this.prisma.chatMessage.create({
       data: {
         imageID,
         senderID,
@@ -326,6 +351,47 @@ export class ImageCollaborationService {
         sender: true,
       },
     });
+
+    // Send notifications to all collaborators except the sender
+    const collaborators = await this.listCollaborators(imageID);
+    const sender = await this.prisma.utilisateur.findUnique({
+      where: { utilisateurID: senderID },
+      select: { nom: true, prenom: true }
+    });
+    
+    // Get the image to get sopInstanceUID
+    const imageForLink = await this.prisma.imageMedicale.findUnique({
+      where: { imageID },
+      select: { sopInstanceUID: true }
+    });
+    
+    // Filter out the sender and create a list of recipients
+    const recipients = collaborators
+      .filter(collaborator => {
+        const isSender = String(collaborator.utilisateurID).trim() === String(senderID).trim();
+        if (isSender) {
+          this.logger.log(`Excluding sender from notifications: ${collaborator.utilisateurID} (${collaborator.prenom} ${collaborator.nom})`);
+        }
+        return !isSender;
+      })
+      .map(collaborator => collaborator.utilisateurID);
+    
+    // Only send notifications if there are recipients
+    if (recipients.length > 0) {
+      this.logger.log(`Sending notifications to ${recipients.length} recipients: ${recipients.join(', ')}`);
+      
+      await this.notificationsService.create({
+        destinataires: recipients,
+        titre: 'Nouveau message',
+        message: `Nouveau message de ${sender?.prenom} ${sender?.nom} sur l'image médicale`,
+        type: 'CHAT_MESSAGE',
+        lien: `/radiologue/dicom/image/${imageForLink?.sopInstanceUID}`,
+      }, senderID);
+    } else {
+      this.logger.log(`No recipients found for notification from sender: ${senderID}`);
+    }
+
+    return message;
   }
 
   async getMessages(imageID: string) {
