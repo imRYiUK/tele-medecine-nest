@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, Put, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, Put, Query, Logger } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { ExamenMedicalService } from './examen-medical.service';
 import { 
@@ -6,11 +6,13 @@ import {
   UpdateExamenMedicalDto,
   CreateImageMedicaleDto,
   UpdateImageMedicaleDto,
-  ExamenMedicalListDto
+  ExamenMedicalListDto,
+  ImageMedicaleDto
 } from './dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
+import { Public } from '../common/decorators/public.decorator';
 import { UserRole } from '../common/constants/roles';
 
 @Controller('examens-medicaux')
@@ -18,6 +20,8 @@ import { UserRole } from '../common/constants/roles';
 @ApiTags('Examens médicaux')
 @ApiBearerAuth()
 export class ExamenMedicalController {
+  private readonly logger = new Logger(ExamenMedicalController.name);
+
   constructor(private readonly examenMedicalService: ExamenMedicalService) {}
 
   @Post()
@@ -166,6 +170,42 @@ export class ExamenMedicalController {
   @ApiResponse({ status: 200, description: 'Nombre d\'images récupéré avec succès' })
   getImageCountByExam(@Param('examenId') examenID: string) {
     return this.examenMedicalService.getImageCountByExam(examenID);
+  }
+
+  @Get('images/test/:sopInstanceUID')
+  @Public()
+  @ApiOperation({ summary: 'Test endpoint to check if image exists by SOP Instance UID' })
+  @ApiResponse({ status: 200, description: 'Image exists' })
+  @ApiResponse({ status: 404, description: 'Image not found' })
+  async testImageExists(@Param('sopInstanceUID') sopInstanceUID: string) {
+    this.logger.log(`Test endpoint called with SOP Instance UID: ${sopInstanceUID}`);
+    
+    try {
+      const image = await this.examenMedicalService.findImageBySopInstanceUID(sopInstanceUID);
+      this.logger.log(`Test endpoint success - Image found: ${image.imageID}`);
+      return {
+        exists: true,
+        imageID: image.imageID,
+        sopInstanceUID: image.sopInstanceUID,
+        message: 'Image found'
+      };
+    } catch (error) {
+      this.logger.error(`Test endpoint error: ${error.message}`);
+      return {
+        exists: false,
+        message: error.message
+      };
+    }
+  }
+
+  @Get('images/sop/:sopInstanceUID')
+  @Roles(UserRole.MEDECIN, UserRole.RADIOLOGUE, UserRole.TECHNICIEN)
+  @ApiOperation({ summary: 'Récupérer une image par son SOP Instance UID' })
+  @ApiResponse({ status: 200, description: 'Image récupérée avec succès', type: ImageMedicaleDto })
+  @ApiResponse({ status: 404, description: 'Image not found' })
+  getImageBySopInstanceUID(@Param('sopInstanceUID') sopInstanceUID: string) {
+    this.logger.log(`Get image by SOP Instance UID called: ${sopInstanceUID}`);
+    return this.examenMedicalService.findImageBySopInstanceUID(sopInstanceUID);
   }
 
   @Post('images')

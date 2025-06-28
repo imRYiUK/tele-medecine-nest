@@ -8,19 +8,47 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var ImageCollaborationService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ImageCollaborationService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
-let ImageCollaborationService = class ImageCollaborationService {
+let ImageCollaborationService = ImageCollaborationService_1 = class ImageCollaborationService {
     prisma;
+    logger = new common_1.Logger(ImageCollaborationService_1.name);
     constructor(prisma) {
         this.prisma = prisma;
     }
     async inviteRadiologistToImage(imageID, inviterID, inviteeID) {
+        if (!inviteeID) {
+            this.logger.error('inviteeID is undefined or empty');
+            throw new common_1.NotFoundException('Invitee ID is required');
+        }
+        this.logger.log(`Inviting radiologist - imageID: ${imageID}, inviterID: ${inviterID}, inviteeID: ${inviteeID}`);
+        if (inviterID === inviteeID) {
+            this.logger.warn(`Inviter ${inviterID} cannot invite themselves`);
+            throw new common_1.ForbiddenException('You cannot invite yourself');
+        }
+        const invitee = await this.prisma.utilisateur.findUnique({
+            where: { utilisateurID: inviteeID },
+        });
+        if (!invitee) {
+            this.logger.error(`Invitee not found with ID: ${inviteeID}`);
+            throw new common_1.NotFoundException('Invited user not found');
+        }
+        if (invitee.role !== 'RADIOLOGUE') {
+            this.logger.warn(`Invitee ${inviteeID} is not a radiologist (role: ${invitee.role})`);
+            throw new common_1.ForbiddenException('You can only invite radiologists');
+        }
         const image = await this.prisma.imageMedicale.findUnique({
             where: { imageID },
             include: {
+                examen: {
+                    include: {
+                        demandePar: true,
+                        radiologues: true,
+                    },
+                },
                 collaborations: {
                     where: {
                         status: {
@@ -30,11 +58,20 @@ let ImageCollaborationService = class ImageCollaborationService {
                 },
             },
         });
-        if (!image)
+        this.logger.log(`Image lookup result: ${image ? 'Image found' : 'Image not found'}`);
+        if (!image) {
+            this.logger.error(`Image not found with imageID: ${imageID}`);
             throw new common_1.NotFoundException('Image not found');
+        }
+        this.logger.log(`Image details - imageID: ${image.imageID}, sopInstanceUID: ${image.sopInstanceUID}`);
+        const isExamRequester = image.examen.demandeParID === inviterID;
+        const isAssignedRadiologist = image.examen.radiologues.some(r => r.utilisateurID === inviterID);
         const isCollaborator = image.collaborations.some((c) => c.inviterID === inviterID || c.inviteeID === inviterID);
-        if (!isCollaborator)
-            throw new common_1.ForbiddenException('You do not have access to invite on this image');
+        this.logger.log(`Access check - isExamRequester: ${isExamRequester}, isAssignedRadiologist: ${isAssignedRadiologist}, isCollaborator: ${isCollaborator}`);
+        if (!isExamRequester && !isAssignedRadiologist && !isCollaborator) {
+            this.logger.warn(`Inviter ${inviterID} does not have access to image ${imageID}`);
+            throw new common_1.ForbiddenException('You do not have permission to invite collaborators on this image');
+        }
         const existingCollaboration = await this.prisma.imageCollaboration.findFirst({
             where: {
                 imageID,
@@ -44,15 +81,19 @@ let ImageCollaborationService = class ImageCollaborationService {
                 }
             }
         });
+        this.logger.log(`Existing collaboration check: ${existingCollaboration ? 'Found existing' : 'No existing'}`);
         if (existingCollaboration) {
             if (existingCollaboration.status === 'ACCEPTED') {
-                throw new common_1.ForbiddenException('This radiologist is already a collaborator');
+                this.logger.warn(`Radiologist ${inviteeID} is already a collaborator on image ${imageID}`);
+                throw new common_1.ForbiddenException('This radiologist is already a collaborator on this image');
             }
             else {
+                this.logger.warn(`Pending invitation already exists for radiologist ${inviteeID} on image ${imageID}`);
                 throw new common_1.ForbiddenException('An invitation is already pending for this radiologist');
             }
         }
-        return this.prisma.imageCollaboration.create({
+        this.logger.log(`Creating new collaboration invitation`);
+        const result = await this.prisma.imageCollaboration.create({
             data: {
                 imageID,
                 inviterID,
@@ -60,20 +101,45 @@ let ImageCollaborationService = class ImageCollaborationService {
                 status: 'PENDING',
             },
             include: {
-                inviter: true,
-                invitee: true,
+                inviter: {
+                    select: {
+                        utilisateurID: true,
+                        nom: true,
+                        prenom: true,
+                        email: true,
+                    },
+                },
+                invitee: {
+                    select: {
+                        utilisateurID: true,
+                        nom: true,
+                        prenom: true,
+                        email: true,
+                    },
+                },
                 image: {
                     include: {
                         examen: {
                             include: {
-                                patient: true,
-                                typeExamen: true,
+                                patient: {
+                                    select: {
+                                        nom: true,
+                                        prenom: true,
+                                    },
+                                },
+                                typeExamen: {
+                                    select: {
+                                        nomType: true,
+                                    },
+                                },
                             },
                         },
                     },
                 },
             },
         });
+        this.logger.log(`Collaboration invitation created successfully - collaborationID: ${result.id}`);
+        return result;
     }
     async acceptCollaboration(collaborationId, inviteeID) {
         const collaboration = await this.prisma.imageCollaboration.findUnique({
@@ -140,16 +206,62 @@ let ImageCollaborationService = class ImageCollaborationService {
         });
     }
     async listCollaborators(imageID) {
-        const collaborations = await this.prisma.imageCollaboration.findMany({
-            where: {
-                imageID,
-                status: 'ACCEPTED'
-            },
+        const image = await this.prisma.imageMedicale.findUnique({
+            where: { imageID },
             include: {
-                invitee: true,
+                examen: {
+                    include: {
+                        demandePar: true,
+                        radiologues: true,
+                    },
+                },
+                collaborations: {
+                    where: {
+                        status: 'ACCEPTED'
+                    },
+                    include: {
+                        invitee: {
+                            select: {
+                                utilisateurID: true,
+                                nom: true,
+                                prenom: true,
+                                email: true,
+                            },
+                        },
+                    },
+                },
             },
         });
-        return collaborations.map((c) => c.invitee);
+        if (!image) {
+            throw new common_1.NotFoundException('Image not found');
+        }
+        const collaborators = new Map();
+        collaborators.set(image.examen.demandePar.utilisateurID, {
+            utilisateurID: image.examen.demandePar.utilisateurID,
+            nom: image.examen.demandePar.nom,
+            prenom: image.examen.demandePar.prenom,
+            email: image.examen.demandePar.email,
+            role: 'Exam Requester',
+        });
+        image.examen.radiologues.forEach(radiologist => {
+            collaborators.set(radiologist.utilisateurID, {
+                utilisateurID: radiologist.utilisateurID,
+                nom: radiologist.nom,
+                prenom: radiologist.prenom,
+                email: radiologist.email,
+                role: 'Assigned Radiologist',
+            });
+        });
+        image.collaborations.forEach(collaboration => {
+            collaborators.set(collaboration.invitee.utilisateurID, {
+                utilisateurID: collaboration.invitee.utilisateurID,
+                nom: collaboration.invitee.nom,
+                prenom: collaboration.invitee.prenom,
+                email: collaboration.invitee.email,
+                role: 'Collaborator',
+            });
+        });
+        return Array.from(collaborators.values());
     }
     async sendMessage(imageID, senderID, content) {
         const collaborations = await this.prisma.imageCollaboration.findMany({
@@ -251,6 +363,38 @@ let ImageCollaborationService = class ImageCollaborationService {
             },
         });
     }
+    async getPendingCollaborationsForImage(imageID, userID) {
+        const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        console.log("heremdr : " + userID + " " + imageID);
+        return this.prisma.imageCollaboration.findMany({
+            where: {
+                imageID,
+                inviterID: userID,
+                status: 'PENDING',
+                createdAt: {
+                    gte: twentyFourHoursAgo,
+                },
+            },
+            include: {
+                image: {
+                    include: {
+                        examen: {
+                            include: {
+                                patient: true,
+                                typeExamen: true,
+                                demandePar: true,
+                            },
+                        },
+                    },
+                },
+                inviter: true,
+                invitee: true,
+            },
+            orderBy: {
+                createdAt: 'desc',
+            },
+        });
+    }
     async getSentInvitations(userID) {
         return this.prisma.imageCollaboration.findMany({
             where: {
@@ -277,9 +421,26 @@ let ImageCollaborationService = class ImageCollaborationService {
             },
         });
     }
+    async findImageBySopInstanceUID(sopInstanceUID) {
+        this.logger.log(`Searching for image by SOP Instance UID: ${sopInstanceUID}`);
+        const image = await this.prisma.imageMedicale.findFirst({
+            where: { sopInstanceUID },
+        });
+        this.logger.log(`Database query result: ${image ? 'Image found' : 'Image not found'}`);
+        if (image) {
+            this.logger.log(`Found image - imageID: ${image.imageID}, sopInstanceUID: ${image.sopInstanceUID}`);
+        }
+        else {
+            this.logger.warn(`No image found with SOP Instance UID: ${sopInstanceUID}`);
+        }
+        if (!image) {
+            throw new common_1.NotFoundException(`Image with SOP Instance UID ${sopInstanceUID} not found`);
+        }
+        return image;
+    }
 };
 exports.ImageCollaborationService = ImageCollaborationService;
-exports.ImageCollaborationService = ImageCollaborationService = __decorate([
+exports.ImageCollaborationService = ImageCollaborationService = ImageCollaborationService_1 = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService])
 ], ImageCollaborationService);

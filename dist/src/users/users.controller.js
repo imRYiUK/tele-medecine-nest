@@ -11,6 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
+var UsersController_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UsersController = void 0;
 const common_1 = require("@nestjs/common");
@@ -21,8 +22,10 @@ const roles_decorator_1 = require("../common/decorators/roles.decorator");
 const jwt_auth_guard_1 = require("../common/guards/jwt-auth.guard");
 const swagger_1 = require("@nestjs/swagger");
 const log_activity_decorator_1 = require("../common/decorators/log-activity.decorator");
-let UsersController = class UsersController {
+const public_decorator_1 = require("../common/decorators/public.decorator");
+let UsersController = UsersController_1 = class UsersController {
     usersService;
+    logger = new common_1.Logger(UsersController_1.name);
     constructor(usersService) {
         this.usersService = usersService;
     }
@@ -60,11 +63,46 @@ let UsersController = class UsersController {
         return this.usersService.findAll(requesterRole);
     }
     async searchUsers(query, req) {
+        this.logger.log(`Search request - query: ${query}, user: ${req.user?.['utilisateurID']}`);
         const requesterRole = this.getUserRole(req);
+        this.logger.log(`Requester role: ${requesterRole}`);
         if (!query) {
+            this.logger.log('Empty query, returning empty array');
             return [];
         }
-        return this.usersService.searchUsers(query, requesterRole);
+        const results = await this.usersService.searchUsers(query, requesterRole);
+        if (results === null) {
+            this.logger.log('No results found (null)');
+            return [];
+        }
+        if (Array.isArray(results)) {
+            this.logger.log(`Search results count: ${results.length}`);
+            return results;
+        }
+        else {
+            this.logger.log('Search result: single user');
+            return results;
+        }
+    }
+    async testSearchUsers(query) {
+        this.logger.log(`Test search request - query: ${query}`);
+        if (!query) {
+            this.logger.log('Empty query, returning empty array');
+            return [];
+        }
+        const results = await this.usersService.searchUsers(query);
+        if (results === null) {
+            this.logger.log('No results found (null)');
+            return [];
+        }
+        if (Array.isArray(results)) {
+            this.logger.log(`Test search results count: ${results.length}`);
+            return results;
+        }
+        else {
+            this.logger.log('Test search result: single user');
+            return results;
+        }
     }
     async findOne(id, req) {
         const requesterRole = this.getUserRole(req);
@@ -146,6 +184,16 @@ __decorate([
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", Promise)
 ], UsersController.prototype, "searchUsers", null);
+__decorate([
+    (0, common_1.Get)('search/test'),
+    (0, public_decorator_1.Public)(),
+    (0, swagger_1.ApiOperation)({ summary: 'Test search users by email, name, or username (public)' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Returns matching users', type: [user_dto_1.UserDto] }),
+    __param(0, (0, common_1.Query)('q')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], UsersController.prototype, "testSearchUsers", null);
 __decorate([
     (0, common_1.Get)(':id'),
     (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMINISTRATEUR"),
@@ -243,7 +291,7 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], UsersController.prototype, "findMedecinsByEtablissement", null);
-exports.UsersController = UsersController = __decorate([
+exports.UsersController = UsersController = UsersController_1 = __decorate([
     (0, swagger_1.ApiTags)('users'),
     (0, common_1.Controller)('users'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),

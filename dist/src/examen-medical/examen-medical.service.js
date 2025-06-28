@@ -8,14 +8,16 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var ExamenMedicalService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ExamenMedicalService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
 const notifications_service_1 = require("../notifications/notifications.service");
-let ExamenMedicalService = class ExamenMedicalService {
+let ExamenMedicalService = ExamenMedicalService_1 = class ExamenMedicalService {
     prisma;
     notificationsService;
+    logger = new common_1.Logger(ExamenMedicalService_1.name);
     constructor(prisma, notificationsService) {
         this.prisma = prisma;
         this.notificationsService = notificationsService;
@@ -467,6 +469,23 @@ let ExamenMedicalService = class ExamenMedicalService {
             where: { examenID },
         });
     }
+    async findImageBySopInstanceUID(sopInstanceUID) {
+        this.logger.log(`Searching for image with SOP Instance UID: ${sopInstanceUID}`);
+        const image = await this.prisma.imageMedicale.findFirst({
+            where: { sopInstanceUID },
+        });
+        this.logger.log(`Database query result: ${image ? 'Image found' : 'Image not found'}`);
+        if (image) {
+            this.logger.log(`Found image - imageID: ${image.imageID}, sopInstanceUID: ${image.sopInstanceUID}`);
+        }
+        else {
+            this.logger.warn(`No image found with SOP Instance UID: ${sopInstanceUID}`);
+        }
+        if (!image) {
+            throw new common_1.NotFoundException(`Image with SOP Instance UID ${sopInstanceUID} not found`);
+        }
+        return image;
+    }
     async getExamsWithImageCounts(etablissementID) {
         const where = {};
         if (etablissementID) {
@@ -562,7 +581,7 @@ let ExamenMedicalService = class ExamenMedicalService {
     }
 };
 exports.ExamenMedicalService = ExamenMedicalService;
-exports.ExamenMedicalService = ExamenMedicalService = __decorate([
+exports.ExamenMedicalService = ExamenMedicalService = ExamenMedicalService_1 = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
         notifications_service_1.NotificationsService])

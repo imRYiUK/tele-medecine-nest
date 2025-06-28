@@ -4,6 +4,7 @@ import { NotificationsService } from '../notifications/notifications.service';
 export declare class ExamenMedicalService {
     private prisma;
     private notificationsService;
+    private readonly logger;
     constructor(prisma: PrismaService, notificationsService: NotificationsService);
     create(createExamenMedicalDto: CreateExamenMedicalDto, demandeParID: string): Promise<{
         patient: {
@@ -449,6 +450,7 @@ export declare class ExamenMedicalService {
     updateImage(imageID: string, updateImageDto: UpdateImageMedicaleDto, radiologistID?: string): Promise<ImageMedicaleDto>;
     deleteImage(imageID: string, radiologistID?: string): Promise<void>;
     getImageCountByExam(examenID: string): Promise<number>;
+    findImageBySopInstanceUID(sopInstanceUID: string): Promise<ImageMedicaleDto>;
     getExamsWithImageCounts(etablissementID?: string): Promise<ExamenMedicalListDto[]>;
     canRadiologistEditExam(examenID: string, radiologistID: string): Promise<boolean>;
     checkRadiologistPermissions(examenID: string, radiologistID: string): Promise<void>;

@@ -9,11 +9,28 @@ export class UsersService {
   constructor(private prisma: PrismaService) {}
 
   private validateRoleHierarchy(requesterRole: string, targetRole: string): boolean {
+    // For search functionality, allow users to see others based on role hierarchy
     if (requesterRole === UserRole.SUPER_ADMIN) {
-      return true; // SUPER_ADMIN can manage all roles
+      return true; // SUPER_ADMIN can see all users
     }
     if (requesterRole === UserRole.ADMINISTRATEUR && targetRole !== UserRole.SUPER_ADMIN) {
-      return true; // ADMIN can manage all roles except SUPER_ADMIN
+      return true; // ADMIN can see all users except SUPER_ADMIN
+    }
+    if (requesterRole === UserRole.RADIOLOGUE) {
+      // RADIOLOGUE can see MEDECIN, RECEPTIONNISTE, TECHNICIEN, and other RADIOLOGUE
+      return [UserRole.MEDECIN, UserRole.RECEPTIONNISTE, UserRole.TECHNICIEN, UserRole.RADIOLOGUE].includes(targetRole as UserRole);
+    }
+    if (requesterRole === UserRole.MEDECIN) {
+      // MEDECIN can see RECEPTIONNISTE, TECHNICIEN, and other MEDECIN
+      return [UserRole.RECEPTIONNISTE, UserRole.TECHNICIEN, UserRole.MEDECIN].includes(targetRole as UserRole);
+    }
+    if (requesterRole === UserRole.RECEPTIONNISTE) {
+      // RECEPTIONNISTE can see TECHNICIEN and other RECEPTIONNISTE
+      return [UserRole.TECHNICIEN, UserRole.RECEPTIONNISTE].includes(targetRole as UserRole);
+    }
+    if (requesterRole === UserRole.TECHNICIEN) {
+      // TECHNICIEN can only see other TECHNICIEN
+      return targetRole === UserRole.TECHNICIEN;
     }
     return false;
   }
@@ -305,11 +322,48 @@ export class UsersService {
   /**
    * Search users by email, name, or username
    */
-  async searchUsers(query: string, requesterRole?: string): Promise<UserDto[]> {
+  async searchUsers(query: string, requesterRole?: string): Promise<UserDto | UserDto[] | null> {
+    // Check if query looks like an email (contains @)
+    const isEmailSearch = query.includes('@');
+    
+    if (isEmailSearch) {
+      // For email search, try exact match first
+      const exactEmailUser = await this.prisma.utilisateur.findUnique({
+        where: { email: query },
+        select: {
+          utilisateurID: true,
+          nom: true,
+          prenom: true,
+          email: true,
+          username: true,
+          telephone: true,
+          role: true,
+          estActif: true,
+          etablissement: {
+            select: {
+              etablissementID: true,
+              nom: true,
+            },
+          },
+        },
+      });
+
+      if (exactEmailUser) {
+        // Check role hierarchy for exact email match
+        if (requesterRole && !this.validateRoleHierarchy(requesterRole, exactEmailUser.role)) {
+          return null;
+        }
+        return exactEmailUser;
+      }
+      
+      // If no exact match, return empty array
+      return [];
+    }
+
+    // For non-email searches, use partial matching
     const users = await this.prisma.utilisateur.findMany({
       where: {
         OR: [
-          { email: { contains: query } },
           { nom: { contains: query } },
           { prenom: { contains: query } },
           { username: { contains: query } },

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { 
   CreateExamenMedicalDto, 
@@ -13,6 +13,8 @@ import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class ExamenMedicalService {
+  private readonly logger = new Logger(ExamenMedicalService.name);
+
   constructor(
     private prisma: PrismaService,
     private notificationsService: NotificationsService,
@@ -544,6 +546,28 @@ export class ExamenMedicalService {
     return this.prisma.imageMedicale.count({
       where: { examenID },
     });
+  }
+
+  async findImageBySopInstanceUID(sopInstanceUID: string): Promise<ImageMedicaleDto> {
+    this.logger.log(`Searching for image with SOP Instance UID: ${sopInstanceUID}`);
+    
+    const image = await this.prisma.imageMedicale.findFirst({
+      where: { sopInstanceUID },
+    });
+
+    this.logger.log(`Database query result: ${image ? 'Image found' : 'Image not found'}`);
+    
+    if (image) {
+      this.logger.log(`Found image - imageID: ${image.imageID}, sopInstanceUID: ${image.sopInstanceUID}`);
+    } else {
+      this.logger.warn(`No image found with SOP Instance UID: ${sopInstanceUID}`);
+    }
+
+    if (!image) {
+      throw new NotFoundException(`Image with SOP Instance UID ${sopInstanceUID} not found`);
+    }
+
+    return image;
   }
 
   async getExamsWithImageCounts(etablissementID?: string): Promise<ExamenMedicalListDto[]> {

@@ -25,6 +25,18 @@ let UsersService = class UsersService {
         if (requesterRole === "ADMINISTRATEUR" && targetRole !== "SUPER_ADMIN") {
             return true;
         }
+        if (requesterRole === "RADIOLOGUE") {
+            return ["MEDECIN", "RECEPTIONNISTE", "TECHNICIEN", "RADIOLOGUE"].includes(targetRole);
+        }
+        if (requesterRole === "MEDECIN") {
+            return ["RECEPTIONNISTE", "TECHNICIEN", "MEDECIN"].includes(targetRole);
+        }
+        if (requesterRole === "RECEPTIONNISTE") {
+            return ["TECHNICIEN", "RECEPTIONNISTE"].includes(targetRole);
+        }
+        if (requesterRole === "TECHNICIEN") {
+            return targetRole === "TECHNICIEN";
+        }
         return false;
     }
     async create(createUserDto, adminId) {
@@ -251,10 +263,38 @@ let UsersService = class UsersService {
         });
     }
     async searchUsers(query, requesterRole) {
+        const isEmailSearch = query.includes('@');
+        if (isEmailSearch) {
+            const exactEmailUser = await this.prisma.utilisateur.findUnique({
+                where: { email: query },
+                select: {
+                    utilisateurID: true,
+                    nom: true,
+                    prenom: true,
+                    email: true,
+                    username: true,
+                    telephone: true,
+                    role: true,
+                    estActif: true,
+                    etablissement: {
+                        select: {
+                            etablissementID: true,
+                            nom: true,
+                        },
+                    },
+                },
+            });
+            if (exactEmailUser) {
+                if (requesterRole && !this.validateRoleHierarchy(requesterRole, exactEmailUser.role)) {
+                    return null;
+                }
+                return exactEmailUser;
+            }
+            return [];
+        }
         const users = await this.prisma.utilisateur.findMany({
             where: {
                 OR: [
-                    { email: { contains: query } },
                     { nom: { contains: query } },
                     { prenom: { contains: query } },
                     { username: { contains: query } },

@@ -3,13 +3,15 @@ import { Request } from 'express';
 import { CreateUserDto, UpdateUserDto, UserDto } from '../common/dto/user.dto';
 export declare class UsersController {
     private usersService;
+    private readonly logger;
     constructor(usersService: UsersService);
     private getUserId;
     private getUserRole;
     private validateRoleHierarchy;
     create(createUserDto: CreateUserDto, req: Request): Promise<UserDto>;
     findAll(req: Request): Promise<UserDto[]>;
-    searchUsers(query: string, req: Request): Promise<UserDto[]>;
+    searchUsers(query: string, req: Request): Promise<UserDto | UserDto[]>;
+    testSearchUsers(query: string): Promise<UserDto | UserDto[]>;
     findOne(id: string, req: Request): Promise<UserDto>;
     update(id: string, updateUserDto: UpdateUserDto, req: Request): Promise<{
         etablissement: {

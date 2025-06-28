@@ -11,6 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
+var ExamenMedicalController_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ExamenMedicalController = void 0;
 const common_1 = require("@nestjs/common");
@@ -20,8 +21,10 @@ const dto_1 = require("./dto");
 const jwt_auth_guard_1 = require("../common/guards/jwt-auth.guard");
 const roles_guard_1 = require("../common/guards/roles.guard");
 const roles_decorator_1 = require("../common/decorators/roles.decorator");
-let ExamenMedicalController = class ExamenMedicalController {
+const public_decorator_1 = require("../common/decorators/public.decorator");
+let ExamenMedicalController = ExamenMedicalController_1 = class ExamenMedicalController {
     examenMedicalService;
+    logger = new common_1.Logger(ExamenMedicalController_1.name);
     constructor(examenMedicalService) {
         this.examenMedicalService = examenMedicalService;
     }
@@ -75,6 +78,30 @@ let ExamenMedicalController = class ExamenMedicalController {
     }
     getImageCountByExam(examenID) {
         return this.examenMedicalService.getImageCountByExam(examenID);
+    }
+    async testImageExists(sopInstanceUID) {
+        this.logger.log(`Test endpoint called with SOP Instance UID: ${sopInstanceUID}`);
+        try {
+            const image = await this.examenMedicalService.findImageBySopInstanceUID(sopInstanceUID);
+            this.logger.log(`Test endpoint success - Image found: ${image.imageID}`);
+            return {
+                exists: true,
+                imageID: image.imageID,
+                sopInstanceUID: image.sopInstanceUID,
+                message: 'Image found'
+            };
+        }
+        catch (error) {
+            this.logger.error(`Test endpoint error: ${error.message}`);
+            return {
+                exists: false,
+                message: error.message
+            };
+        }
+    }
+    getImageBySopInstanceUID(sopInstanceUID) {
+        this.logger.log(`Get image by SOP Instance UID called: ${sopInstanceUID}`);
+        return this.examenMedicalService.findImageBySopInstanceUID(sopInstanceUID);
     }
     createImage(createImageDto, req) {
         const radiologistID = req.user.role === 'RADIOLOGUE' ? req.user.utilisateurID : undefined;
@@ -261,6 +288,28 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], ExamenMedicalController.prototype, "getImageCountByExam", null);
 __decorate([
+    (0, common_1.Get)('images/test/:sopInstanceUID'),
+    (0, public_decorator_1.Public)(),
+    (0, swagger_1.ApiOperation)({ summary: 'Test endpoint to check if image exists by SOP Instance UID' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Image exists' }),
+    (0, swagger_1.ApiResponse)({ status: 404, description: 'Image not found' }),
+    __param(0, (0, common_1.Param)('sopInstanceUID')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], ExamenMedicalController.prototype, "testImageExists", null);
+__decorate([
+    (0, common_1.Get)('images/sop/:sopInstanceUID'),
+    (0, roles_decorator_1.Roles)("MEDECIN", "RADIOLOGUE", "TECHNICIEN"),
+    (0, swagger_1.ApiOperation)({ summary: 'Récupérer une image par son SOP Instance UID' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Image récupérée avec succès', type: dto_1.ImageMedicaleDto }),
+    (0, swagger_1.ApiResponse)({ status: 404, description: 'Image not found' }),
+    __param(0, (0, common_1.Param)('sopInstanceUID')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], ExamenMedicalController.prototype, "getImageBySopInstanceUID", null);
+__decorate([
     (0, common_1.Post)('images'),
     (0, roles_decorator_1.Roles)("RADIOLOGUE", "TECHNICIEN"),
     (0, swagger_1.ApiOperation)({ summary: 'Ajouter une nouvelle image à un examen médical' }),
@@ -297,7 +346,7 @@ __decorate([
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", void 0)
 ], ExamenMedicalController.prototype, "deleteImage", null);
-exports.ExamenMedicalController = ExamenMedicalController = __decorate([
+exports.ExamenMedicalController = ExamenMedicalController = ExamenMedicalController_1 = __decorate([
     (0, common_1.Controller)('examens-medicaux'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
     (0, swagger_1.ApiTags)('Examens médicaux'),

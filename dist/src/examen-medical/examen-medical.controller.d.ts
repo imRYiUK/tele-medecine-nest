@@ -1,7 +1,8 @@
 import { ExamenMedicalService } from './examen-medical.service';
-import { CreateExamenMedicalDto, UpdateExamenMedicalDto, CreateImageMedicaleDto, UpdateImageMedicaleDto, ExamenMedicalListDto } from './dto';
+import { CreateExamenMedicalDto, UpdateExamenMedicalDto, CreateImageMedicaleDto, UpdateImageMedicaleDto, ExamenMedicalListDto, ImageMedicaleDto } from './dto';
 export declare class ExamenMedicalController {
     private readonly examenMedicalService;
+    private readonly logger;
     constructor(examenMedicalService: ExamenMedicalService);
     create(createExamenMedicalDto: CreateExamenMedicalDto, req: any): Promise<{
         patient: {
@@ -446,9 +447,21 @@ export declare class ExamenMedicalController {
         resultat: string | null;
         estAnalyse: boolean;
     }>;
-    getImagesByExam(examenID: string): Promise<import("./dto").ImageMedicaleDto[]>;
+    getImagesByExam(examenID: string): Promise<ImageMedicaleDto[]>;
     getImageCountByExam(examenID: string): Promise<number>;
-    createImage(createImageDto: CreateImageMedicaleDto, req: any): Promise<import("./dto").ImageMedicaleDto>;
-    updateImage(imageID: string, updateImageDto: UpdateImageMedicaleDto, req: any): Promise<import("./dto").ImageMedicaleDto>;
+    testImageExists(sopInstanceUID: string): Promise<{
+        exists: boolean;
+        imageID: string;
+        sopInstanceUID: string;
+        message: string;
+    } | {
+        exists: boolean;
+        message: any;
+        imageID?: undefined;
+        sopInstanceUID?: undefined;
+    }>;
+    getImageBySopInstanceUID(sopInstanceUID: string): Promise<ImageMedicaleDto>;
+    createImage(createImageDto: CreateImageMedicaleDto, req: any): Promise<ImageMedicaleDto>;
+    updateImage(imageID: string, updateImageDto: UpdateImageMedicaleDto, req: any): Promise<ImageMedicaleDto>;
     deleteImage(imageID: string, req: any): Promise<void>;
 }

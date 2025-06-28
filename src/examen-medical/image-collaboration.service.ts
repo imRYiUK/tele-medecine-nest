@@ -1,15 +1,50 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class ImageCollaborationService {
+  private readonly logger = new Logger(ImageCollaborationService.name);
+
   constructor(private readonly prisma: PrismaService) {}
 
   async inviteRadiologistToImage(imageID: string, inviterID: string, inviteeID: string) {
-    // Check if inviter is already a collaborator or owner (has access to the image)
+    if (!inviteeID) {
+      this.logger.error('inviteeID is undefined or empty');
+      throw new NotFoundException('Invitee ID is required');
+    }
+    this.logger.log(`Inviting radiologist - imageID: ${imageID}, inviterID: ${inviterID}, inviteeID: ${inviteeID}`);
+    
+    // Check if inviter and invitee are the same person
+    if (inviterID === inviteeID) {
+      this.logger.warn(`Inviter ${inviterID} cannot invite themselves`);
+      throw new ForbiddenException('You cannot invite yourself');
+    }
+    
+    // Check if invitee exists and is a radiologist
+    const invitee = await this.prisma.utilisateur.findUnique({
+      where: { utilisateurID: inviteeID },
+    });
+    
+    if (!invitee) {
+      this.logger.error(`Invitee not found with ID: ${inviteeID}`);
+      throw new NotFoundException('Invited user not found');
+    }
+    
+    if (invitee.role !== 'RADIOLOGUE') {
+      this.logger.warn(`Invitee ${inviteeID} is not a radiologist (role: ${invitee.role})`);
+      throw new ForbiddenException('You can only invite radiologists');
+    }
+    
+    // Check if image exists and get its details
     const image = await this.prisma.imageMedicale.findUnique({
       where: { imageID },
       include: {
+        examen: {
+          include: {
+            demandePar: true,
+            radiologues: true,
+          },
+        },
         collaborations: {
           where: {
             status: {
@@ -19,12 +54,33 @@ export class ImageCollaborationService {
         },
       },
     });
-    if (!image) throw new NotFoundException('Image not found');
     
+    this.logger.log(`Image lookup result: ${image ? 'Image found' : 'Image not found'}`);
+    
+    if (!image) {
+      this.logger.error(`Image not found with imageID: ${imageID}`);
+      throw new NotFoundException('Image not found');
+    }
+    
+    this.logger.log(`Image details - imageID: ${image.imageID}, sopInstanceUID: ${image.sopInstanceUID}`);
+    
+    // Check if inviter has access to this image
+    // They can invite if they are:
+    // 1. The person who requested the exam
+    // 2. A radiologist assigned to the exam
+    // 3. An accepted collaborator on the image
+    const isExamRequester = image.examen.demandeParID === inviterID;
+    const isAssignedRadiologist = image.examen.radiologues.some(r => r.utilisateurID === inviterID);
     const isCollaborator = image.collaborations.some(
       (c) => c.inviterID === inviterID || c.inviteeID === inviterID
     );
-    if (!isCollaborator) throw new ForbiddenException('You do not have access to invite on this image');
+    
+    this.logger.log(`Access check - isExamRequester: ${isExamRequester}, isAssignedRadiologist: ${isAssignedRadiologist}, isCollaborator: ${isCollaborator}`);
+    
+    if (!isExamRequester && !isAssignedRadiologist && !isCollaborator) {
+      this.logger.warn(`Inviter ${inviterID} does not have access to image ${imageID}`);
+      throw new ForbiddenException('You do not have permission to invite collaborators on this image');
+    }
     
     // Check if there's already a pending or accepted invitation
     const existingCollaboration = await this.prisma.imageCollaboration.findFirst({
@@ -37,16 +93,22 @@ export class ImageCollaborationService {
       }
     });
     
+    this.logger.log(`Existing collaboration check: ${existingCollaboration ? 'Found existing' : 'No existing'}`);
+    
     if (existingCollaboration) {
       if (existingCollaboration.status === 'ACCEPTED') {
-        throw new ForbiddenException('This radiologist is already a collaborator');
+        this.logger.warn(`Radiologist ${inviteeID} is already a collaborator on image ${imageID}`);
+        throw new ForbiddenException('This radiologist is already a collaborator on this image');
       } else {
+        this.logger.warn(`Pending invitation already exists for radiologist ${inviteeID} on image ${imageID}`);
         throw new ForbiddenException('An invitation is already pending for this radiologist');
       }
     }
     
+    this.logger.log(`Creating new collaboration invitation`);
+    
     // Create collaboration with PENDING status
-    return this.prisma.imageCollaboration.create({
+    const result = await this.prisma.imageCollaboration.create({
       data: {
         imageID,
         inviterID,
@@ -54,20 +116,46 @@ export class ImageCollaborationService {
         status: 'PENDING',
       },
       include: {
-        inviter: true,
-        invitee: true,
+        inviter: {
+          select: {
+            utilisateurID: true,
+            nom: true,
+            prenom: true,
+            email: true,
+          },
+        },
+        invitee: {
+          select: {
+            utilisateurID: true,
+            nom: true,
+            prenom: true,
+            email: true,
+          },
+        },
         image: {
           include: {
             examen: {
               include: {
-                patient: true,
-                typeExamen: true,
+                patient: {
+                  select: {
+                    nom: true,
+                    prenom: true,
+                  },
+                },
+                typeExamen: {
+                  select: {
+                    nomType: true,
+                  },
+                },
               },
             },
           },
         },
       },
     });
+    
+    this.logger.log(`Collaboration invitation created successfully - collaborationID: ${result.id}`);
+    return result;
   }
 
   async acceptCollaboration(collaborationId: string, inviteeID: string) {
@@ -145,16 +233,73 @@ export class ImageCollaborationService {
   }
 
   async listCollaborators(imageID: string) {
-    const collaborations = await this.prisma.imageCollaboration.findMany({
-      where: { 
-        imageID,
-        status: 'ACCEPTED'
-      },
+    // Get the image with exam details
+    const image = await this.prisma.imageMedicale.findUnique({
+      where: { imageID },
       include: {
-        invitee: true,
+        examen: {
+          include: {
+            demandePar: true,
+            radiologues: true,
+          },
+        },
+        collaborations: {
+          where: {
+            status: 'ACCEPTED'
+          },
+          include: {
+            invitee: {
+              select: {
+                utilisateurID: true,
+                nom: true,
+                prenom: true,
+                email: true,
+              },
+            },
+          },
+        },
       },
     });
-    return collaborations.map((c) => c.invitee);
+
+    if (!image) {
+      throw new NotFoundException('Image not found');
+    }
+
+    // Create a set to avoid duplicates
+    const collaborators = new Map();
+
+    // Add the exam requester (original owner)
+    collaborators.set(image.examen.demandePar.utilisateurID, {
+      utilisateurID: image.examen.demandePar.utilisateurID,
+      nom: image.examen.demandePar.nom,
+      prenom: image.examen.demandePar.prenom,
+      email: image.examen.demandePar.email,
+      role: 'Exam Requester',
+    });
+
+    // Add assigned radiologists
+    image.examen.radiologues.forEach(radiologist => {
+      collaborators.set(radiologist.utilisateurID, {
+        utilisateurID: radiologist.utilisateurID,
+        nom: radiologist.nom,
+        prenom: radiologist.prenom,
+        email: radiologist.email,
+        role: 'Assigned Radiologist',
+      });
+    });
+
+    // Add accepted collaborators
+    image.collaborations.forEach(collaboration => {
+      collaborators.set(collaboration.invitee.utilisateurID, {
+        utilisateurID: collaboration.invitee.utilisateurID,
+        nom: collaboration.invitee.nom,
+        prenom: collaboration.invitee.prenom,
+        email: collaboration.invitee.email,
+        role: 'Collaborator',
+      });
+    });
+
+    return Array.from(collaborators.values());
   }
 
   async sendMessage(imageID: string, senderID: string, content: string) {
@@ -236,10 +381,43 @@ export class ImageCollaborationService {
 
   async getPendingCollaborations(userID: string) {
     const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-    
     return this.prisma.imageCollaboration.findMany({
       where: {
         inviteeID: userID,
+        status: 'PENDING',
+        createdAt: {
+          gte: twentyFourHoursAgo,
+        },
+      },
+      include: {
+        image: {
+          include: {
+            examen: {
+              include: {
+                patient: true,
+                typeExamen: true,
+                demandePar: true,
+              },
+            },
+          },
+        },
+        inviter: true,
+        invitee: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
+
+  async getPendingCollaborationsForImage(imageID: string, userID: string) {
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+    console.log("heremdr : " + userID + " " + imageID)
+    return this.prisma.imageCollaboration.findMany({
+      where: {
+        imageID,
+        inviterID: userID,
         status: 'PENDING',
         createdAt: {
           gte: twentyFourHoursAgo,
@@ -291,5 +469,27 @@ export class ImageCollaborationService {
         createdAt: 'desc',
       },
     });
+  }
+
+  async findImageBySopInstanceUID(sopInstanceUID: string) {
+    this.logger.log(`Searching for image by SOP Instance UID: ${sopInstanceUID}`);
+    
+    const image = await this.prisma.imageMedicale.findFirst({
+      where: { sopInstanceUID },
+    });
+
+    this.logger.log(`Database query result: ${image ? 'Image found' : 'Image not found'}`);
+    
+    if (image) {
+      this.logger.log(`Found image - imageID: ${image.imageID}, sopInstanceUID: ${image.sopInstanceUID}`);
+    } else {
+      this.logger.warn(`No image found with SOP Instance UID: ${sopInstanceUID}`);
+    }
+
+    if (!image) {
+      throw new NotFoundException(`Image with SOP Instance UID ${sopInstanceUID} not found`);
+    }
+
+    return image;
   }
 } 
