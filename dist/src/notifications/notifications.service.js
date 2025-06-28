@@ -47,6 +47,7 @@ let NotificationsService = class NotificationsService {
         await Promise.all(filteredDestinataires.map(async (utilisateurID) => {
             await this.notificationsGateway.sendNotificationToUser(utilisateurID, {
                 ...notification,
+                dateCreation: notification.dateCreation.toISOString(),
                 estLu: false,
                 utilisateurID: utilisateurID,
             });
