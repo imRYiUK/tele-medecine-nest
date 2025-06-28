@@ -305,6 +305,7 @@ let ImageCollaborationService = ImageCollaborationService_1 = class ImageCollabo
         });
     }
     async getUserCollaborations(userID) {
+        console.log('getUserCollaborations' + userID);
         return this.prisma.imageCollaboration.findMany({
             where: {
                 OR: [
@@ -335,6 +336,7 @@ let ImageCollaborationService = ImageCollaborationService_1 = class ImageCollabo
     }
     async getPendingCollaborations(userID) {
         const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        console.log('getPendingCollaborations', userID);
         return this.prisma.imageCollaboration.findMany({
             where: {
                 inviteeID: userID,
@@ -396,8 +398,37 @@ let ImageCollaborationService = ImageCollaborationService_1 = class ImageCollabo
         });
     }
     async getSentInvitations(userID) {
+        console.log('getSentInvitations', userID);
         return this.prisma.imageCollaboration.findMany({
             where: {
+                inviterID: userID,
+                status: 'PENDING',
+            },
+            include: {
+                image: {
+                    include: {
+                        examen: {
+                            include: {
+                                patient: true,
+                                typeExamen: true,
+                                demandePar: true,
+                            },
+                        },
+                    },
+                },
+                inviter: true,
+                invitee: true,
+            },
+            orderBy: {
+                createdAt: 'desc',
+            },
+        });
+    }
+    async getSentInvitationsForImage(imageID, userID) {
+        console.log('getSentInvitationsForImage', userID, imageID);
+        return this.prisma.imageCollaboration.findMany({
+            where: {
+                imageID,
                 inviterID: userID,
                 status: 'PENDING',
             },

@@ -16,18 +16,19 @@ export class ImageCollaborationController {
 
   constructor(private readonly collaborationService: ImageCollaborationService) {}
 
+  // ===== INVITATION MANAGEMENT (Inviter Perspective) =====
+  
   @Post(':imageID/invite')
   @Roles(UserRole.RADIOLOGUE)
-  @ApiOperation({ summary: 'Inviter un radiologue à collaborer sur une image' })
+  @ApiOperation({ summary: 'Inviter un radiologue à collaborer sur une image (Inviter)' })
   @ApiResponse({ status: 201, description: 'Invitation envoyée avec succès' })
-  async invite(
+  async inviteRadiologistToImage(
     @Param('imageID') imageID: string,
     @Body('inviteeID') inviteeID: string,
     @Req() req: any
   ) {
     this.logger.log(`Invite request - imageID: ${imageID}, inviteeID: ${inviteeID}, inviterID: ${req.user?.utilisateurID}`);
     
-    // req.user.utilisateurID is the inviter
     const result = await this.collaborationService.inviteRadiologistToImage(
       imageID,
       req.user.utilisateurID,
@@ -40,21 +41,19 @@ export class ImageCollaborationController {
 
   @Post('sop/:sopInstanceUID/invite')
   @Roles(UserRole.RADIOLOGUE)
-  @ApiOperation({ summary: 'Inviter un radiologue à collaborer sur une image par SOP Instance UID' })
+  @ApiOperation({ summary: 'Inviter un radiologue à collaborer sur une image par SOP Instance UID (Inviter)' })
   @ApiResponse({ status: 201, description: 'Invitation envoyée avec succès' })
   @ApiResponse({ status: 404, description: 'Image not found' })
-  async inviteBySopInstanceUID(
+  async inviteRadiologistToImageBySopInstanceUID(
     @Param('sopInstanceUID') sopInstanceUID: string,
     @Body('inviteeID') inviteeID: string,
     @Req() req: any
   ) {
     this.logger.log(`SOP Invite request - sopInstanceUID: ${sopInstanceUID}, inviteeID: ${inviteeID}, inviterID: ${req.user?.utilisateurID}`);
     
-    // First find the image by SOP Instance UID
     const image = await this.collaborationService.findImageBySopInstanceUID(sopInstanceUID);
     this.logger.log(`Found image by SOP Instance UID - imageID: ${image.imageID}`);
     
-    // Then invite using the found imageID
     const result = await this.collaborationService.inviteRadiologistToImage(
       image.imageID,
       req.user.utilisateurID,
@@ -65,11 +64,13 @@ export class ImageCollaborationController {
     return result;
   }
 
+  // ===== INVITATION RESPONSE (Invitee Perspective) =====
+
   @Post('collaborations/:collaborationId/accept')
   @Roles(UserRole.RADIOLOGUE)
-  @ApiOperation({ summary: 'Accepter une invitation de collaboration' })
+  @ApiOperation({ summary: 'Accepter une invitation de collaboration (Invitee)' })
   @ApiResponse({ status: 200, description: 'Invitation acceptée avec succès' })
-  async acceptCollaboration(
+  async acceptCollaborationInvitation(
     @Param('collaborationId') collaborationId: string,
     @Req() req: any
   ) {
@@ -81,9 +82,9 @@ export class ImageCollaborationController {
 
   @Post('collaborations/:collaborationId/reject')
   @Roles(UserRole.RADIOLOGUE)
-  @ApiOperation({ summary: 'Rejeter une invitation de collaboration' })
+  @ApiOperation({ summary: 'Rejeter une invitation de collaboration (Invitee)' })
   @ApiResponse({ status: 200, description: 'Invitation rejetée avec succès' })
-  async rejectCollaboration(
+  async rejectCollaborationInvitation(
     @Param('collaborationId') collaborationId: string,
     @Req() req: any
   ) {
@@ -93,11 +94,13 @@ export class ImageCollaborationController {
     );
   }
 
+  // ===== COLLABORATORS LISTING =====
+
   @Get(':imageID/collaborators')
   @Roles(UserRole.RADIOLOGUE)
   @ApiOperation({ summary: 'Lister les collaborateurs d\'une image' })
   @ApiResponse({ status: 200, description: 'Liste des collaborateurs récupérée' })
-  async collaborators(@Param('imageID') imageID: string) {
+  async getImageCollaborators(@Param('imageID') imageID: string) {
     return this.collaborationService.listCollaborators(imageID);
   }
 
@@ -106,52 +109,25 @@ export class ImageCollaborationController {
   @ApiOperation({ summary: 'Lister les collaborateurs d\'une image par SOP Instance UID' })
   @ApiResponse({ status: 200, description: 'Liste des collaborateurs récupérée' })
   @ApiResponse({ status: 404, description: 'Image not found' })
-  async collaboratorsBySopInstanceUID(@Param('sopInstanceUID') sopInstanceUID: string) {
+  async getImageCollaboratorsBySopInstanceUID(@Param('sopInstanceUID') sopInstanceUID: string) {
     this.logger.log(`SOP Collaborators request - sopInstanceUID: ${sopInstanceUID}`);
     
-    // First find the image by SOP Instance UID
     const image = await this.collaborationService.findImageBySopInstanceUID(sopInstanceUID);
     this.logger.log(`Found image by SOP Instance UID - imageID: ${image.imageID}`);
     
-    // Then get collaborators using the found imageID
     const result = await this.collaborationService.listCollaborators(image.imageID);
     
     this.logger.log(`SOP Collaborators request completed successfully`);
     return result;
   }
 
-  @Get(':imageID/pending-collaborations')
-  @Roles(UserRole.RADIOLOGUE)
-  @ApiOperation({ summary: 'Récupérer les collaborations en attente pour une image' })
-  @ApiResponse({ status: 200, description: 'Collaborations en attente récupérées' })
-  async getPendingCollaborationsForImage(@Param('imageID') imageID: string, @Req() req: any) {
-    return this.collaborationService.getPendingCollaborationsForImage(imageID, req.user.utilisateurID);
-  }
-
-  @Get('sop/:sopInstanceUID/pending-collaborations')
-  @Roles(UserRole.RADIOLOGUE)
-  @ApiOperation({ summary: 'Récupérer les collaborations en attente pour une image par SOP Instance UID' })
-  @ApiResponse({ status: 200, description: 'Collaborations en attente récupérées' })
-  @ApiResponse({ status: 404, description: 'Image not found' })
-  async getPendingCollaborationsForImageBySopInstanceUID(@Param('sopInstanceUID') sopInstanceUID: string, @Req() req: any) {
-    this.logger.log(`SOP Pending Collaborations request - sopInstanceUID: ${sopInstanceUID}`);
-    
-    // First find the image by SOP Instance UID
-    const image = await this.collaborationService.findImageBySopInstanceUID(sopInstanceUID);
-    this.logger.log(`Found image by SOP Instance UID - imageID: ${image.imageID}`);
-    
-    // Then get pending collaborations using the found imageID
-    const result = await this.collaborationService.getPendingCollaborationsForImage(image.imageID, req.user.utilisateurID);
-    
-    this.logger.log(`SOP Pending Collaborations request completed successfully`);
-    return result;
-  }
+  // ===== CHAT MESSAGES =====
 
   @Post(':imageID/messages')
   @Roles(UserRole.RADIOLOGUE)
   @ApiOperation({ summary: 'Envoyer un message sur une image' })
   @ApiResponse({ status: 201, description: 'Message envoyé avec succès', type: ChatMessageDto })
-  async sendMessage(
+  async sendMessageOnImage(
     @Param('imageID') imageID: string,
     @Body() createMessageDto: CreateChatMessageDto,
     @Req() req: any
@@ -167,32 +143,33 @@ export class ImageCollaborationController {
   @Roles(UserRole.RADIOLOGUE)
   @ApiOperation({ summary: 'Récupérer les messages d\'une image' })
   @ApiResponse({ status: 200, description: 'Messages récupérés avec succès', type: [ChatMessageDto] })
-  async getMessages(@Param('imageID') imageID: string) {
+  async getImageMessages(@Param('imageID') imageID: string) {
     return this.collaborationService.getMessages(imageID);
   }
 
-  // User-centric endpoints (for getting all collaborations across all images)
-  @Get('user/collaborations')
-  @Roles(UserRole.RADIOLOGUE)
-  @ApiOperation({ summary: 'Récupérer toutes les collaborations d\'un utilisateur' })
-  @ApiResponse({ status: 200, description: 'Collaborations récupérées avec succès' })
-  async getUserCollaborations(@Req() req: any) {
-    return this.collaborationService.getUserCollaborations(req.user.utilisateurID);
-  }
+  // ===== USER-CENTRIC ENDPOINTS (All Images) =====
 
-  @Get('user/pending-collaborations')
+  @Get('user/received-invitations')
   @Roles(UserRole.RADIOLOGUE)
-  @ApiOperation({ summary: 'Récupérer toutes les collaborations en attente d\'un utilisateur' })
-  @ApiResponse({ status: 200, description: 'Collaborations en attente récupérées' })
-  async getPendingCollaborations(@Req() req: any) {
+  @ApiOperation({ summary: 'Récupérer toutes les invitations reçues par l\'utilisateur (Invitee)' })
+  @ApiResponse({ status: 200, description: 'Invitations reçues récupérées' })
+  async getReceivedInvitations(@Req() req: any) {
     return this.collaborationService.getPendingCollaborations(req.user.utilisateurID);
   }
 
   @Get('user/sent-invitations')
   @Roles(UserRole.RADIOLOGUE)
-  @ApiOperation({ summary: 'Récupérer toutes les invitations envoyées par un utilisateur' })
+  @ApiOperation({ summary: 'Récupérer toutes les invitations envoyées par l\'utilisateur (Inviter)' })
   @ApiResponse({ status: 200, description: 'Invitations envoyées récupérées' })
   async getSentInvitations(@Req() req: any) {
     return this.collaborationService.getSentInvitations(req.user.utilisateurID);
+  }
+
+  @Get('user/active-collaborations')
+  @Roles(UserRole.RADIOLOGUE)
+  @ApiOperation({ summary: 'Récupérer toutes les collaborations actives de l\'utilisateur' })
+  @ApiResponse({ status: 200, description: 'Collaborations actives récupérées' })
+  async getActiveCollaborations(@Req() req: any) {
+    return this.collaborationService.getUserCollaborations(req.user.utilisateurID);
   }
 } 
