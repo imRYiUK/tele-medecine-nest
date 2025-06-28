@@ -319,35 +319,23 @@ export class ExamenMedicalService {
       this.prisma.examenMedical.count({
         where: {
           estAnalyse: false,
-          radiologues: {
-            some: { utilisateurID: radiologueID }
-          },
           demandePar: { etablissementID: radiologue.etablissementID }
         }
       }),
       this.prisma.examenMedical.count({
         where: {
           estAnalyse: false,
-          radiologues: {
-            some: { utilisateurID: radiologueID }
-          },
           demandePar: { etablissementID: radiologue.etablissementID }
         }
       }),
       this.prisma.examenMedical.count({
         where: {
           estAnalyse: true,
-          radiologues: {
-            some: { utilisateurID: radiologueID }
-          },
           demandePar: { etablissementID: radiologue.etablissementID }
         }
       }),
       this.prisma.examenMedical.count({
         where: {
-          radiologues: {
-            some: { utilisateurID: radiologueID }
-          },
           demandePar: { etablissementID: radiologue.etablissementID },
           OR: [
             { description: { contains: 'urgent' } },
@@ -378,8 +366,6 @@ export class ExamenMedicalService {
 
     return this.prisma.examenMedical.findMany({
       where: {
-        radiologues: { some: { utilisateurID: radiologueID } },
-        // Filtrer par l'établissement du radiologue connecté
         demandePar: { etablissementID: radiologue.etablissementID }
       },
       include: {
@@ -667,8 +653,6 @@ export class ExamenMedicalService {
     }
 
     const where: any = {
-      radiologues: { some: { utilisateurID: radiologueID } },
-      // Filtrer par l'établissement du radiologue connecté
       demandePar: { etablissementID: radiologue.etablissementID }
     };
     
