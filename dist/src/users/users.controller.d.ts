@@ -14,34 +14,34 @@ export declare class UsersController {
     testSearchUsers(query: string): Promise<UserDto | UserDto[]>;
     findOne(id: string, req: Request): Promise<UserDto>;
     update(id: string, updateUserDto: UpdateUserDto, req: Request): Promise<{
-        etablissement: {
-            etablissementID: string;
-            nom: string;
-        } | null;
-        nom: string;
-        telephone: string;
-        email: string;
-        estActif: boolean;
         utilisateurID: string;
+        nom: string;
         prenom: string;
         username: string;
+        email: string;
+        telephone: string;
         role: string;
+        estActif: boolean;
+        etablissement: {
+            nom: string;
+            etablissementID: string;
+        } | null;
     }>;
     remove(id: string, req: Request): Promise<void>;
     getProfile(req: Request): Promise<UserDto>;
     updateProfile(req: Request, updateUserDto: UpdateUserDto): Promise<{
-        etablissement: {
-            etablissementID: string;
-            nom: string;
-        } | null;
-        nom: string;
-        telephone: string;
-        email: string;
-        estActif: boolean;
         utilisateurID: string;
+        nom: string;
         prenom: string;
         username: string;
+        email: string;
+        telephone: string;
         role: string;
+        estActif: boolean;
+        etablissement: {
+            nom: string;
+            etablissementID: string;
+        } | null;
     }>;
     findMedecinsByEtablissement(etablissementID: string): Promise<UserDto[]>;
 }

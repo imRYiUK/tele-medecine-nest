@@ -6,28 +6,28 @@ export declare class ImageCollaborationController {
     constructor(collaborationService: ImageCollaborationService);
     getReceivedInvitations(req: any): Promise<({
         inviter: {
-            etablissementID: string | null;
-            nom: string;
-            telephone: string;
-            email: string;
-            estActif: boolean;
             utilisateurID: string;
+            nom: string;
             prenom: string;
             username: string;
             password: string;
+            email: string;
+            telephone: string;
             role: string;
+            etablissementID: string | null;
+            estActif: boolean;
         };
         invitee: {
-            etablissementID: string | null;
-            nom: string;
-            telephone: string;
-            email: string;
-            estActif: boolean;
             utilisateurID: string;
+            nom: string;
             prenom: string;
             username: string;
             password: string;
+            email: string;
+            telephone: string;
             role: string;
+            etablissementID: string | null;
+            estActif: boolean;
         };
         image: {
             examen: {
@@ -39,12 +39,12 @@ export declare class ImageCollaborationController {
                 };
                 patient: {
                     nom: string;
-                    adresse: string;
-                    telephone: string;
+                    prenom: string;
                     email: string | null;
+                    telephone: string;
+                    adresse: string;
                     createdAt: Date;
                     updatedAt: Date;
-                    prenom: string;
                     createdBy: string;
                     patientID: string;
                     dateNaissance: Date;
@@ -52,16 +52,16 @@ export declare class ImageCollaborationController {
                     groupeSanguin: string;
                 };
                 demandePar: {
-                    etablissementID: string | null;
-                    nom: string;
-                    telephone: string;
-                    email: string;
-                    estActif: boolean;
                     utilisateurID: string;
+                    nom: string;
                     prenom: string;
                     username: string;
                     password: string;
+                    email: string;
+                    telephone: string;
                     role: string;
+                    etablissementID: string | null;
+                    estActif: boolean;
                 };
             } & {
                 typeExamenID: string;
@@ -98,28 +98,28 @@ export declare class ImageCollaborationController {
     })[]>;
     getSentInvitations(req: any): Promise<({
         inviter: {
-            etablissementID: string | null;
-            nom: string;
-            telephone: string;
-            email: string;
-            estActif: boolean;
             utilisateurID: string;
+            nom: string;
             prenom: string;
             username: string;
             password: string;
+            email: string;
+            telephone: string;
             role: string;
+            etablissementID: string | null;
+            estActif: boolean;
         };
         invitee: {
-            etablissementID: string | null;
-            nom: string;
-            telephone: string;
-            email: string;
-            estActif: boolean;
             utilisateurID: string;
+            nom: string;
             prenom: string;
             username: string;
             password: string;
+            email: string;
+            telephone: string;
             role: string;
+            etablissementID: string | null;
+            estActif: boolean;
         };
         image: {
             examen: {
@@ -131,12 +131,12 @@ export declare class ImageCollaborationController {
                 };
                 patient: {
                     nom: string;
-                    adresse: string;
-                    telephone: string;
+                    prenom: string;
                     email: string | null;
+                    telephone: string;
+                    adresse: string;
                     createdAt: Date;
                     updatedAt: Date;
-                    prenom: string;
                     createdBy: string;
                     patientID: string;
                     dateNaissance: Date;
@@ -144,16 +144,16 @@ export declare class ImageCollaborationController {
                     groupeSanguin: string;
                 };
                 demandePar: {
-                    etablissementID: string | null;
-                    nom: string;
-                    telephone: string;
-                    email: string;
-                    estActif: boolean;
                     utilisateurID: string;
+                    nom: string;
                     prenom: string;
                     username: string;
                     password: string;
+                    email: string;
+                    telephone: string;
                     role: string;
+                    etablissementID: string | null;
+                    estActif: boolean;
                 };
             } & {
                 typeExamenID: string;
@@ -190,28 +190,28 @@ export declare class ImageCollaborationController {
     })[]>;
     getActiveCollaborations(req: any): Promise<({
         inviter: {
-            etablissementID: string | null;
-            nom: string;
-            telephone: string;
-            email: string;
-            estActif: boolean;
             utilisateurID: string;
+            nom: string;
             prenom: string;
             username: string;
             password: string;
+            email: string;
+            telephone: string;
             role: string;
+            etablissementID: string | null;
+            estActif: boolean;
         };
         invitee: {
-            etablissementID: string | null;
-            nom: string;
-            telephone: string;
-            email: string;
-            estActif: boolean;
             utilisateurID: string;
+            nom: string;
             prenom: string;
             username: string;
             password: string;
+            email: string;
+            telephone: string;
             role: string;
+            etablissementID: string | null;
+            estActif: boolean;
         };
         image: {
             examen: {
@@ -223,12 +223,12 @@ export declare class ImageCollaborationController {
                 };
                 patient: {
                     nom: string;
-                    adresse: string;
-                    telephone: string;
+                    prenom: string;
                     email: string | null;
+                    telephone: string;
+                    adresse: string;
                     createdAt: Date;
                     updatedAt: Date;
-                    prenom: string;
                     createdBy: string;
                     patientID: string;
                     dateNaissance: Date;
@@ -236,16 +236,16 @@ export declare class ImageCollaborationController {
                     groupeSanguin: string;
                 };
                 demandePar: {
-                    etablissementID: string | null;
-                    nom: string;
-                    telephone: string;
-                    email: string;
-                    estActif: boolean;
                     utilisateurID: string;
+                    nom: string;
                     prenom: string;
                     username: string;
                     password: string;
+                    email: string;
+                    telephone: string;
                     role: string;
+                    etablissementID: string | null;
+                    estActif: boolean;
                 };
             } & {
                 typeExamenID: string;
@@ -282,16 +282,16 @@ export declare class ImageCollaborationController {
     })[]>;
     inviteRadiologistToImage(imageID: string, inviteeID: string, req: any): Promise<{
         inviter: {
-            nom: string;
-            email: string;
             utilisateurID: string;
+            nom: string;
             prenom: string;
+            email: string;
         };
         invitee: {
-            nom: string;
-            email: string;
             utilisateurID: string;
+            nom: string;
             prenom: string;
+            email: string;
         };
         image: {
             examen: {
@@ -337,16 +337,16 @@ export declare class ImageCollaborationController {
     }>;
     inviteRadiologistToImageBySopInstanceUID(sopInstanceUID: string, inviteeID: string, req: any): Promise<{
         inviter: {
-            nom: string;
-            email: string;
             utilisateurID: string;
+            nom: string;
             prenom: string;
+            email: string;
         };
         invitee: {
-            nom: string;
-            email: string;
             utilisateurID: string;
+            nom: string;
             prenom: string;
+            email: string;
         };
         image: {
             examen: {
@@ -392,28 +392,28 @@ export declare class ImageCollaborationController {
     }>;
     acceptCollaborationInvitation(collaborationId: string, req: any): Promise<{
         inviter: {
-            etablissementID: string | null;
-            nom: string;
-            telephone: string;
-            email: string;
-            estActif: boolean;
             utilisateurID: string;
+            nom: string;
             prenom: string;
             username: string;
             password: string;
+            email: string;
+            telephone: string;
             role: string;
+            etablissementID: string | null;
+            estActif: boolean;
         };
         invitee: {
-            etablissementID: string | null;
-            nom: string;
-            telephone: string;
-            email: string;
-            estActif: boolean;
             utilisateurID: string;
+            nom: string;
             prenom: string;
             username: string;
             password: string;
+            email: string;
+            telephone: string;
             role: string;
+            etablissementID: string | null;
+            estActif: boolean;
         };
         image: {
             examen: {
@@ -425,12 +425,12 @@ export declare class ImageCollaborationController {
                 };
                 patient: {
                     nom: string;
-                    adresse: string;
-                    telephone: string;
+                    prenom: string;
                     email: string | null;
+                    telephone: string;
+                    adresse: string;
                     createdAt: Date;
                     updatedAt: Date;
-                    prenom: string;
                     createdBy: string;
                     patientID: string;
                     dateNaissance: Date;
@@ -472,28 +472,28 @@ export declare class ImageCollaborationController {
     }>;
     rejectCollaborationInvitation(collaborationId: string, req: any): Promise<{
         inviter: {
-            etablissementID: string | null;
-            nom: string;
-            telephone: string;
-            email: string;
-            estActif: boolean;
             utilisateurID: string;
+            nom: string;
             prenom: string;
             username: string;
             password: string;
+            email: string;
+            telephone: string;
             role: string;
+            etablissementID: string | null;
+            estActif: boolean;
         };
         invitee: {
-            etablissementID: string | null;
-            nom: string;
-            telephone: string;
-            email: string;
-            estActif: boolean;
             utilisateurID: string;
+            nom: string;
             prenom: string;
             username: string;
             password: string;
+            email: string;
+            telephone: string;
             role: string;
+            etablissementID: string | null;
+            estActif: boolean;
         };
         image: {
             examen: {
@@ -505,12 +505,12 @@ export declare class ImageCollaborationController {
                 };
                 patient: {
                     nom: string;
-                    adresse: string;
-                    telephone: string;
+                    prenom: string;
                     email: string | null;
+                    telephone: string;
+                    adresse: string;
                     createdAt: Date;
                     updatedAt: Date;
-                    prenom: string;
                     createdBy: string;
                     patientID: string;
                     dateNaissance: Date;
@@ -554,28 +554,28 @@ export declare class ImageCollaborationController {
     getImageCollaboratorsBySopInstanceUID(sopInstanceUID: string): Promise<any[]>;
     getPendingCollaborationsBySopInstanceUID(sopInstanceUID: string): Promise<({
         inviter: {
-            etablissementID: string | null;
-            nom: string;
-            telephone: string;
-            email: string;
-            estActif: boolean;
             utilisateurID: string;
+            nom: string;
             prenom: string;
             username: string;
             password: string;
+            email: string;
+            telephone: string;
             role: string;
+            etablissementID: string | null;
+            estActif: boolean;
         };
         invitee: {
-            etablissementID: string | null;
-            nom: string;
-            telephone: string;
-            email: string;
-            estActif: boolean;
             utilisateurID: string;
+            nom: string;
             prenom: string;
             username: string;
             password: string;
+            email: string;
+            telephone: string;
             role: string;
+            etablissementID: string | null;
+            estActif: boolean;
         };
         image: {
             examen: {
@@ -587,12 +587,12 @@ export declare class ImageCollaborationController {
                 };
                 patient: {
                     nom: string;
-                    adresse: string;
-                    telephone: string;
+                    prenom: string;
                     email: string | null;
+                    telephone: string;
+                    adresse: string;
                     createdAt: Date;
                     updatedAt: Date;
-                    prenom: string;
                     createdBy: string;
                     patientID: string;
                     dateNaissance: Date;
@@ -600,16 +600,16 @@ export declare class ImageCollaborationController {
                     groupeSanguin: string;
                 };
                 demandePar: {
-                    etablissementID: string | null;
-                    nom: string;
-                    telephone: string;
-                    email: string;
-                    estActif: boolean;
                     utilisateurID: string;
+                    nom: string;
                     prenom: string;
                     username: string;
                     password: string;
+                    email: string;
+                    telephone: string;
                     role: string;
+                    etablissementID: string | null;
+                    estActif: boolean;
                 };
             } & {
                 typeExamenID: string;
@@ -646,16 +646,16 @@ export declare class ImageCollaborationController {
     })[]>;
     sendMessageOnImage(imageID: string, createMessageDto: CreateChatMessageDto, req: any): Promise<{
         sender: {
-            etablissementID: string | null;
-            nom: string;
-            telephone: string;
-            email: string;
-            estActif: boolean;
             utilisateurID: string;
+            nom: string;
             prenom: string;
             username: string;
             password: string;
+            email: string;
+            telephone: string;
             role: string;
+            etablissementID: string | null;
+            estActif: boolean;
         };
     } & {
         senderID: string;
@@ -675,12 +675,12 @@ export declare class ImageCollaborationController {
                 };
                 patient: {
                     nom: string;
-                    adresse: string;
-                    telephone: string;
+                    prenom: string;
                     email: string | null;
+                    telephone: string;
+                    adresse: string;
                     createdAt: Date;
                     updatedAt: Date;
-                    prenom: string;
                     createdBy: string;
                     patientID: string;
                     dateNaissance: Date;
@@ -688,16 +688,16 @@ export declare class ImageCollaborationController {
                     groupeSanguin: string;
                 };
                 demandePar: {
-                    etablissementID: string | null;
-                    nom: string;
-                    telephone: string;
-                    email: string;
-                    estActif: boolean;
                     utilisateurID: string;
+                    nom: string;
                     prenom: string;
                     username: string;
                     password: string;
+                    email: string;
+                    telephone: string;
                     role: string;
+                    etablissementID: string | null;
+                    estActif: boolean;
                 };
             } & {
                 typeExamenID: string;
@@ -724,16 +724,16 @@ export declare class ImageCollaborationController {
             orthancInstanceId: string | null;
         };
         sender: {
-            etablissementID: string | null;
-            nom: string;
-            telephone: string;
-            email: string;
-            estActif: boolean;
             utilisateurID: string;
+            nom: string;
             prenom: string;
             username: string;
             password: string;
+            email: string;
+            telephone: string;
             role: string;
+            etablissementID: string | null;
+            estActif: boolean;
         };
     } & {
         senderID: string;

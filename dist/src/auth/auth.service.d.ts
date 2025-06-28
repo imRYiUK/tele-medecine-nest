@@ -15,15 +15,15 @@ export declare class AuthService {
     validateUser(email: string, pass: string): Promise<UserDto | null>;
     login(loginDto: LoginDto): Promise<{
         user: {
-            etablissementID: string | null;
-            nom: string;
-            telephone: string;
-            email: string;
-            estActif: boolean;
             utilisateurID: string;
+            nom: string;
             prenom: string;
             username: string;
+            email: string;
+            telephone: string;
             role: string;
+            etablissementID: string | null;
+            estActif: boolean;
         };
         token: string;
     }>;
@@ -32,15 +32,15 @@ export declare class AuthService {
     }>;
     register(registerDto: RegisterDto): Promise<{
         user: {
-            etablissementID: string | null;
-            nom: string;
-            telephone: string;
-            email: string;
-            estActif: boolean;
             utilisateurID: string;
+            nom: string;
             prenom: string;
             username: string;
+            email: string;
+            telephone: string;
             role: string;
+            etablissementID: string | null;
+            estActif: boolean;
         };
         token: string;
     }>;

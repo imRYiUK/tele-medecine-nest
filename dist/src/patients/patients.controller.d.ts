@@ -18,12 +18,12 @@ export declare class PatientsController {
         } | null;
     } & {
         nom: string;
-        adresse: string;
-        telephone: string;
+        prenom: string;
         email: string | null;
+        telephone: string;
+        adresse: string;
         createdAt: Date;
         updatedAt: Date;
-        prenom: string;
         createdBy: string;
         patientID: string;
         dateNaissance: Date;
@@ -53,12 +53,12 @@ export declare class PatientsController {
         } | null;
     } & {
         nom: string;
-        adresse: string;
-        telephone: string;
+        prenom: string;
         email: string | null;
+        telephone: string;
+        adresse: string;
         createdAt: Date;
         updatedAt: Date;
-        prenom: string;
         createdBy: string;
         patientID: string;
         dateNaissance: Date;
@@ -88,12 +88,12 @@ export declare class PatientsController {
         } | null;
     } & {
         nom: string;
-        adresse: string;
-        telephone: string;
+        prenom: string;
         email: string | null;
+        telephone: string;
+        adresse: string;
         createdAt: Date;
         updatedAt: Date;
-        prenom: string;
         createdBy: string;
         patientID: string;
         dateNaissance: Date;
@@ -111,12 +111,12 @@ export declare class PatientsController {
         } | null;
     } & {
         nom: string;
-        adresse: string;
-        telephone: string;
+        prenom: string;
         email: string | null;
+        telephone: string;
+        adresse: string;
         createdAt: Date;
         updatedAt: Date;
-        prenom: string;
         createdBy: string;
         patientID: string;
         dateNaissance: Date;

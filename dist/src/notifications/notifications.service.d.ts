@@ -24,10 +24,10 @@ export declare class NotificationsService {
     findAll(userId: string): Promise<({
         notification: {
             createdBy: {
-                nom: string;
-                email: string;
                 utilisateurID: string;
+                nom: string;
                 prenom: string;
+                email: string;
             };
         } & {
             type: string | null;
@@ -48,10 +48,10 @@ export declare class NotificationsService {
     findUnread(userId: string): Promise<({
         notification: {
             createdBy: {
-                nom: string;
-                email: string;
                 utilisateurID: string;
+                nom: string;
                 prenom: string;
+                email: string;
             };
         } & {
             type: string | null;

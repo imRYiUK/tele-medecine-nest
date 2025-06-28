@@ -44,12 +44,12 @@ export declare class ExamenMedicalService {
         };
         patient: {
             nom: string;
-            adresse: string;
-            telephone: string;
+            prenom: string;
             email: string | null;
+            telephone: string;
+            adresse: string;
             createdAt: Date;
             updatedAt: Date;
-            prenom: string;
             createdBy: string;
             patientID: string;
             dateNaissance: Date;
@@ -57,28 +57,28 @@ export declare class ExamenMedicalService {
             groupeSanguin: string;
         };
         demandePar: {
-            etablissementID: string | null;
-            nom: string;
-            telephone: string;
-            email: string;
-            estActif: boolean;
             utilisateurID: string;
+            nom: string;
             prenom: string;
             username: string;
             password: string;
+            email: string;
+            telephone: string;
             role: string;
+            etablissementID: string | null;
+            estActif: boolean;
         };
         radiologues: {
-            etablissementID: string | null;
-            nom: string;
-            telephone: string;
-            email: string;
-            estActif: boolean;
             utilisateurID: string;
+            nom: string;
             prenom: string;
             username: string;
             password: string;
+            email: string;
+            telephone: string;
             role: string;
+            etablissementID: string | null;
+            estActif: boolean;
         }[];
         images: {
             description: string;
@@ -122,10 +122,10 @@ export declare class ExamenMedicalService {
             role: string;
         };
         radiologues: {
-            nom: string;
-            email: string;
             utilisateurID: string;
+            nom: string;
             prenom: string;
+            email: string;
         }[];
         images: {
             description: string;
@@ -205,10 +205,10 @@ export declare class ExamenMedicalService {
             role: string;
         };
         radiologues: {
-            nom: string;
-            email: string;
             utilisateurID: string;
+            nom: string;
             prenom: string;
+            email: string;
         }[];
         images: {
             description: string;
@@ -247,10 +247,10 @@ export declare class ExamenMedicalService {
             role: string;
         };
         radiologues: {
-            nom: string;
-            email: string;
             utilisateurID: string;
+            nom: string;
             prenom: string;
+            email: string;
         }[];
         images: {
             description: string;
@@ -278,10 +278,10 @@ export declare class ExamenMedicalService {
     })[]>;
     inviteRadiologue(examenID: string, radiologueID: string): Promise<{
         radiologues: {
-            nom: string;
-            email: string;
             utilisateurID: string;
+            nom: string;
             prenom: string;
+            email: string;
         }[];
     } & {
         typeExamenID: string;
@@ -310,12 +310,12 @@ export declare class ExamenMedicalService {
         };
         patient: {
             nom: string;
-            adresse: string;
-            telephone: string;
+            prenom: string;
             email: string | null;
+            telephone: string;
+            adresse: string;
             createdAt: Date;
             updatedAt: Date;
-            prenom: string;
             createdBy: string;
             patientID: string;
             dateNaissance: Date;
@@ -323,28 +323,28 @@ export declare class ExamenMedicalService {
             groupeSanguin: string;
         };
         demandePar: {
-            etablissementID: string | null;
-            nom: string;
-            telephone: string;
-            email: string;
-            estActif: boolean;
             utilisateurID: string;
+            nom: string;
             prenom: string;
             username: string;
             password: string;
+            email: string;
+            telephone: string;
             role: string;
+            etablissementID: string | null;
+            estActif: boolean;
         };
         radiologues: {
-            etablissementID: string | null;
-            nom: string;
-            telephone: string;
-            email: string;
-            estActif: boolean;
             utilisateurID: string;
+            nom: string;
             prenom: string;
             username: string;
             password: string;
+            email: string;
+            telephone: string;
             role: string;
+            etablissementID: string | null;
+            estActif: boolean;
         }[];
         images: {
             description: string;
@@ -379,12 +379,12 @@ export declare class ExamenMedicalService {
         };
         patient: {
             nom: string;
-            adresse: string;
-            telephone: string;
+            prenom: string;
             email: string | null;
+            telephone: string;
+            adresse: string;
             createdAt: Date;
             updatedAt: Date;
-            prenom: string;
             createdBy: string;
             patientID: string;
             dateNaissance: Date;
@@ -392,28 +392,28 @@ export declare class ExamenMedicalService {
             groupeSanguin: string;
         };
         demandePar: {
-            etablissementID: string | null;
-            nom: string;
-            telephone: string;
-            email: string;
-            estActif: boolean;
             utilisateurID: string;
+            nom: string;
             prenom: string;
             username: string;
             password: string;
+            email: string;
+            telephone: string;
             role: string;
+            etablissementID: string | null;
+            estActif: boolean;
         };
         radiologues: {
-            etablissementID: string | null;
-            nom: string;
-            telephone: string;
-            email: string;
-            estActif: boolean;
             utilisateurID: string;
+            nom: string;
             prenom: string;
             username: string;
             password: string;
+            email: string;
+            telephone: string;
             role: string;
+            etablissementID: string | null;
+            estActif: boolean;
         }[];
         images: {
             description: string;

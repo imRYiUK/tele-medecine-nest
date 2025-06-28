@@ -6,6 +6,7 @@ export declare class RendezVousController {
     create(body: any, req: any): Promise<import("./dto/rendez-vous.dto").RendezVousDto>;
     findAll(): Promise<import("./dto/rendez-vous.dto").RendezVousDto[]>;
     findByMedecin(medecinID: string): Promise<import("./dto/rendez-vous.dto").RendezVousDto[]>;
+    findByRadiologue(radiologueID: string): Promise<import("./dto/rendez-vous.dto").RendezVousDto[]>;
     findByPatient(patientID: string): Promise<import("./dto/rendez-vous.dto").RendezVousDto[]>;
     update(id: string, body: UpdateRendezVousDto): Promise<import("./dto/rendez-vous.dto").RendezVousDto>;
     remove(id: string): Promise<import("./dto/rendez-vous.dto").RendezVousDto>;

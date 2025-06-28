@@ -40,10 +40,10 @@ export declare class NotificationsController {
     findAll(req: any): Promise<({
         notification: {
             createdBy: {
-                nom: string;
-                email: string;
                 utilisateurID: string;
+                nom: string;
                 prenom: string;
+                email: string;
             };
         } & {
             type: string | null;
@@ -64,10 +64,10 @@ export declare class NotificationsController {
     findUnread(req: any): Promise<({
         notification: {
             createdBy: {
-                nom: string;
-                email: string;
                 utilisateurID: string;
+                nom: string;
                 prenom: string;
+                email: string;
             };
         } & {
             type: string | null;
