@@ -3,12 +3,14 @@ import { PrismaService } from '../prisma/prisma.service';
 import { Prisma } from '@prisma/client';
 import { RendezVousDto } from './dto/rendez-vous.dto';
 import { NotificationsService } from '../notifications/notifications.service';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class RendezVousService {
   constructor(
     private prisma: PrismaService,
     private notificationsService: NotificationsService,
+    private usersService: UsersService,
   ) {}
 
   async create(data: {
@@ -42,6 +44,19 @@ export class RendezVousService {
       },
     });
 
+    // Fetch the recipient's role
+    let lien = '/rendez-vous';
+    try {
+      const recipient = await this.usersService.findOne(data.medecinID);
+      if (recipient.role === 'RADIOLOGUE') {
+        lien = '/radiologue/rendez-vous';
+      } else if (recipient.role === 'MEDECIN') {
+        lien = '/medecin/rendez-vous';
+      }
+    } catch (e) {
+      // fallback to default lien
+    }
+
     // Create notification for the medecin/radiologue
     try {
       await this.notificationsService.create({
@@ -49,7 +64,7 @@ export class RendezVousService {
         titre: 'Nouveau Rendez-vous',
         message: `Un nouveau rendez-vous a été créé pour ${created.patient.nom} ${created.patient.prenom} le ${data.date} de ${data.debutTime} à ${data.endTime}. Motif: ${data.motif || 'Non spécifié'}`,
         type: 'RENDEZ_VOUS_CREATED',
-        lien: `/rendez-vous`,
+        lien,
       }, data.createdByID);
     } catch (error) {
       // Log the error but don't fail the rendez-vous creation
