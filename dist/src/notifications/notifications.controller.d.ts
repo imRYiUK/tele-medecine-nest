@@ -5,6 +5,7 @@ export declare class NotificationsController {
     private readonly notificationsService;
     private readonly prisma;
     constructor(notificationsService: NotificationsService, prisma: PrismaService);
+    private getUserId;
     create(createNotificationDto: CreateNotificationDto, req: any): Promise<{
         recipients: {
             utilisateurID: string;
@@ -106,7 +107,7 @@ export declare class NotificationsController {
     }): Promise<{
         message: string;
         sender: {
-            id: any;
+            id: string;
             name: string;
         };
         totalCollaborators: number;

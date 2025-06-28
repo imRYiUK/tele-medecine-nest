@@ -54,6 +54,7 @@ export class NotificationsService {
           utilisateurID,
           {
             ...notification,
+            dateCreation: notification.dateCreation.toISOString(),
             estLu: false,
             utilisateurID: utilisateurID,
           },
@@ -68,8 +69,8 @@ export class NotificationsService {
   }
 
   async findAll(userId: string) {
-    // First get all notification recipients for this user
-    const allRecipients = await this.prisma.notificationRecipient.findMany({
+    // Get all notification recipients for this user
+    return this.prisma.notificationRecipient.findMany({
       where: {
         utilisateurID: userId,
       },
@@ -93,13 +94,6 @@ export class NotificationsService {
         },
       },
     });
-
-    // Filter out notifications where the user is both sender and recipient
-    const filteredRecipients = allRecipients.filter(
-      recipient => recipient.notification.createdByID !== userId
-    );
-
-    return filteredRecipients;
   }
 
   async findUnread(userId: string) {
@@ -130,8 +124,7 @@ export class NotificationsService {
     });
   }
 
-  async markAsRead(notificationId: string, userId: string) {
-    // First verify the notification recipient belongs to the user
+  private async verifyNotificationOwnership(notificationId: string, userId: string) {
     const notificationRecipient = await this.prisma.notificationRecipient.findFirst({
       where: { 
         notificationID: notificationId,
@@ -142,6 +135,13 @@ export class NotificationsService {
     if (!notificationRecipient) {
       throw new NotFoundException('Notification not found or access denied');
     }
+
+    return notificationRecipient;
+  }
+
+  async markAsRead(notificationId: string, userId: string) {
+    // Verify the notification recipient belongs to the user
+    await this.verifyNotificationOwnership(notificationId, userId);
 
     const updatedRecipient = await this.prisma.notificationRecipient.update({
       where: { 
@@ -186,17 +186,8 @@ export class NotificationsService {
   }
 
   async remove(notificationId: string, userId: string) {
-    // First verify the notification recipient belongs to the user
-    const notificationRecipient = await this.prisma.notificationRecipient.findFirst({
-      where: { 
-        notificationID: notificationId,
-        utilisateurID: userId,
-      },
-    });
-
-    if (!notificationRecipient) {
-      throw new NotFoundException('Notification not found or access denied');
-    }
+    // Verify the notification recipient belongs to the user
+    await this.verifyNotificationOwnership(notificationId, userId);
 
     return this.prisma.notificationRecipient.delete({
       where: { 

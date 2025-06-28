@@ -57,7 +57,7 @@ let NotificationsService = class NotificationsService {
         };
     }
     async findAll(userId) {
-        const allRecipients = await this.prisma.notificationRecipient.findMany({
+        return this.prisma.notificationRecipient.findMany({
             where: {
                 utilisateurID: userId,
             },
@@ -81,8 +81,6 @@ let NotificationsService = class NotificationsService {
                 },
             },
         });
-        const filteredRecipients = allRecipients.filter(recipient => recipient.notification.createdByID !== userId);
-        return filteredRecipients;
     }
     async findUnread(userId) {
         return this.prisma.notificationRecipient.findMany({
@@ -111,7 +109,7 @@ let NotificationsService = class NotificationsService {
             },
         });
     }
-    async markAsRead(notificationId, userId) {
+    async verifyNotificationOwnership(notificationId, userId) {
         const notificationRecipient = await this.prisma.notificationRecipient.findFirst({
             where: {
                 notificationID: notificationId,
@@ -121,6 +119,10 @@ let NotificationsService = class NotificationsService {
         if (!notificationRecipient) {
             throw new common_1.NotFoundException('Notification not found or access denied');
         }
+        return notificationRecipient;
+    }
+    async markAsRead(notificationId, userId) {
+        await this.verifyNotificationOwnership(notificationId, userId);
         const updatedRecipient = await this.prisma.notificationRecipient.update({
             where: {
                 notificationID_utilisateurID: {
@@ -153,15 +155,7 @@ let NotificationsService = class NotificationsService {
         return result;
     }
     async remove(notificationId, userId) {
-        const notificationRecipient = await this.prisma.notificationRecipient.findFirst({
-            where: {
-                notificationID: notificationId,
-                utilisateurID: userId,
-            },
-        });
-        if (!notificationRecipient) {
-            throw new common_1.NotFoundException('Notification not found or access denied');
-        }
+        await this.verifyNotificationOwnership(notificationId, userId);
         return this.prisma.notificationRecipient.delete({
             where: {
                 notificationID_utilisateurID: {

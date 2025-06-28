@@ -26,53 +26,67 @@ let NotificationsController = class NotificationsController {
         this.notificationsService = notificationsService;
         this.prisma = prisma;
     }
+    getUserId(req) {
+        if (!req.user || !req.user['utilisateurID']) {
+            throw new common_1.UnauthorizedException('Utilisateur non authentifié');
+        }
+        return req.user['utilisateurID'];
+    }
     create(createNotificationDto, req) {
+        const userId = this.getUserId(req);
         const isAdmin = req.user.role === 'ADMINISTRATEUR' || req.user.role === 'SUPER_ADMIN';
         const isCreatingForSelf = createNotificationDto.destinataires.length === 1 &&
-            createNotificationDto.destinataires[0] === req.user.userId;
+            createNotificationDto.destinataires[0] === userId;
         if (!isAdmin && !isCreatingForSelf) {
             throw new common_1.HttpException('Unauthorized: You can only create notifications for yourself', common_1.HttpStatus.FORBIDDEN);
         }
-        return this.notificationsService.create(createNotificationDto, req.user.userId);
+        return this.notificationsService.create(createNotificationDto, userId);
     }
     async createTestNotification(req) {
+        const userId = this.getUserId(req);
         const testNotification = {
-            destinataires: [req.user.userId],
+            destinataires: [userId],
             titre: 'Test Notification',
             message: 'Ceci est une notification de test pour vérifier le système de notifications en temps réel.',
             type: 'system',
             lien: undefined,
         };
-        return this.notificationsService.create(testNotification, req.user.userId);
+        return this.notificationsService.create(testNotification, userId);
     }
     findAll(req) {
-        return this.notificationsService.findAll(req.user.userId);
+        const userId = this.getUserId(req);
+        return this.notificationsService.findAll(userId);
     }
     findUnread(req) {
-        return this.notificationsService.findUnread(req.user.userId);
+        const userId = this.getUserId(req);
+        return this.notificationsService.findUnread(userId);
     }
     async markAsRead(id, req) {
+        const userId = this.getUserId(req);
         try {
-            return await this.notificationsService.markAsRead(id, req.user.userId);
+            return await this.notificationsService.markAsRead(id, userId);
         }
         catch (error) {
             throw new common_1.HttpException(error.message, common_1.HttpStatus.NOT_FOUND);
         }
     }
     markAllAsRead(req) {
-        return this.notificationsService.markAllAsRead(req.user.userId);
+        const userId = this.getUserId(req);
+        return this.notificationsService.markAllAsRead(userId);
     }
     async remove(id, req) {
+        const userId = this.getUserId(req);
         try {
-            return await this.notificationsService.remove(id, req.user.userId);
+            return await this.notificationsService.remove(id, userId);
         }
         catch (error) {
             throw new common_1.HttpException(error.message, common_1.HttpStatus.NOT_FOUND);
         }
     }
     async testChatNotification(req, body) {
+        const userId = this.getUserId(req);
         const { imageID, message } = body;
-        const senderID = req.user.utilisateurID;
+        const senderID = userId;
         const image = await this.prisma.imageMedicale.findUnique({
             where: { imageID },
             include: {

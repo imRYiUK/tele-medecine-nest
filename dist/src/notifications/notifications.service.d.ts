@@ -69,6 +69,7 @@ export declare class NotificationsService {
         notificationID: string;
         dateLecture: Date | null;
     })[]>;
+    private verifyNotificationOwnership;
     markAsRead(notificationId: string, userId: string): Promise<{
         utilisateurID: string;
         id: string;
