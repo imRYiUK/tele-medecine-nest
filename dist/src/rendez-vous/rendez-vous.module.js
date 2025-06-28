@@ -12,12 +12,13 @@ const rendez_vous_service_1 = require("./rendez-vous.service");
 const rendez_vous_controller_1 = require("./rendez-vous.controller");
 const prisma_service_1 = require("../prisma/prisma.service");
 const notifications_module_1 = require("../notifications/notifications.module");
+const users_module_1 = require("../users/users.module");
 let RendezVousModule = class RendezVousModule {
 };
 exports.RendezVousModule = RendezVousModule;
 exports.RendezVousModule = RendezVousModule = __decorate([
     (0, common_1.Module)({
-        imports: [notifications_module_1.NotificationsModule],
+        imports: [notifications_module_1.NotificationsModule, users_module_1.UsersModule],
         controllers: [rendez_vous_controller_1.RendezVousController],
         providers: [rendez_vous_service_1.RendezVousService, prisma_service_1.PrismaService],
         exports: [rendez_vous_service_1.RendezVousService],

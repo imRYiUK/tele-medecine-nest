@@ -14,12 +14,15 @@ const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
 const rendez_vous_dto_1 = require("./dto/rendez-vous.dto");
 const notifications_service_1 = require("../notifications/notifications.service");
+const users_service_1 = require("../users/users.service");
 let RendezVousService = class RendezVousService {
     prisma;
     notificationsService;
-    constructor(prisma, notificationsService) {
+    usersService;
+    constructor(prisma, notificationsService, usersService) {
         this.prisma = prisma;
         this.notificationsService = notificationsService;
+        this.usersService = usersService;
     }
     async create(data) {
         const conflits = await this.prisma.rendezVous.findFirst({
@@ -42,13 +45,25 @@ let RendezVousService = class RendezVousService {
                 medecin: { select: { utilisateurID: true, nom: true, prenom: true } },
             },
         });
+        let lien = '/rendez-vous';
+        try {
+            const recipient = await this.usersService.findOne(data.medecinID);
+            if (recipient.role === 'RADIOLOGUE') {
+                lien = '/radiologue/rendez-vous';
+            }
+            else if (recipient.role === 'MEDECIN') {
+                lien = '/medecin/rendez-vous';
+            }
+        }
+        catch (e) {
+        }
         try {
             await this.notificationsService.create({
                 destinataires: [data.medecinID],
                 titre: 'Nouveau Rendez-vous',
                 message: `Un nouveau rendez-vous a été créé pour ${created.patient.nom} ${created.patient.prenom} le ${data.date} de ${data.debutTime} à ${data.endTime}. Motif: ${data.motif || 'Non spécifié'}`,
                 type: 'RENDEZ_VOUS_CREATED',
-                lien: `/rendez-vous`,
+                lien,
             }, data.createdByID);
         }
         catch (error) {
@@ -182,6 +197,7 @@ exports.RendezVousService = RendezVousService;
 exports.RendezVousService = RendezVousService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
-        notifications_service_1.NotificationsService])
+        notifications_service_1.NotificationsService,
+        users_service_1.UsersService])
 ], RendezVousService);
 //# sourceMappingURL=rendez-vous.service.js.map
