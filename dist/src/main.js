@@ -8,12 +8,11 @@ async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
     app.useGlobalPipes(new common_1.ValidationPipe());
     app.enableCors({
-        origin: process.env.FRONTEND_URL || '*',
-        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-        allowedHeaders: ['Content-Type', 'Authorization'],
-        exposedHeaders: ['Content-Disposition'],
+        origin: 'https://tele-medecine-next.vercel.app',
         credentials: true,
-        maxAge: 3600,
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+        allowedHeaders: ['Authorization', 'Content-Type'],
+        exposedHeaders: ['Content-Disposition'],
     });
     const config = new swagger_1.DocumentBuilder()
         .setTitle('API Sunu Santé')
