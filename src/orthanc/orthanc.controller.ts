@@ -16,6 +16,7 @@ import { ApiTags, ApiOperation, ApiResponse, ApiConsumes, ApiBody } from '@nestj
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { UserRole } from '../common/constants/roles';
 import { LogActivity } from '../common/decorators/log-activity.decorator';
+import { Express } from 'express';
 
 @Controller('dicom')
 @UseGuards(JwtAuthGuard, RolesGuard)
