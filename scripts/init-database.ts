@@ -1,5 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+import * as fs from 'fs';
+import * as path from 'path';
 
 const prisma = new PrismaClient();
 
@@ -355,7 +357,7 @@ async function initializeDatabase() {
     // Run initialization tasks
     await createSuperAdmin();
     await createExamTypes();
-    // await importMedications(); // Removed medication import
+    await importMedications();
 
     console.log('=====================================');
     console.log('🎉 Database initialization completed successfully!');
