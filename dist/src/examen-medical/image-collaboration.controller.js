@@ -30,8 +30,14 @@ let ImageCollaborationController = ImageCollaborationController_1 = class ImageC
     async getReceivedInvitations(req) {
         return this.collaborationService.getPendingCollaborations(req.user.utilisateurID);
     }
+    async getReceivedRejectedInvitations(req) {
+        return this.collaborationService.getReceivedRejectedInvitations(req.user.utilisateurID);
+    }
     async getSentInvitations(req) {
         return this.collaborationService.getSentInvitations(req.user.utilisateurID);
+    }
+    async getAllSentInvitations(req) {
+        return this.collaborationService.getAllSentInvitations(req.user.utilisateurID);
     }
     async getActiveCollaborations(req) {
         return this.collaborationService.getUserCollaborations(req.user.utilisateurID);
@@ -94,6 +100,16 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], ImageCollaborationController.prototype, "getReceivedInvitations", null);
 __decorate([
+    (0, common_1.Get)('user/received-rejected-invitations'),
+    (0, roles_decorator_1.Roles)("RADIOLOGUE"),
+    (0, swagger_1.ApiOperation)({ summary: 'Récupérer toutes les invitations rejetées reçues par l\'utilisateur' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Invitations rejetées reçues récupérées' }),
+    __param(0, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], ImageCollaborationController.prototype, "getReceivedRejectedInvitations", null);
+__decorate([
     (0, common_1.Get)('user/sent-invitations'),
     (0, roles_decorator_1.Roles)("RADIOLOGUE"),
     (0, swagger_1.ApiOperation)({ summary: 'Récupérer toutes les invitations envoyées par l\'utilisateur (Inviter)' }),
@@ -103,6 +119,16 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], ImageCollaborationController.prototype, "getSentInvitations", null);
+__decorate([
+    (0, common_1.Get)('user/all-sent-invitations'),
+    (0, roles_decorator_1.Roles)("RADIOLOGUE"),
+    (0, swagger_1.ApiOperation)({ summary: 'Récupérer toutes les invitations envoyées par l\'utilisateur (y compris rejetées)' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Toutes les invitations envoyées récupérées' }),
+    __param(0, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], ImageCollaborationController.prototype, "getAllSentInvitations", null);
 __decorate([
     (0, common_1.Get)('user/active-collaborations'),
     (0, roles_decorator_1.Roles)("RADIOLOGUE"),

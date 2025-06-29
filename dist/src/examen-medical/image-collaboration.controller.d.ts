@@ -96,7 +96,191 @@ export declare class ImageCollaborationController {
         imageID: string;
         status: import(".prisma/client").$Enums.CollaborationStatus;
     })[]>;
+    getReceivedRejectedInvitations(req: any): Promise<({
+        inviter: {
+            utilisateurID: string;
+            nom: string;
+            prenom: string;
+            username: string;
+            password: string;
+            email: string;
+            telephone: string;
+            role: string;
+            etablissementID: string | null;
+            estActif: boolean;
+        };
+        invitee: {
+            utilisateurID: string;
+            nom: string;
+            prenom: string;
+            username: string;
+            password: string;
+            email: string;
+            telephone: string;
+            role: string;
+            etablissementID: string | null;
+            estActif: boolean;
+        };
+        image: {
+            examen: {
+                typeExamen: {
+                    typeExamenID: string;
+                    nomType: string;
+                    description: string;
+                    categorie: string;
+                };
+                patient: {
+                    nom: string;
+                    prenom: string;
+                    email: string | null;
+                    telephone: string;
+                    adresse: string;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    createdBy: string;
+                    patientID: string;
+                    dateNaissance: Date;
+                    genre: string;
+                    groupeSanguin: string;
+                };
+                demandePar: {
+                    utilisateurID: string;
+                    nom: string;
+                    prenom: string;
+                    username: string;
+                    password: string;
+                    email: string;
+                    telephone: string;
+                    role: string;
+                    etablissementID: string | null;
+                    estActif: boolean;
+                };
+            } & {
+                typeExamenID: string;
+                description: string;
+                demandeParID: string;
+                examenID: string;
+                dossierID: string;
+                patientID: string;
+                dateExamen: Date;
+                resultat: string | null;
+                estAnalyse: boolean;
+                consultationID: string | null;
+            };
+        } & {
+            description: string;
+            url: string | null;
+            imageID: string;
+            examenID: string;
+            studyInstanceUID: string;
+            seriesInstanceUID: string;
+            sopInstanceUID: string;
+            dateAcquisition: Date;
+            modalite: string;
+            orthancInstanceId: string | null;
+        };
+    } & {
+        createdAt: Date;
+        updatedAt: Date;
+        inviteeID: string;
+        inviterID: string;
+        id: string;
+        imageID: string;
+        status: import(".prisma/client").$Enums.CollaborationStatus;
+    })[]>;
     getSentInvitations(req: any): Promise<({
+        inviter: {
+            utilisateurID: string;
+            nom: string;
+            prenom: string;
+            username: string;
+            password: string;
+            email: string;
+            telephone: string;
+            role: string;
+            etablissementID: string | null;
+            estActif: boolean;
+        };
+        invitee: {
+            utilisateurID: string;
+            nom: string;
+            prenom: string;
+            username: string;
+            password: string;
+            email: string;
+            telephone: string;
+            role: string;
+            etablissementID: string | null;
+            estActif: boolean;
+        };
+        image: {
+            examen: {
+                typeExamen: {
+                    typeExamenID: string;
+                    nomType: string;
+                    description: string;
+                    categorie: string;
+                };
+                patient: {
+                    nom: string;
+                    prenom: string;
+                    email: string | null;
+                    telephone: string;
+                    adresse: string;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    createdBy: string;
+                    patientID: string;
+                    dateNaissance: Date;
+                    genre: string;
+                    groupeSanguin: string;
+                };
+                demandePar: {
+                    utilisateurID: string;
+                    nom: string;
+                    prenom: string;
+                    username: string;
+                    password: string;
+                    email: string;
+                    telephone: string;
+                    role: string;
+                    etablissementID: string | null;
+                    estActif: boolean;
+                };
+            } & {
+                typeExamenID: string;
+                description: string;
+                demandeParID: string;
+                examenID: string;
+                dossierID: string;
+                patientID: string;
+                dateExamen: Date;
+                resultat: string | null;
+                estAnalyse: boolean;
+                consultationID: string | null;
+            };
+        } & {
+            description: string;
+            url: string | null;
+            imageID: string;
+            examenID: string;
+            studyInstanceUID: string;
+            seriesInstanceUID: string;
+            sopInstanceUID: string;
+            dateAcquisition: Date;
+            modalite: string;
+            orthancInstanceId: string | null;
+        };
+    } & {
+        createdAt: Date;
+        updatedAt: Date;
+        inviteeID: string;
+        inviterID: string;
+        id: string;
+        imageID: string;
+        status: import(".prisma/client").$Enums.CollaborationStatus;
+    })[]>;
+    getAllSentInvitations(req: any): Promise<({
         inviter: {
             utilisateurID: string;
             nom: string;

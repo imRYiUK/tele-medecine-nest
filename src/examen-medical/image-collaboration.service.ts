@@ -559,6 +559,36 @@ export class ImageCollaborationService {
     });
   }
 
+  async getReceivedRejectedInvitations(userID: string) {
+    console.log('getReceivedRejectedInvitations', userID);
+    return this.prisma.imageCollaboration.findMany({
+      where: {
+        inviteeID: userID,
+        status: {
+          in: ['REJECTED', 'EXPIRED']
+        },
+      },
+      include: {
+        image: {
+          include: {
+            examen: {
+              include: {
+                patient: true,
+                typeExamen: true,
+                demandePar: true,
+              },
+            },
+          },
+        },
+        inviter: true,
+        invitee: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
+
   async getPendingCollaborationsForImage(imageID: string, userID: string) {
     const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
@@ -631,6 +661,36 @@ export class ImageCollaborationService {
       where: {
         inviterID: userID,
         status: 'PENDING',
+      },
+      include: {
+        image: {
+          include: {
+            examen: {
+              include: {
+                patient: true,
+                typeExamen: true,
+                demandePar: true,
+              },
+            },
+          },
+        },
+        inviter: true,
+        invitee: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
+
+  async getAllSentInvitations(userID: string) {
+    console.log('getAllSentInvitations', userID);
+    return this.prisma.imageCollaboration.findMany({
+      where: {
+        inviterID: userID,
+        status: {
+          in: ['PENDING', 'REJECTED', 'EXPIRED']
+        },
       },
       include: {
         image: {
