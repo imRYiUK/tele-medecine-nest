@@ -12,12 +12,11 @@ async function bootstrap() {
   
   // Configuration CORS
   app.enableCors({
-    origin: process.env.FRONTEND_URL || '*',
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    exposedHeaders: ['Content-Disposition'],
+    origin: '*',
     credentials: true,
-    maxAge: 3600,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Authorization', 'Content-Type'],
+    exposedHeaders: ['Content-Disposition'],
   });
 
   // Configuration Swagger/OpenAPI
