@@ -13,29 +13,27 @@ exports.UsersService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
 const bcrypt = require("bcrypt");
+const roles_1 = require("../common/constants/roles");
 let UsersService = class UsersService {
     prisma;
     constructor(prisma) {
         this.prisma = prisma;
     }
     validateRoleHierarchy(requesterRole, targetRole) {
-        if (requesterRole === "SUPER_ADMIN") {
+        if (requesterRole === roles_1.UserRole.SUPER_ADMIN) {
             return true;
         }
-        if (requesterRole === "ADMINISTRATEUR" && targetRole !== "SUPER_ADMIN") {
+        if (requesterRole === roles_1.UserRole.ADMINISTRATEUR && targetRole !== roles_1.UserRole.SUPER_ADMIN) {
             return true;
         }
-        if (requesterRole === "RADIOLOGUE") {
-            return ["MEDECIN", "RECEPTIONNISTE", "TECHNICIEN", "RADIOLOGUE"].includes(targetRole);
+        if (requesterRole === roles_1.UserRole.RADIOLOGUE) {
+            return [roles_1.UserRole.MEDECIN, roles_1.UserRole.RECEPTIONNISTE, roles_1.UserRole.RADIOLOGUE].includes(targetRole);
         }
-        if (requesterRole === "MEDECIN") {
-            return ["RECEPTIONNISTE", "TECHNICIEN", "MEDECIN"].includes(targetRole);
+        if (requesterRole === roles_1.UserRole.MEDECIN) {
+            return [roles_1.UserRole.RECEPTIONNISTE, roles_1.UserRole.MEDECIN].includes(targetRole);
         }
-        if (requesterRole === "RECEPTIONNISTE") {
-            return ["TECHNICIEN", "RECEPTIONNISTE"].includes(targetRole);
-        }
-        if (requesterRole === "TECHNICIEN") {
-            return targetRole === "TECHNICIEN";
+        if (requesterRole === roles_1.UserRole.RECEPTIONNISTE) {
+            return targetRole === roles_1.UserRole.RECEPTIONNISTE;
         }
         return false;
     }
@@ -241,7 +239,7 @@ let UsersService = class UsersService {
     async findMedecinsByEtablissement(etablissementID) {
         return this.prisma.utilisateur.findMany({
             where: {
-                role: "MEDECIN",
+                role: roles_1.UserRole.MEDECIN,
                 etablissementID,
             },
             select: {
@@ -265,7 +263,7 @@ let UsersService = class UsersService {
     async findRadiologuesByEtablissement(etablissementID) {
         return this.prisma.utilisateur.findMany({
             where: {
-                role: "RADIOLOGUE",
+                role: roles_1.UserRole.RADIOLOGUE,
                 etablissementID,
             },
             select: {

@@ -18,6 +18,7 @@ const swagger_1 = require("@nestjs/swagger");
 const jwt_auth_guard_1 = require("../common/guards/jwt-auth.guard");
 const roles_guard_1 = require("../common/guards/roles.guard");
 const roles_decorator_1 = require("../common/decorators/roles.decorator");
+const roles_1 = require("../common/constants/roles");
 const journal_service_1 = require("./journal.service");
 let JournalController = class JournalController {
     journalService;
@@ -40,7 +41,7 @@ let JournalController = class JournalController {
 exports.JournalController = JournalController;
 __decorate([
     (0, common_1.Get)(),
-    (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMINISTRATEUR"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.SUPER_ADMIN, roles_1.UserRole.ADMINISTRATEUR),
     (0, swagger_1.ApiOperation)({ summary: 'Récupérer tout l\'historique des actions' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Liste des actions récupérée avec succès' }),
     __param(0, (0, common_1.Request)()),
@@ -50,7 +51,7 @@ __decorate([
 ], JournalController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)('user'),
-    (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMINISTRATEUR"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.SUPER_ADMIN, roles_1.UserRole.ADMINISTRATEUR),
     (0, swagger_1.ApiOperation)({ summary: 'Récupérer l\'historique des actions d\'un utilisateur' }),
     (0, swagger_1.ApiQuery)({ name: 'utilisateurID', required: true, type: String }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Liste des actions de l\'utilisateur récupérée avec succès' }),
@@ -62,7 +63,7 @@ __decorate([
 ], JournalController.prototype, "findByUser", null);
 __decorate([
     (0, common_1.Get)('date-range'),
-    (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMINISTRATEUR"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.SUPER_ADMIN, roles_1.UserRole.ADMINISTRATEUR),
     (0, swagger_1.ApiOperation)({ summary: 'Récupérer l\'historique des actions sur une période donnée' }),
     (0, swagger_1.ApiQuery)({ name: 'startDate', required: true, type: Date }),
     (0, swagger_1.ApiQuery)({ name: 'endDate', required: true, type: Date }),
@@ -76,7 +77,7 @@ __decorate([
 ], JournalController.prototype, "findByDateRange", null);
 __decorate([
     (0, common_1.Get)('type'),
-    (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMINISTRATEUR"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.SUPER_ADMIN, roles_1.UserRole.ADMINISTRATEUR),
     (0, swagger_1.ApiOperation)({ summary: 'Récupérer l\'historique des actions par type' }),
     (0, swagger_1.ApiQuery)({ name: 'typeAction', required: true, type: String }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Liste des actions du type spécifié récupérée avec succès' }),

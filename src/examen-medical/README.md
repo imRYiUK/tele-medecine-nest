@@ -77,7 +77,7 @@ model ImageMedicale {
 
 #### `GET /examens-medicaux`
 - Récupère tous les examens avec filtres
-- Rôle requis : MEDECIN, RADIOLOGUE, TECHNICIEN
+- Rôle requis : MEDECIN, RADIOLOGUE
 
 #### `GET /examens-medicaux/:id`
 - Récupère un examen spécifique avec toutes ses relations
@@ -99,16 +99,16 @@ model ImageMedicale {
 
 #### `POST /examens-medicaux/images`
 - Ajoute une nouvelle image à un examen
-- Rôle requis : RADIOLOGUE, TECHNICIEN
+- Rôle requis : RADIOLOGUE
 - Vérifie automatiquement l'existence de l'examen
 
 #### `PATCH /examens-medicaux/images/:imageId`
 - Met à jour une image existante
-- Rôle requis : RADIOLOGUE, TECHNICIEN
+- Rôle requis : RADIOLOGUE
 
 #### `DELETE /examens-medicaux/images/:imageId`
 - Supprime une image
-- Rôle requis : RADIOLOGUE, TECHNICIEN
+- Rôle requis : RADIOLOGUE
 
 ## Exemples d'Utilisation
 
@@ -162,7 +162,6 @@ Le système envoie automatiquement des notifications lors des événements suiva
 
 - **Médecins** : Peuvent créer, consulter et modifier les examens
 - **Radiologues** : Peuvent gérer les images et analyser les examens
-- **Techniciens** : Peuvent ajouter et gérer les images
 
 ## Intégration avec Orthanc
 

@@ -20,6 +20,7 @@ const update_consultation_medicale_dto_1 = require("./dto/update-consultation-me
 const jwt_auth_guard_1 = require("../common/guards/jwt-auth.guard");
 const roles_guard_1 = require("../common/guards/roles.guard");
 const roles_decorator_1 = require("../common/decorators/roles.decorator");
+const roles_1 = require("../common/constants/roles");
 const swagger_1 = require("@nestjs/swagger");
 let ConsultationMedicaleController = class ConsultationMedicaleController {
     consultationMedicaleService;
@@ -57,7 +58,7 @@ let ConsultationMedicaleController = class ConsultationMedicaleController {
 exports.ConsultationMedicaleController = ConsultationMedicaleController;
 __decorate([
     (0, common_1.Post)(),
-    (0, roles_decorator_1.Roles)("MEDECIN"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.MEDECIN),
     __param(0, (0, common_1.Body)()),
     __param(1, (0, common_1.Request)()),
     __metadata("design:type", Function),
@@ -66,14 +67,14 @@ __decorate([
 ], ConsultationMedicaleController.prototype, "create", null);
 __decorate([
     (0, common_1.Get)(),
-    (0, roles_decorator_1.Roles)("ADMINISTRATEUR", "SUPER_ADMIN"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.ADMINISTRATEUR, roles_1.UserRole.SUPER_ADMIN),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
 ], ConsultationMedicaleController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)(':id'),
-    (0, roles_decorator_1.Roles)("ADMINISTRATEUR", "SUPER_ADMIN", "MEDECIN"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.ADMINISTRATEUR, roles_1.UserRole.SUPER_ADMIN, roles_1.UserRole.MEDECIN),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -81,7 +82,7 @@ __decorate([
 ], ConsultationMedicaleController.prototype, "findOne", null);
 __decorate([
     (0, common_1.Patch)(':id'),
-    (0, roles_decorator_1.Roles)("MEDECIN"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.MEDECIN),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -90,7 +91,7 @@ __decorate([
 ], ConsultationMedicaleController.prototype, "update", null);
 __decorate([
     (0, common_1.Delete)(':id'),
-    (0, roles_decorator_1.Roles)("ADMINISTRATEUR", "SUPER_ADMIN"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.ADMINISTRATEUR, roles_1.UserRole.SUPER_ADMIN),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -98,7 +99,7 @@ __decorate([
 ], ConsultationMedicaleController.prototype, "remove", null);
 __decorate([
     (0, common_1.Get)('patient/:patientId'),
-    (0, roles_decorator_1.Roles)("ADMINISTRATEUR", "SUPER_ADMIN", "MEDECIN"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.ADMINISTRATEUR, roles_1.UserRole.SUPER_ADMIN, roles_1.UserRole.MEDECIN),
     __param(0, (0, common_1.Param)('patientId')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -106,7 +107,7 @@ __decorate([
 ], ConsultationMedicaleController.prototype, "findByPatient", null);
 __decorate([
     (0, common_1.Get)('patient/:patientId/count'),
-    (0, roles_decorator_1.Roles)("ADMINISTRATEUR", "RECEPTIONNISTE", "MEDECIN", "RADIOLOGUE"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.ADMINISTRATEUR, roles_1.UserRole.RECEPTIONNISTE, roles_1.UserRole.MEDECIN, roles_1.UserRole.RADIOLOGUE),
     (0, swagger_1.ApiOperation)({ summary: 'Récupérer le nombre de consultations d\'un patient' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Nombre de consultations récupéré avec succès' }),
     __param(0, (0, common_1.Param)('patientId')),
@@ -116,7 +117,7 @@ __decorate([
 ], ConsultationMedicaleController.prototype, "getConsultationCount", null);
 __decorate([
     (0, common_1.Get)('dossier/:dossierId'),
-    (0, roles_decorator_1.Roles)("ADMINISTRATEUR", "SUPER_ADMIN", "MEDECIN"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.ADMINISTRATEUR, roles_1.UserRole.SUPER_ADMIN, roles_1.UserRole.MEDECIN),
     __param(0, (0, common_1.Param)('dossierId')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -124,7 +125,7 @@ __decorate([
 ], ConsultationMedicaleController.prototype, "findByDossier", null);
 __decorate([
     (0, common_1.Get)('medecin/:medecinId'),
-    (0, roles_decorator_1.Roles)("ADMINISTRATEUR", "SUPER_ADMIN", "MEDECIN"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.ADMINISTRATEUR, roles_1.UserRole.SUPER_ADMIN, roles_1.UserRole.MEDECIN),
     __param(0, (0, common_1.Param)('medecinId')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
