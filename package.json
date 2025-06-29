@@ -6,8 +6,9 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build": "npx prisma generate && npx ts-node scripts/simple-setup.ts && npx nest build",
-    "build:render": "npx prisma generate && npx nest build",
+    "build": "npx prisma generate && npx nest build",
+    "build:render": "npm run prisma:generate && npm run nest:build",
+    "nest:build": "npx nest build",
     "build:with-init": "npx nest build && npm run db:init",
     "build:with-migrate": "npx nest build && npm run db:migrate",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
@@ -29,9 +30,9 @@
     "db:migrate": "prisma migrate deploy && ts-node scripts/init-database.ts",
     "db:seed": "npm run db:init",
     "post-deploy": "npx ts-node scripts/simple-setup.ts",
+    "db:setup": "npx ts-node scripts/simple-setup.ts",
     "create-super-admin": "ts-node scripts/create-super-admin.ts",
-    "create-exam-types": "ts-node scripts/create-exam-types.ts",
-    "postinstall": "prisma generate"
+    "create-exam-types": "ts-node scripts/create-exam-types.ts"
   },
   "dependencies": {
     "@nestjs/axios": "^4.0.0",
