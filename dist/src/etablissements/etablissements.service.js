@@ -14,6 +14,7 @@ const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
 const notifications_service_1 = require("../notifications/notifications.service");
 const users_service_1 = require("../users/users.service");
+const roles_1 = require("../common/constants/roles");
 let EtablissementsService = class EtablissementsService {
     prisma;
     notificationsService;
@@ -211,7 +212,7 @@ let EtablissementsService = class EtablissementsService {
     async notifySuperAdmins(notification) {
         const superAdmins = await this.prisma.utilisateur.findMany({
             where: {
-                role: "SUPER_ADMIN",
+                role: roles_1.UserRole.SUPER_ADMIN,
                 estActif: true,
             },
             select: { utilisateurID: true }

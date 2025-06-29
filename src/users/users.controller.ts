@@ -190,7 +190,7 @@ export class UsersController {
   }
 
   @Get('profile/me')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMINISTRATEUR, UserRole.RADIOLOGUE, UserRole.MEDECIN, UserRole.RECEPTIONNISTE, UserRole.TECHNICIEN)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMINISTRATEUR, UserRole.RADIOLOGUE, UserRole.MEDECIN, UserRole.RECEPTIONNISTE)
   @ApiOperation({ summary: 'Get current user profile' })
   @ApiResponse({ 
     status: 200, 
@@ -207,7 +207,7 @@ export class UsersController {
   }
 
   @Put('profile/me')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMINISTRATEUR, UserRole.RADIOLOGUE, UserRole.MEDECIN, UserRole.RECEPTIONNISTE, UserRole.TECHNICIEN)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMINISTRATEUR, UserRole.RADIOLOGUE, UserRole.MEDECIN, UserRole.RECEPTIONNISTE)
   @LogActivity({
     typeAction: 'MODIFICATION_PROFIL',
     description: 'Modification du profil utilisateur',

@@ -19,6 +19,7 @@ const roles_guard_1 = require("../common/guards/roles.guard");
 const roles_decorator_1 = require("../common/decorators/roles.decorator");
 const swagger_1 = require("@nestjs/swagger");
 const jwt_auth_guard_1 = require("../common/guards/jwt-auth.guard");
+const roles_1 = require("../common/constants/roles");
 let CollaborativeOrthancController = class CollaborativeOrthancController {
     collaborativeOrthancService;
     constructor(collaborativeOrthancService) {
@@ -71,7 +72,7 @@ let CollaborativeOrthancController = class CollaborativeOrthancController {
 exports.CollaborativeOrthancController = CollaborativeOrthancController;
 __decorate([
     (0, common_1.Get)('instances/:sopInstanceUID/preview'),
-    (0, roles_decorator_1.Roles)("RADIOLOGUE", "MEDECIN"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.RADIOLOGUE, roles_1.UserRole.MEDECIN),
     (0, swagger_1.ApiOperation)({ summary: 'Récupérer l\'aperçu d\'une image DICOM en mode collaboratif' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Aperçu de l\'image récupéré avec succès' }),
     (0, swagger_1.ApiResponse)({ status: 403, description: 'Accès refusé' }),
@@ -86,7 +87,7 @@ __decorate([
 ], CollaborativeOrthancController.prototype, "getCollaborativeImagePreview", null);
 __decorate([
     (0, common_1.Get)('instances/:sopInstanceUID/file'),
-    (0, roles_decorator_1.Roles)("RADIOLOGUE", "MEDECIN"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.RADIOLOGUE, roles_1.UserRole.MEDECIN),
     (0, swagger_1.ApiOperation)({ summary: 'Télécharger un fichier DICOM en mode collaboratif' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Fichier DICOM téléchargé avec succès' }),
     (0, swagger_1.ApiResponse)({ status: 403, description: 'Accès refusé' }),

@@ -18,6 +18,7 @@ const etablissements_service_1 = require("./etablissements.service");
 const etablissement_dto_1 = require("./dto/etablissement.dto");
 const roles_guard_1 = require("../common/guards/roles.guard");
 const roles_decorator_1 = require("../common/decorators/roles.decorator");
+const roles_1 = require("../common/constants/roles");
 const jwt_auth_guard_1 = require("../common/guards/jwt-auth.guard");
 const swagger_1 = require("@nestjs/swagger");
 const log_activity_decorator_1 = require("../common/decorators/log-activity.decorator");
@@ -52,7 +53,7 @@ let EtablissementsController = class EtablissementsController {
 exports.EtablissementsController = EtablissementsController;
 __decorate([
     (0, common_1.Post)(),
-    (0, roles_decorator_1.Roles)("SUPER_ADMIN"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.SUPER_ADMIN),
     (0, log_activity_decorator_1.LogActivity)({
         typeAction: 'CREATION_ETABLISSEMENT',
         description: (result) => `Création d'un nouvel établissement: ${result.nom}`,
@@ -68,7 +69,7 @@ __decorate([
 ], EtablissementsController.prototype, "create", null);
 __decorate([
     (0, common_1.Get)(),
-    (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMINISTRATEUR"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.SUPER_ADMIN, roles_1.UserRole.ADMINISTRATEUR),
     (0, swagger_1.ApiOperation)({ summary: 'Get all establishments' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Returns all establishments', type: [etablissement_dto_1.EtablissementDto] }),
     __metadata("design:type", Function),
@@ -77,7 +78,7 @@ __decorate([
 ], EtablissementsController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)('region/:region'),
-    (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMINISTRATEUR"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.SUPER_ADMIN, roles_1.UserRole.ADMINISTRATEUR),
     (0, swagger_1.ApiOperation)({ summary: 'Get establishments by region' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Returns establishments in the specified region', type: [etablissement_dto_1.EtablissementDto] }),
     __param(0, (0, common_1.Param)('region')),
@@ -87,7 +88,7 @@ __decorate([
 ], EtablissementsController.prototype, "findByRegion", null);
 __decorate([
     (0, common_1.Get)('type/:type'),
-    (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMINISTRATEUR"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.SUPER_ADMIN, roles_1.UserRole.ADMINISTRATEUR),
     (0, swagger_1.ApiOperation)({ summary: 'Get establishments by type' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Returns establishments of the specified type', type: [etablissement_dto_1.EtablissementDto] }),
     __param(0, (0, common_1.Param)('type')),
@@ -97,7 +98,7 @@ __decorate([
 ], EtablissementsController.prototype, "findByType", null);
 __decorate([
     (0, common_1.Get)(':id'),
-    (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMINISTRATEUR"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.SUPER_ADMIN, roles_1.UserRole.ADMINISTRATEUR),
     (0, swagger_1.ApiOperation)({ summary: 'Get an establishment by ID' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Returns the establishment', type: etablissement_dto_1.EtablissementDto }),
     (0, swagger_1.ApiResponse)({ status: 404, description: 'Establishment not found' }),
@@ -108,7 +109,7 @@ __decorate([
 ], EtablissementsController.prototype, "findOne", null);
 __decorate([
     (0, common_1.Put)(':id'),
-    (0, roles_decorator_1.Roles)("SUPER_ADMIN"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.SUPER_ADMIN),
     (0, log_activity_decorator_1.LogActivity)({
         typeAction: 'MODIFICATION_ETABLISSEMENT',
         description: (result) => `Modification de l'établissement: ${result.nom}`,
@@ -125,7 +126,7 @@ __decorate([
 ], EtablissementsController.prototype, "update", null);
 __decorate([
     (0, common_1.Delete)(':id'),
-    (0, roles_decorator_1.Roles)("SUPER_ADMIN"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.SUPER_ADMIN),
     (0, log_activity_decorator_1.LogActivity)({
         typeAction: 'SUPPRESSION_ETABLISSEMENT',
         description: (result) => `Suppression de l'établissement: ${result.nom}`,

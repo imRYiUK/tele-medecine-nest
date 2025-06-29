@@ -33,7 +33,7 @@ export class ExamenMedicalController {
   }
 
   @Get('liste-avec-images')
-  @Roles(UserRole.MEDECIN, UserRole.RADIOLOGUE, UserRole.TECHNICIEN)
+  @Roles(UserRole.MEDECIN, UserRole.RADIOLOGUE)
   @ApiOperation({ summary: 'Récupérer la liste des examens avec le nombre d\'images' })
   @ApiResponse({ status: 200, description: 'Liste des examens avec compteurs d\'images récupérée avec succès', type: [ExamenMedicalListDto] })
   getExamsWithImageCounts(@Query('etablissementID') etablissementID?: string) {
@@ -51,7 +51,7 @@ export class ExamenMedicalController {
   }
 
   @Get()
-  @Roles(UserRole.MEDECIN, UserRole.RADIOLOGUE, UserRole.TECHNICIEN)
+  @Roles(UserRole.MEDECIN, UserRole.RADIOLOGUE)
   @ApiOperation({ summary: 'Récupérer tous les examens médicaux' })
   @ApiResponse({ status: 200, description: 'Liste des examens médicaux récupérée avec succès' })
   findAll(@Query('status') status?: string, @Query('category') category?: string, @Query('search') search?: string) {
@@ -59,7 +59,7 @@ export class ExamenMedicalController {
   }
 
   @Get('types')
-  @Roles(UserRole.MEDECIN, UserRole.RADIOLOGUE, UserRole.TECHNICIEN)
+  @Roles(UserRole.MEDECIN, UserRole.RADIOLOGUE)
   @ApiOperation({ summary: 'Récupérer tous les types d\'examens' })
   @ApiResponse({ status: 200, description: 'Liste des types d\'examens récupérée avec succès' })
   getTypeExamens() {
@@ -79,7 +79,7 @@ export class ExamenMedicalController {
   }
 
   @Get(':id')
-  @Roles(UserRole.MEDECIN, UserRole.RADIOLOGUE, UserRole.TECHNICIEN)
+  @Roles(UserRole.MEDECIN, UserRole.RADIOLOGUE)
   @ApiOperation({ summary: 'Récupérer un examen médical par son ID' })
   @ApiResponse({ status: 200, description: 'Examen médical récupéré avec succès' })
   @ApiResponse({ status: 403, description: 'Permission refusée - radiologue non autorisé' })
@@ -111,7 +111,7 @@ export class ExamenMedicalController {
   }
 
   @Get('patient/:patientID')
-  @Roles(UserRole.MEDECIN, UserRole.RADIOLOGUE, UserRole.TECHNICIEN)
+  @Roles(UserRole.MEDECIN, UserRole.RADIOLOGUE)
   @ApiOperation({ summary: 'Récupérer les examens médicaux d\'un patient' })
   @ApiResponse({ status: 200, description: 'Liste des examens médicaux du patient récupérée avec succès' })
   findByPatient(@Param('patientID') patientID: string) {
@@ -119,7 +119,7 @@ export class ExamenMedicalController {
   }
 
   @Get('dossier/:dossierID')
-  @Roles(UserRole.MEDECIN, UserRole.RADIOLOGUE, UserRole.TECHNICIEN)
+  @Roles(UserRole.MEDECIN, UserRole.RADIOLOGUE)
   @ApiOperation({ summary: 'Récupérer les examens médicaux d\'un dossier médical' })
   @ApiResponse({ status: 200, description: 'Liste des examens médicaux du dossier récupérée avec succès' })
   findByDossier(@Param('dossierID') dossierID: string) {
@@ -169,7 +169,7 @@ export class ExamenMedicalController {
 
   // Image Management Endpoints
   @Get(':examenId/images')
-  @Roles(UserRole.MEDECIN, UserRole.RADIOLOGUE, UserRole.TECHNICIEN)
+  @Roles(UserRole.MEDECIN, UserRole.RADIOLOGUE)
   @ApiOperation({ summary: 'Récupérer toutes les images d\'un examen médical' })
   @ApiResponse({ status: 200, description: 'Images de l\'examen récupérées avec succès' })
   @ApiResponse({ status: 403, description: 'Permission refusée - radiologue non autorisé' })
@@ -179,7 +179,7 @@ export class ExamenMedicalController {
   }
 
   @Get(':examenId/images/count')
-  @Roles(UserRole.MEDECIN, UserRole.RADIOLOGUE, UserRole.TECHNICIEN)
+  @Roles(UserRole.MEDECIN, UserRole.RADIOLOGUE)
   @ApiOperation({ summary: 'Récupérer le nombre d\'images d\'un examen médical' })
   @ApiResponse({ status: 200, description: 'Nombre d\'images récupéré avec succès' })
   getImageCountByExam(@Param('examenId') examenID: string) {
@@ -213,7 +213,7 @@ export class ExamenMedicalController {
   }
 
   @Get('images/sop/:sopInstanceUID')
-  @Roles(UserRole.MEDECIN, UserRole.RADIOLOGUE, UserRole.TECHNICIEN)
+  @Roles(UserRole.MEDECIN, UserRole.RADIOLOGUE)
   @ApiOperation({ summary: 'Récupérer une image par son SOP Instance UID' })
   @ApiResponse({ status: 200, description: 'Image récupérée avec succès', type: ImageMedicaleDto })
   @ApiResponse({ status: 404, description: 'Image not found' })
@@ -223,7 +223,7 @@ export class ExamenMedicalController {
   }
 
   @Post('images')
-  @Roles(UserRole.RADIOLOGUE, UserRole.TECHNICIEN)
+  @Roles(UserRole.RADIOLOGUE)
   @ApiOperation({ summary: 'Ajouter une nouvelle image à un examen médical' })
   @ApiResponse({ status: 201, description: 'Image ajoutée avec succès' })
   @ApiResponse({ status: 403, description: 'Permission refusée - établissement différent et non invité' })
@@ -236,7 +236,7 @@ export class ExamenMedicalController {
   }
 
   @Patch('images/:imageId')
-  @Roles(UserRole.RADIOLOGUE, UserRole.TECHNICIEN)
+  @Roles(UserRole.RADIOLOGUE)
   @ApiOperation({ summary: 'Mettre à jour une image médicale' })
   @ApiResponse({ status: 200, description: 'Image mise à jour avec succès' })
   @ApiResponse({ status: 403, description: 'Permission refusée - établissement différent et non invité' })
@@ -250,7 +250,7 @@ export class ExamenMedicalController {
   }
 
   @Delete('images/:imageId')
-  @Roles(UserRole.RADIOLOGUE, UserRole.TECHNICIEN)
+  @Roles(UserRole.RADIOLOGUE)
   @ApiOperation({ summary: 'Supprimer une image médicale' })
   @ApiResponse({ status: 200, description: 'Image supprimée avec succès' })
   @ApiResponse({ status: 403, description: 'Permission refusée - établissement différent et non invité' })

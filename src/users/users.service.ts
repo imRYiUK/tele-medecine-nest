@@ -17,20 +17,16 @@ export class UsersService {
       return true; // ADMIN can see all users except SUPER_ADMIN
     }
     if (requesterRole === UserRole.RADIOLOGUE) {
-      // RADIOLOGUE can see MEDECIN, RECEPTIONNISTE, TECHNICIEN, and other RADIOLOGUE
-      return [UserRole.MEDECIN, UserRole.RECEPTIONNISTE, UserRole.TECHNICIEN, UserRole.RADIOLOGUE].includes(targetRole as UserRole);
+      // RADIOLOGUE can see MEDECIN, RECEPTIONNISTE, and other RADIOLOGUE
+      return [UserRole.MEDECIN, UserRole.RECEPTIONNISTE, UserRole.RADIOLOGUE].includes(targetRole as UserRole);
     }
     if (requesterRole === UserRole.MEDECIN) {
-      // MEDECIN can see RECEPTIONNISTE, TECHNICIEN, and other MEDECIN
-      return [UserRole.RECEPTIONNISTE, UserRole.TECHNICIEN, UserRole.MEDECIN].includes(targetRole as UserRole);
+      // MEDECIN can see RECEPTIONNISTE and other MEDECIN
+      return [UserRole.RECEPTIONNISTE, UserRole.MEDECIN].includes(targetRole as UserRole);
     }
     if (requesterRole === UserRole.RECEPTIONNISTE) {
-      // RECEPTIONNISTE can see TECHNICIEN and other RECEPTIONNISTE
-      return [UserRole.TECHNICIEN, UserRole.RECEPTIONNISTE].includes(targetRole as UserRole);
-    }
-    if (requesterRole === UserRole.TECHNICIEN) {
-      // TECHNICIEN can only see other TECHNICIEN
-      return targetRole === UserRole.TECHNICIEN;
+      // RECEPTIONNISTE can only see other RECEPTIONNISTE
+      return targetRole === UserRole.RECEPTIONNISTE;
     }
     return false;
   }

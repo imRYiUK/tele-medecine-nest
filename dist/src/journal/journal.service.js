@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.JournalService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
+const roles_1 = require("../common/constants/roles");
 const client_1 = require("@prisma/client");
 let JournalService = class JournalService {
     prisma;
@@ -42,7 +43,7 @@ let JournalService = class JournalService {
                 dateAction: client_1.Prisma.SortOrder.desc
             }
         };
-        if (requesterRole === "SUPER_ADMIN") {
+        if (requesterRole === roles_1.UserRole.SUPER_ADMIN) {
             return this.prisma.journalActivite.findMany(baseQuery);
         }
         const requesterEstablishment = await this.getUserEstablishment(requesterId);
@@ -76,7 +77,7 @@ let JournalService = class JournalService {
                 dateAction: client_1.Prisma.SortOrder.desc
             }
         };
-        if (requesterRole === "SUPER_ADMIN") {
+        if (requesterRole === roles_1.UserRole.SUPER_ADMIN) {
             return this.prisma.journalActivite.findMany(baseQuery);
         }
         const requesterEstablishment = await this.getUserEstablishment(requesterId);
@@ -115,7 +116,7 @@ let JournalService = class JournalService {
                 dateAction: client_1.Prisma.SortOrder.desc
             }
         };
-        if (requesterRole === "SUPER_ADMIN") {
+        if (requesterRole === roles_1.UserRole.SUPER_ADMIN) {
             return this.prisma.journalActivite.findMany(baseQuery);
         }
         const requesterEstablishment = await this.getUserEstablishment(requesterId);
@@ -150,7 +151,7 @@ let JournalService = class JournalService {
                 dateAction: client_1.Prisma.SortOrder.desc
             }
         };
-        if (requesterRole === "SUPER_ADMIN") {
+        if (requesterRole === roles_1.UserRole.SUPER_ADMIN) {
             return this.prisma.journalActivite.findMany(baseQuery);
         }
         const requesterEstablishment = await this.getUserEstablishment(requesterId);

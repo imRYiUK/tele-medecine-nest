@@ -22,6 +22,7 @@ const jwt_auth_guard_1 = require("../common/guards/jwt-auth.guard");
 const roles_guard_1 = require("../common/guards/roles.guard");
 const roles_decorator_1 = require("../common/decorators/roles.decorator");
 const public_decorator_1 = require("../common/decorators/public.decorator");
+const roles_1 = require("../common/constants/roles");
 let ExamenMedicalController = ExamenMedicalController_1 = class ExamenMedicalController {
     examenMedicalService;
     logger = new common_1.Logger(ExamenMedicalController_1.name);
@@ -124,7 +125,7 @@ let ExamenMedicalController = ExamenMedicalController_1 = class ExamenMedicalCon
 exports.ExamenMedicalController = ExamenMedicalController;
 __decorate([
     (0, common_1.Post)(),
-    (0, roles_decorator_1.Roles)("MEDECIN", "RADIOLOGUE"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.MEDECIN, roles_1.UserRole.RADIOLOGUE),
     (0, swagger_1.ApiOperation)({ summary: 'Créer un nouvel examen médical' }),
     (0, swagger_1.ApiResponse)({ status: 201, description: 'L\'examen médical a été créé avec succès' }),
     __param(0, (0, common_1.Body)()),
@@ -135,7 +136,7 @@ __decorate([
 ], ExamenMedicalController.prototype, "create", null);
 __decorate([
     (0, common_1.Get)('liste-avec-images'),
-    (0, roles_decorator_1.Roles)("MEDECIN", "RADIOLOGUE", "TECHNICIEN"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.MEDECIN, roles_1.UserRole.RADIOLOGUE),
     (0, swagger_1.ApiOperation)({ summary: 'Récupérer la liste des examens avec le nombre d\'images' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Liste des examens avec compteurs d\'images récupérée avec succès', type: [dto_1.ExamenMedicalListDto] }),
     __param(0, (0, common_1.Query)('etablissementID')),
@@ -145,7 +146,7 @@ __decorate([
 ], ExamenMedicalController.prototype, "getExamsWithImageCounts", null);
 __decorate([
     (0, common_1.Get)('radiologue/liste-avec-images'),
-    (0, roles_decorator_1.Roles)("RADIOLOGUE"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.RADIOLOGUE),
     (0, swagger_1.ApiOperation)({ summary: 'Récupérer la liste des examens du radiologue avec le nombre d\'images' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Liste des examens du radiologue avec compteurs d\'images récupérée avec succès', type: [dto_1.ExamenMedicalListDto] }),
     __param(0, (0, common_1.Request)()),
@@ -155,7 +156,7 @@ __decorate([
 ], ExamenMedicalController.prototype, "getRadiologistExamsWithImageCounts", null);
 __decorate([
     (0, common_1.Get)(),
-    (0, roles_decorator_1.Roles)("MEDECIN", "RADIOLOGUE", "TECHNICIEN"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.MEDECIN, roles_1.UserRole.RADIOLOGUE),
     (0, swagger_1.ApiOperation)({ summary: 'Récupérer tous les examens médicaux' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Liste des examens médicaux récupérée avec succès' }),
     __param(0, (0, common_1.Query)('status')),
@@ -167,7 +168,7 @@ __decorate([
 ], ExamenMedicalController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)('types'),
-    (0, roles_decorator_1.Roles)("MEDECIN", "RADIOLOGUE", "TECHNICIEN"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.MEDECIN, roles_1.UserRole.RADIOLOGUE),
     (0, swagger_1.ApiOperation)({ summary: 'Récupérer tous les types d\'examens' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Liste des types d\'examens récupérée avec succès' }),
     __metadata("design:type", Function),
@@ -176,7 +177,7 @@ __decorate([
 ], ExamenMedicalController.prototype, "getTypeExamens", null);
 __decorate([
     (0, common_1.Get)(':id/can-edit'),
-    (0, roles_decorator_1.Roles)("RADIOLOGUE"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.RADIOLOGUE),
     (0, swagger_1.ApiOperation)({ summary: 'Vérifier si le radiologue peut éditer cet examen' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Permission vérifiée', schema: { type: 'object', properties: { canEdit: { type: 'boolean' } } } }),
     __param(0, (0, common_1.Param)('id')),
@@ -187,7 +188,7 @@ __decorate([
 ], ExamenMedicalController.prototype, "canEditExam", null);
 __decorate([
     (0, common_1.Get)(':id'),
-    (0, roles_decorator_1.Roles)("MEDECIN", "RADIOLOGUE", "TECHNICIEN"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.MEDECIN, roles_1.UserRole.RADIOLOGUE),
     (0, swagger_1.ApiOperation)({ summary: 'Récupérer un examen médical par son ID' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Examen médical récupéré avec succès' }),
     (0, swagger_1.ApiResponse)({ status: 403, description: 'Permission refusée - radiologue non autorisé' }),
@@ -199,7 +200,7 @@ __decorate([
 ], ExamenMedicalController.prototype, "findOne", null);
 __decorate([
     (0, common_1.Patch)(':id'),
-    (0, roles_decorator_1.Roles)("MEDECIN", "RADIOLOGUE"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.MEDECIN, roles_1.UserRole.RADIOLOGUE),
     (0, swagger_1.ApiOperation)({ summary: 'Mettre à jour un examen médical' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'L\'examen médical a été mis à jour avec succès' }),
     (0, swagger_1.ApiResponse)({ status: 403, description: 'Permission refusée - établissement différent et non invité' }),
@@ -212,7 +213,7 @@ __decorate([
 ], ExamenMedicalController.prototype, "update", null);
 __decorate([
     (0, common_1.Delete)(':id'),
-    (0, roles_decorator_1.Roles)("MEDECIN", "RADIOLOGUE"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.MEDECIN, roles_1.UserRole.RADIOLOGUE),
     (0, swagger_1.ApiOperation)({ summary: 'Supprimer un examen médical' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'L\'examen médical a été supprimé avec succès' }),
     __param(0, (0, common_1.Param)('id')),
@@ -222,7 +223,7 @@ __decorate([
 ], ExamenMedicalController.prototype, "remove", null);
 __decorate([
     (0, common_1.Get)('patient/:patientID'),
-    (0, roles_decorator_1.Roles)("MEDECIN", "RADIOLOGUE", "TECHNICIEN"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.MEDECIN, roles_1.UserRole.RADIOLOGUE),
     (0, swagger_1.ApiOperation)({ summary: 'Récupérer les examens médicaux d\'un patient' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Liste des examens médicaux du patient récupérée avec succès' }),
     __param(0, (0, common_1.Param)('patientID')),
@@ -232,7 +233,7 @@ __decorate([
 ], ExamenMedicalController.prototype, "findByPatient", null);
 __decorate([
     (0, common_1.Get)('dossier/:dossierID'),
-    (0, roles_decorator_1.Roles)("MEDECIN", "RADIOLOGUE", "TECHNICIEN"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.MEDECIN, roles_1.UserRole.RADIOLOGUE),
     (0, swagger_1.ApiOperation)({ summary: 'Récupérer les examens médicaux d\'un dossier médical' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Liste des examens médicaux du dossier récupérée avec succès' }),
     __param(0, (0, common_1.Param)('dossierID')),
@@ -242,7 +243,7 @@ __decorate([
 ], ExamenMedicalController.prototype, "findByDossier", null);
 __decorate([
     (0, common_1.Put)(':id/invite-radiologue/:radiologueId'),
-    (0, roles_decorator_1.Roles)("RADIOLOGUE"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.RADIOLOGUE),
     (0, swagger_1.ApiOperation)({ summary: "Inviter un radiologue à participer à l'examen" }),
     (0, swagger_1.ApiResponse)({ status: 200, description: "Radiologue invité avec succès" }),
     __param(0, (0, common_1.Param)('id')),
@@ -253,7 +254,7 @@ __decorate([
 ], ExamenMedicalController.prototype, "inviteRadiologue", null);
 __decorate([
     (0, common_1.Get)('radiologue/statistiques'),
-    (0, roles_decorator_1.Roles)("RADIOLOGUE"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.RADIOLOGUE),
     (0, swagger_1.ApiOperation)({ summary: 'Récupérer les statistiques du dashboard radiologue' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Statistiques récupérées avec succès' }),
     __param(0, (0, common_1.Request)()),
@@ -263,7 +264,7 @@ __decorate([
 ], ExamenMedicalController.prototype, "getRadiologistStats", null);
 __decorate([
     (0, common_1.Get)('radiologue/examens-recents'),
-    (0, roles_decorator_1.Roles)("RADIOLOGUE"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.RADIOLOGUE),
     (0, swagger_1.ApiOperation)({ summary: 'Récupérer les examens récents pour le radiologue' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Examens récents récupérés avec succès' }),
     __param(0, (0, common_1.Request)()),
@@ -273,7 +274,7 @@ __decorate([
 ], ExamenMedicalController.prototype, "getRecentExams", null);
 __decorate([
     (0, common_1.Put)(':id/marquer-analyse'),
-    (0, roles_decorator_1.Roles)("RADIOLOGUE"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.RADIOLOGUE),
     (0, swagger_1.ApiOperation)({ summary: 'Marquer un examen comme analysé' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Examen marqué comme analysé' }),
     (0, swagger_1.ApiResponse)({ status: 403, description: 'Permission refusée - établissement différent et non invité' }),
@@ -286,7 +287,7 @@ __decorate([
 ], ExamenMedicalController.prototype, "markAsAnalyzed", null);
 __decorate([
     (0, common_1.Get)(':examenId/images'),
-    (0, roles_decorator_1.Roles)("MEDECIN", "RADIOLOGUE", "TECHNICIEN"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.MEDECIN, roles_1.UserRole.RADIOLOGUE),
     (0, swagger_1.ApiOperation)({ summary: 'Récupérer toutes les images d\'un examen médical' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Images de l\'examen récupérées avec succès' }),
     (0, swagger_1.ApiResponse)({ status: 403, description: 'Permission refusée - radiologue non autorisé' }),
@@ -298,7 +299,7 @@ __decorate([
 ], ExamenMedicalController.prototype, "getImagesByExam", null);
 __decorate([
     (0, common_1.Get)(':examenId/images/count'),
-    (0, roles_decorator_1.Roles)("MEDECIN", "RADIOLOGUE", "TECHNICIEN"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.MEDECIN, roles_1.UserRole.RADIOLOGUE),
     (0, swagger_1.ApiOperation)({ summary: 'Récupérer le nombre d\'images d\'un examen médical' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Nombre d\'images récupéré avec succès' }),
     __param(0, (0, common_1.Param)('examenId')),
@@ -319,7 +320,7 @@ __decorate([
 ], ExamenMedicalController.prototype, "testImageExists", null);
 __decorate([
     (0, common_1.Get)('images/sop/:sopInstanceUID'),
-    (0, roles_decorator_1.Roles)("MEDECIN", "RADIOLOGUE", "TECHNICIEN"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.MEDECIN, roles_1.UserRole.RADIOLOGUE),
     (0, swagger_1.ApiOperation)({ summary: 'Récupérer une image par son SOP Instance UID' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Image récupérée avec succès', type: dto_1.ImageMedicaleDto }),
     (0, swagger_1.ApiResponse)({ status: 404, description: 'Image not found' }),
@@ -330,7 +331,7 @@ __decorate([
 ], ExamenMedicalController.prototype, "getImageBySopInstanceUID", null);
 __decorate([
     (0, common_1.Post)('images'),
-    (0, roles_decorator_1.Roles)("RADIOLOGUE", "TECHNICIEN"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.RADIOLOGUE),
     (0, swagger_1.ApiOperation)({ summary: 'Ajouter une nouvelle image à un examen médical' }),
     (0, swagger_1.ApiResponse)({ status: 201, description: 'Image ajoutée avec succès' }),
     (0, swagger_1.ApiResponse)({ status: 403, description: 'Permission refusée - établissement différent et non invité' }),
@@ -342,7 +343,7 @@ __decorate([
 ], ExamenMedicalController.prototype, "createImage", null);
 __decorate([
     (0, common_1.Patch)('images/:imageId'),
-    (0, roles_decorator_1.Roles)("RADIOLOGUE", "TECHNICIEN"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.RADIOLOGUE),
     (0, swagger_1.ApiOperation)({ summary: 'Mettre à jour une image médicale' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Image mise à jour avec succès' }),
     (0, swagger_1.ApiResponse)({ status: 403, description: 'Permission refusée - établissement différent et non invité' }),
@@ -355,7 +356,7 @@ __decorate([
 ], ExamenMedicalController.prototype, "updateImage", null);
 __decorate([
     (0, common_1.Delete)('images/:imageId'),
-    (0, roles_decorator_1.Roles)("RADIOLOGUE", "TECHNICIEN"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.RADIOLOGUE),
     (0, swagger_1.ApiOperation)({ summary: 'Supprimer une image médicale' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Image supprimée avec succès' }),
     (0, swagger_1.ApiResponse)({ status: 403, description: 'Permission refusée - établissement différent et non invité' }),

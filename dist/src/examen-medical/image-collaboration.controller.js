@@ -19,6 +19,7 @@ const image_collaboration_service_1 = require("./image-collaboration.service");
 const jwt_auth_guard_1 = require("../common/guards/jwt-auth.guard");
 const roles_guard_1 = require("../common/guards/roles.guard");
 const roles_decorator_1 = require("../common/decorators/roles.decorator");
+const roles_1 = require("../common/constants/roles");
 const swagger_1 = require("@nestjs/swagger");
 const chat_message_dto_1 = require("./dto/chat-message.dto");
 let ImageCollaborationController = ImageCollaborationController_1 = class ImageCollaborationController {
@@ -91,7 +92,7 @@ let ImageCollaborationController = ImageCollaborationController_1 = class ImageC
 exports.ImageCollaborationController = ImageCollaborationController;
 __decorate([
     (0, common_1.Get)('user/received-invitations'),
-    (0, roles_decorator_1.Roles)("RADIOLOGUE"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.RADIOLOGUE),
     (0, swagger_1.ApiOperation)({ summary: 'Récupérer toutes les invitations reçues par l\'utilisateur (Invitee)' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Invitations reçues récupérées' }),
     __param(0, (0, common_1.Req)()),
@@ -101,7 +102,7 @@ __decorate([
 ], ImageCollaborationController.prototype, "getReceivedInvitations", null);
 __decorate([
     (0, common_1.Get)('user/received-rejected-invitations'),
-    (0, roles_decorator_1.Roles)("RADIOLOGUE"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.RADIOLOGUE),
     (0, swagger_1.ApiOperation)({ summary: 'Récupérer toutes les invitations rejetées reçues par l\'utilisateur' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Invitations rejetées reçues récupérées' }),
     __param(0, (0, common_1.Req)()),
@@ -111,7 +112,7 @@ __decorate([
 ], ImageCollaborationController.prototype, "getReceivedRejectedInvitations", null);
 __decorate([
     (0, common_1.Get)('user/sent-invitations'),
-    (0, roles_decorator_1.Roles)("RADIOLOGUE"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.RADIOLOGUE),
     (0, swagger_1.ApiOperation)({ summary: 'Récupérer toutes les invitations envoyées par l\'utilisateur (Inviter)' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Invitations envoyées récupérées' }),
     __param(0, (0, common_1.Req)()),
@@ -121,7 +122,7 @@ __decorate([
 ], ImageCollaborationController.prototype, "getSentInvitations", null);
 __decorate([
     (0, common_1.Get)('user/all-sent-invitations'),
-    (0, roles_decorator_1.Roles)("RADIOLOGUE"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.RADIOLOGUE),
     (0, swagger_1.ApiOperation)({ summary: 'Récupérer toutes les invitations envoyées par l\'utilisateur (y compris rejetées)' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Toutes les invitations envoyées récupérées' }),
     __param(0, (0, common_1.Req)()),
@@ -131,7 +132,7 @@ __decorate([
 ], ImageCollaborationController.prototype, "getAllSentInvitations", null);
 __decorate([
     (0, common_1.Get)('user/active-collaborations'),
-    (0, roles_decorator_1.Roles)("RADIOLOGUE"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.RADIOLOGUE),
     (0, swagger_1.ApiOperation)({ summary: 'Récupérer toutes les collaborations actives de l\'utilisateur' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Collaborations actives récupérées' }),
     __param(0, (0, common_1.Req)()),
@@ -141,7 +142,7 @@ __decorate([
 ], ImageCollaborationController.prototype, "getActiveCollaborations", null);
 __decorate([
     (0, common_1.Post)(':imageID/invite'),
-    (0, roles_decorator_1.Roles)("RADIOLOGUE"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.RADIOLOGUE),
     (0, swagger_1.ApiOperation)({ summary: 'Inviter un radiologue à collaborer sur une image (Inviter)' }),
     (0, swagger_1.ApiResponse)({ status: 201, description: 'Invitation envoyée avec succès' }),
     __param(0, (0, common_1.Param)('imageID')),
@@ -153,7 +154,7 @@ __decorate([
 ], ImageCollaborationController.prototype, "inviteRadiologistToImage", null);
 __decorate([
     (0, common_1.Post)('sop/:sopInstanceUID/invite'),
-    (0, roles_decorator_1.Roles)("RADIOLOGUE"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.RADIOLOGUE),
     (0, swagger_1.ApiOperation)({ summary: 'Inviter un radiologue à collaborer sur une image par SOP Instance UID (Inviter)' }),
     (0, swagger_1.ApiResponse)({ status: 201, description: 'Invitation envoyée avec succès' }),
     (0, swagger_1.ApiResponse)({ status: 404, description: 'Image not found' }),
@@ -166,7 +167,7 @@ __decorate([
 ], ImageCollaborationController.prototype, "inviteRadiologistToImageBySopInstanceUID", null);
 __decorate([
     (0, common_1.Post)('collaborations/:collaborationId/accept'),
-    (0, roles_decorator_1.Roles)("RADIOLOGUE"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.RADIOLOGUE),
     (0, swagger_1.ApiOperation)({ summary: 'Accepter une invitation de collaboration (Invitee)' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Invitation acceptée avec succès' }),
     __param(0, (0, common_1.Param)('collaborationId')),
@@ -177,7 +178,7 @@ __decorate([
 ], ImageCollaborationController.prototype, "acceptCollaborationInvitation", null);
 __decorate([
     (0, common_1.Post)('collaborations/:collaborationId/reject'),
-    (0, roles_decorator_1.Roles)("RADIOLOGUE"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.RADIOLOGUE),
     (0, swagger_1.ApiOperation)({ summary: 'Rejeter une invitation de collaboration (Invitee)' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Invitation rejetée avec succès' }),
     __param(0, (0, common_1.Param)('collaborationId')),
@@ -188,7 +189,7 @@ __decorate([
 ], ImageCollaborationController.prototype, "rejectCollaborationInvitation", null);
 __decorate([
     (0, common_1.Get)(':imageID/collaborators'),
-    (0, roles_decorator_1.Roles)("RADIOLOGUE"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.RADIOLOGUE),
     (0, swagger_1.ApiOperation)({ summary: 'Lister les collaborateurs d\'une image' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Liste des collaborateurs récupérée' }),
     __param(0, (0, common_1.Param)('imageID')),
@@ -198,7 +199,7 @@ __decorate([
 ], ImageCollaborationController.prototype, "getImageCollaborators", null);
 __decorate([
     (0, common_1.Get)('sop/:sopInstanceUID/collaborators'),
-    (0, roles_decorator_1.Roles)("RADIOLOGUE"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.RADIOLOGUE),
     (0, swagger_1.ApiOperation)({ summary: 'Lister les collaborateurs d\'une image par SOP Instance UID' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Liste des collaborateurs récupérée' }),
     (0, swagger_1.ApiResponse)({ status: 404, description: 'Image not found' }),
@@ -209,7 +210,7 @@ __decorate([
 ], ImageCollaborationController.prototype, "getImageCollaboratorsBySopInstanceUID", null);
 __decorate([
     (0, common_1.Get)('sop/:sopInstanceUID/pending-collaborations'),
-    (0, roles_decorator_1.Roles)("RADIOLOGUE"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.RADIOLOGUE),
     (0, swagger_1.ApiOperation)({ summary: 'Lister les collaborations en attente d\'une image par SOP Instance UID' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Liste des collaborations en attente récupérée' }),
     (0, swagger_1.ApiResponse)({ status: 404, description: 'Image not found' }),
@@ -220,7 +221,7 @@ __decorate([
 ], ImageCollaborationController.prototype, "getPendingCollaborationsBySopInstanceUID", null);
 __decorate([
     (0, common_1.Post)(':imageID/messages'),
-    (0, roles_decorator_1.Roles)("RADIOLOGUE"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.RADIOLOGUE),
     (0, swagger_1.ApiOperation)({ summary: 'Envoyer un message sur une image' }),
     (0, swagger_1.ApiResponse)({ status: 201, description: 'Message envoyé avec succès', type: chat_message_dto_1.ChatMessageDto }),
     __param(0, (0, common_1.Param)('imageID')),
@@ -232,7 +233,7 @@ __decorate([
 ], ImageCollaborationController.prototype, "sendMessageOnImage", null);
 __decorate([
     (0, common_1.Get)(':imageID/messages'),
-    (0, roles_decorator_1.Roles)("RADIOLOGUE"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.RADIOLOGUE),
     (0, swagger_1.ApiOperation)({ summary: 'Récupérer les messages d\'une image' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Messages récupérés avec succès', type: [chat_message_dto_1.ChatMessageDto] }),
     __param(0, (0, common_1.Param)('imageID')),

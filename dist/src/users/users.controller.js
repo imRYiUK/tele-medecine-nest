@@ -19,6 +19,7 @@ const users_service_1 = require("./users.service");
 const user_dto_1 = require("../common/dto/user.dto");
 const roles_guard_1 = require("../common/guards/roles.guard");
 const roles_decorator_1 = require("../common/decorators/roles.decorator");
+const roles_1 = require("../common/constants/roles");
 const jwt_auth_guard_1 = require("../common/guards/jwt-auth.guard");
 const swagger_1 = require("@nestjs/swagger");
 const log_activity_decorator_1 = require("../common/decorators/log-activity.decorator");
@@ -42,10 +43,10 @@ let UsersController = UsersController_1 = class UsersController {
         return req.user['role'];
     }
     validateRoleHierarchy(requesterRole, targetRole) {
-        if (requesterRole === "SUPER_ADMIN") {
+        if (requesterRole === roles_1.UserRole.SUPER_ADMIN) {
             return true;
         }
-        if (requesterRole === "ADMINISTRATEUR" && targetRole !== "SUPER_ADMIN") {
+        if (requesterRole === roles_1.UserRole.ADMINISTRATEUR && targetRole !== roles_1.UserRole.SUPER_ADMIN) {
             return true;
         }
         return false;
@@ -151,7 +152,7 @@ let UsersController = UsersController_1 = class UsersController {
 exports.UsersController = UsersController;
 __decorate([
     (0, common_1.Post)(),
-    (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMINISTRATEUR"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.SUPER_ADMIN, roles_1.UserRole.ADMINISTRATEUR),
     (0, log_activity_decorator_1.LogActivity)({
         typeAction: 'CREATION_UTILISATEUR',
         description: (result) => `Création d'un nouvel utilisateur: ${result.email}`,
@@ -168,7 +169,7 @@ __decorate([
 ], UsersController.prototype, "create", null);
 __decorate([
     (0, common_1.Get)(),
-    (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMINISTRATEUR"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.SUPER_ADMIN, roles_1.UserRole.ADMINISTRATEUR),
     (0, swagger_1.ApiOperation)({ summary: 'Get all users' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Returns all users', type: [user_dto_1.UserDto] }),
     __param(0, (0, common_1.Req)()),
@@ -178,7 +179,7 @@ __decorate([
 ], UsersController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)('search'),
-    (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMINISTRATEUR", "RADIOLOGUE"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.SUPER_ADMIN, roles_1.UserRole.ADMINISTRATEUR, roles_1.UserRole.RADIOLOGUE),
     (0, swagger_1.ApiOperation)({ summary: 'Search users by email, name, or username' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Returns matching users', type: [user_dto_1.UserDto] }),
     __param(0, (0, common_1.Query)('q')),
@@ -199,7 +200,7 @@ __decorate([
 ], UsersController.prototype, "testSearchUsers", null);
 __decorate([
     (0, common_1.Get)(':id'),
-    (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMINISTRATEUR"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.SUPER_ADMIN, roles_1.UserRole.ADMINISTRATEUR),
     (0, swagger_1.ApiOperation)({ summary: 'Get a user by ID' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Returns the user', type: user_dto_1.UserDto }),
     (0, swagger_1.ApiResponse)({ status: 404, description: 'User not found' }),
@@ -211,7 +212,7 @@ __decorate([
 ], UsersController.prototype, "findOne", null);
 __decorate([
     (0, common_1.Put)(':id'),
-    (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMINISTRATEUR"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.SUPER_ADMIN, roles_1.UserRole.ADMINISTRATEUR),
     (0, log_activity_decorator_1.LogActivity)({
         typeAction: 'MODIFICATION_UTILISATEUR',
         description: (result) => `Modification de l'utilisateur: ${result.email}`,
@@ -229,7 +230,7 @@ __decorate([
 ], UsersController.prototype, "update", null);
 __decorate([
     (0, common_1.Delete)(':id'),
-    (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMINISTRATEUR"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.SUPER_ADMIN, roles_1.UserRole.ADMINISTRATEUR),
     (0, log_activity_decorator_1.LogActivity)({
         typeAction: 'SUPPRESSION_UTILISATEUR',
         description: (result) => `Suppression de l'utilisateur: ${result.email}`,
@@ -245,7 +246,7 @@ __decorate([
 ], UsersController.prototype, "remove", null);
 __decorate([
     (0, common_1.Get)('profile/me'),
-    (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMINISTRATEUR", "RADIOLOGUE", "MEDECIN", "RECEPTIONNISTE", "TECHNICIEN"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.SUPER_ADMIN, roles_1.UserRole.ADMINISTRATEUR, roles_1.UserRole.RADIOLOGUE, roles_1.UserRole.MEDECIN, roles_1.UserRole.RECEPTIONNISTE),
     (0, swagger_1.ApiOperation)({ summary: 'Get current user profile' }),
     (0, swagger_1.ApiResponse)({
         status: 200,
@@ -263,7 +264,7 @@ __decorate([
 ], UsersController.prototype, "getProfile", null);
 __decorate([
     (0, common_1.Put)('profile/me'),
-    (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMINISTRATEUR", "RADIOLOGUE", "MEDECIN", "RECEPTIONNISTE", "TECHNICIEN"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.SUPER_ADMIN, roles_1.UserRole.ADMINISTRATEUR, roles_1.UserRole.RADIOLOGUE, roles_1.UserRole.MEDECIN, roles_1.UserRole.RECEPTIONNISTE),
     (0, log_activity_decorator_1.LogActivity)({
         typeAction: 'MODIFICATION_PROFIL',
         description: 'Modification du profil utilisateur',
@@ -286,7 +287,7 @@ __decorate([
 ], UsersController.prototype, "updateProfile", null);
 __decorate([
     (0, common_1.Get)('medecins/etablissement/:etablissementID'),
-    (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMINISTRATEUR", "RECEPTIONNISTE"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.SUPER_ADMIN, roles_1.UserRole.ADMINISTRATEUR, roles_1.UserRole.RECEPTIONNISTE),
     (0, swagger_1.ApiOperation)({ summary: 'Get all medecins for a given etablissement' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Returns all medecins for the etablissement', type: [user_dto_1.UserDto] }),
     __param(0, (0, common_1.Param)('etablissementID')),
@@ -296,7 +297,7 @@ __decorate([
 ], UsersController.prototype, "findMedecinsByEtablissement", null);
 __decorate([
     (0, common_1.Get)('radiologues/etablissement/:etablissementID'),
-    (0, roles_decorator_1.Roles)("SUPER_ADMIN", "ADMINISTRATEUR", "RECEPTIONNISTE"),
+    (0, roles_decorator_1.Roles)(roles_1.UserRole.SUPER_ADMIN, roles_1.UserRole.ADMINISTRATEUR, roles_1.UserRole.RECEPTIONNISTE),
     (0, swagger_1.ApiOperation)({ summary: 'Get all radiologues for a given etablissement' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Returns all radiologues for the etablissement', type: [user_dto_1.UserDto] }),
     __param(0, (0, common_1.Param)('etablissementID')),
