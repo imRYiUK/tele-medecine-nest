@@ -111,7 +111,7 @@ export declare class ExamenMedicalController {
         categorie: string;
     }[]>;
     canEditExam(examenID: string, req: any): Promise<boolean>;
-    findOne(id: string): Promise<{
+    findOne(id: string, req: any): Promise<{
         typeExamen: {
             typeExamenID: string;
             nomType: string;
@@ -448,7 +448,7 @@ export declare class ExamenMedicalController {
         estAnalyse: boolean;
         consultationID: string | null;
     }>;
-    getImagesByExam(examenID: string): Promise<ImageMedicaleDto[]>;
+    getImagesByExam(examenID: string, req: any): Promise<ImageMedicaleDto[]>;
     getImageCountByExam(examenID: string): Promise<number>;
     testImageExists(sopInstanceUID: string): Promise<{
         exists: boolean;

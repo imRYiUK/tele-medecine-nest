@@ -136,7 +136,7 @@ export class ExamenMedicalService {
     });
   }
 
-  async findOne(examenID: string) {
+  async findOne(examenID: string, radiologistID?: string) {
     const examen = await this.prisma.examenMedical.findUnique({
       where: { examenID },
       include: {
@@ -166,11 +166,16 @@ export class ExamenMedicalService {
       throw new NotFoundException(`Examen médical avec l'ID ${examenID} non trouvé`);
     }
 
+    // Si un radiologistID est fourni, vérifier les permissions de consultation
+    if (radiologistID) {
+      await this.checkRadiologistViewPermissions(examenID, radiologistID);
+    }
+
     return examen;
   }
 
   async update(examenID: string, updateExamenMedicalDto: UpdateExamenMedicalDto, radiologistID?: string) {
-    const examen = await this.findOne(examenID);
+    const examen = await this.findOne(examenID, radiologistID);
 
     // Si un radiologistID est fourni, vérifier les permissions
     if (radiologistID) {
@@ -218,7 +223,7 @@ export class ExamenMedicalService {
   }
 
   async remove(examenID: string) {
-    const examen = await this.findOne(examenID);
+    const examen = await this.findOne(examenID, undefined);
 
     // Notifier le demandeur avant la suppression
     await this.notificationsService.create({
@@ -282,7 +287,7 @@ export class ExamenMedicalService {
 
   async inviteRadiologue(examenID: string, radiologueID: string) {
     // Vérifier que l'examen existe
-    await this.findOne(examenID);
+    await this.findOne(examenID, undefined);
     // Associer le radiologue à l'examen
     return this.prisma.examenMedical.update({
       where: { examenID },
@@ -468,14 +473,18 @@ export class ExamenMedicalService {
     return image;
   }
 
-  async getImagesByExam(examenID: string): Promise<ImageMedicaleDto[]> {
-    // Verify that the exam exists
-    const exam = await this.prisma.examenMedical.findUnique({
-      where: { examenID },
-    });
+  async getImagesByExam(examenID: string, radiologistID?: string): Promise<ImageMedicaleDto[]> {
+    // Verify that the exam exists and check permissions if radiologistID is provided
+    if (radiologistID) {
+      await this.findOne(examenID, radiologistID);
+    } else {
+      const exam = await this.prisma.examenMedical.findUnique({
+        where: { examenID },
+      });
 
-    if (!exam) {
-      throw new NotFoundException(`Examen médical avec l'ID ${examenID} non trouvé`);
+      if (!exam) {
+        throw new NotFoundException(`Examen médical avec l'ID ${examenID} non trouvé`);
+      }
     }
 
     return this.prisma.imageMedicale.findMany({
@@ -707,20 +716,14 @@ export class ExamenMedicalService {
   }
 
   /**
-   * Vérifie si un radiologue a la permission d'éditer un examen
-   * Un radiologue peut éditer un examen si :
-   * 1. L'examen a été demandé par un médecin de son établissement, OU
-   * 2. Il a été invité à collaborer sur cet examen
+   * Vérifie si un radiologue a la permission de voir un examen
+   * Un radiologue peut voir un examen si :
+   * 1. Il a été explicitement assigné à cet examen (dans la relation radiologues)
    */
-  async canRadiologistEditExam(examenID: string, radiologistID: string): Promise<boolean> {
+  async canRadiologistViewExam(examenID: string, radiologistID: string): Promise<boolean> {
     const exam = await this.prisma.examenMedical.findUnique({
       where: { examenID },
       select: {
-        demandePar: {
-          select: {
-            etablissementID: true,
-          },
-        },
         radiologues: {
           select: {
             utilisateurID: true,
@@ -733,24 +736,50 @@ export class ExamenMedicalService {
       return false;
     }
 
-    // Vérifier si le radiologue a été invité
-    const isInvited = exam.radiologues.some(rad => rad.utilisateurID === radiologistID);
-    if (isInvited) {
-      return true;
-    }
+    // Vérifier si le radiologue a été assigné à cet examen
+    const isAssigned = exam.radiologues.some(rad => rad.utilisateurID === radiologistID);
+    return isAssigned;
+  }
 
-    // Vérifier si le radiologue appartient au même établissement que le médecin demandeur
-    const radiologist = await this.prisma.utilisateur.findUnique({
-      where: { utilisateurID: radiologistID },
-      select: { etablissementID: true },
+  /**
+   * Vérifie les permissions avant d'autoriser la consultation d'un examen
+   * Lance une exception si le radiologue n'a pas les permissions
+   */
+  async checkRadiologistViewPermissions(examenID: string, radiologistID: string): Promise<void> {
+    const canView = await this.canRadiologistViewExam(examenID, radiologistID);
+    
+    if (!canView) {
+      throw new ForbiddenException(
+        'Vous n\'avez pas la permission de consulter cet examen. ' +
+        'Vous devez être invité à collaborer sur cet examen.'
+      );
+    }
+  }
+
+  /**
+   * Vérifie si un radiologue a la permission d'éditer un examen
+   * Un radiologue peut éditer un examen si :
+   * 1. Il a été explicitement assigné à cet examen (dans la relation radiologues)
+   */
+  async canRadiologistEditExam(examenID: string, radiologistID: string): Promise<boolean> {
+    const exam = await this.prisma.examenMedical.findUnique({
+      where: { examenID },
+      select: {
+        radiologues: {
+          select: {
+            utilisateurID: true,
+          },
+        },
+      },
     });
 
-    if (!radiologist) {
+    if (!exam) {
       return false;
     }
 
-    // Si le radiologue et le médecin demandeur sont du même établissement
-    return radiologist.etablissementID === exam.demandePar.etablissementID;
+    // Vérifier si le radiologue a été assigné à cet examen
+    const isAssigned = exam.radiologues.some(rad => rad.utilisateurID === radiologistID);
+    return isAssigned;
   }
 
   /**
@@ -763,8 +792,7 @@ export class ExamenMedicalService {
     if (!canEdit) {
       throw new ForbiddenException(
         'Vous n\'avez pas la permission d\'éditer cet examen. ' +
-        'Vous devez soit appartenir au même établissement que le médecin demandeur, ' +
-        'soit être invité à collaborer sur cet examen.'
+        'Vous devez être invité à collaborer sur cet examen.'
       );
     }
   }

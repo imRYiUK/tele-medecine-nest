@@ -47,8 +47,9 @@ let ExamenMedicalController = ExamenMedicalController_1 = class ExamenMedicalCon
         const radiologistID = req.user.utilisateurID;
         return this.examenMedicalService.canRadiologistEditExam(examenID, radiologistID);
     }
-    findOne(id) {
-        return this.examenMedicalService.findOne(id);
+    findOne(id, req) {
+        const radiologistID = req.user.role === 'RADIOLOGUE' ? req.user.utilisateurID : undefined;
+        return this.examenMedicalService.findOne(id, radiologistID);
     }
     update(id, updateExamenMedicalDto, req) {
         const radiologistID = req.user.role === 'RADIOLOGUE' ? req.user.utilisateurID : undefined;
@@ -76,8 +77,9 @@ let ExamenMedicalController = ExamenMedicalController_1 = class ExamenMedicalCon
         const radiologistID = req.user.utilisateurID;
         return this.examenMedicalService.markAsAnalyzed(examenID, resultat.resultat, radiologistID);
     }
-    getImagesByExam(examenID) {
-        return this.examenMedicalService.getImagesByExam(examenID);
+    getImagesByExam(examenID, req) {
+        const radiologistID = req.user.role === 'RADIOLOGUE' ? req.user.utilisateurID : undefined;
+        return this.examenMedicalService.getImagesByExam(examenID, radiologistID);
     }
     getImageCountByExam(examenID) {
         return this.examenMedicalService.getImageCountByExam(examenID);
@@ -188,9 +190,11 @@ __decorate([
     (0, roles_decorator_1.Roles)("MEDECIN", "RADIOLOGUE", "TECHNICIEN"),
     (0, swagger_1.ApiOperation)({ summary: 'Récupérer un examen médical par son ID' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Examen médical récupéré avec succès' }),
+    (0, swagger_1.ApiResponse)({ status: 403, description: 'Permission refusée - radiologue non autorisé' }),
     __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Request)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", void 0)
 ], ExamenMedicalController.prototype, "findOne", null);
 __decorate([
@@ -285,9 +289,11 @@ __decorate([
     (0, roles_decorator_1.Roles)("MEDECIN", "RADIOLOGUE", "TECHNICIEN"),
     (0, swagger_1.ApiOperation)({ summary: 'Récupérer toutes les images d\'un examen médical' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Images de l\'examen récupérées avec succès' }),
+    (0, swagger_1.ApiResponse)({ status: 403, description: 'Permission refusée - radiologue non autorisé' }),
     __param(0, (0, common_1.Param)('examenId')),
+    __param(1, (0, common_1.Request)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", void 0)
 ], ExamenMedicalController.prototype, "getImagesByExam", null);
 __decorate([

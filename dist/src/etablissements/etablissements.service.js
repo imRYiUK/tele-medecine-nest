@@ -205,6 +205,7 @@ let EtablissementsService = class EtablissementsService {
             siteWeb: etablissementData.siteWeb ?? undefined,
             orthancUrl: etablissementData.orthancUrl ?? undefined,
             orthancLogin: etablissementData.orthancLogin ?? undefined,
+            utilisateursCount: _count?.utilisateurs ?? 0,
         };
     }
     async notifySuperAdmins(notification) {

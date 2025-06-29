@@ -104,7 +104,7 @@ export declare class ExamenMedicalService {
         estAnalyse: boolean;
         consultationID: string | null;
     })[]>;
-    findOne(examenID: string): Promise<{
+    findOne(examenID: string, radiologistID?: string): Promise<{
         typeExamen: {
             typeExamenID: string;
             nomType: string;
@@ -446,13 +446,15 @@ export declare class ExamenMedicalService {
         categorie: string;
     }[]>;
     createImage(createImageDto: CreateImageMedicaleDto, radiologistID?: string): Promise<ImageMedicaleDto>;
-    getImagesByExam(examenID: string): Promise<ImageMedicaleDto[]>;
+    getImagesByExam(examenID: string, radiologistID?: string): Promise<ImageMedicaleDto[]>;
     updateImage(imageID: string, updateImageDto: UpdateImageMedicaleDto, radiologistID?: string): Promise<ImageMedicaleDto>;
     deleteImage(imageID: string, radiologistID?: string): Promise<void>;
     getImageCountByExam(examenID: string): Promise<number>;
     findImageBySopInstanceUID(sopInstanceUID: string): Promise<ImageMedicaleDto>;
     getExamsWithImageCounts(etablissementID?: string): Promise<ExamenMedicalListDto[]>;
     getRadiologistExamsWithImageCounts(radiologueID: string): Promise<ExamenMedicalListDto[]>;
+    canRadiologistViewExam(examenID: string, radiologistID: string): Promise<boolean>;
+    checkRadiologistViewPermissions(examenID: string, radiologistID: string): Promise<void>;
     canRadiologistEditExam(examenID: string, radiologistID: string): Promise<boolean>;
     checkRadiologistPermissions(examenID: string, radiologistID: string): Promise<void>;
 }

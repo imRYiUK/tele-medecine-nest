@@ -82,8 +82,10 @@ export class ExamenMedicalController {
   @Roles(UserRole.MEDECIN, UserRole.RADIOLOGUE, UserRole.TECHNICIEN)
   @ApiOperation({ summary: 'Récupérer un examen médical par son ID' })
   @ApiResponse({ status: 200, description: 'Examen médical récupéré avec succès' })
-  findOne(@Param('id') id: string) {
-    return this.examenMedicalService.findOne(id);
+  @ApiResponse({ status: 403, description: 'Permission refusée - radiologue non autorisé' })
+  findOne(@Param('id') id: string, @Request() req: any) {
+    const radiologistID = req.user.role === 'RADIOLOGUE' ? req.user.utilisateurID : undefined;
+    return this.examenMedicalService.findOne(id, radiologistID);
   }
 
   @Patch(':id')
@@ -170,8 +172,10 @@ export class ExamenMedicalController {
   @Roles(UserRole.MEDECIN, UserRole.RADIOLOGUE, UserRole.TECHNICIEN)
   @ApiOperation({ summary: 'Récupérer toutes les images d\'un examen médical' })
   @ApiResponse({ status: 200, description: 'Images de l\'examen récupérées avec succès' })
-  getImagesByExam(@Param('examenId') examenID: string) {
-    return this.examenMedicalService.getImagesByExam(examenID);
+  @ApiResponse({ status: 403, description: 'Permission refusée - radiologue non autorisé' })
+  getImagesByExam(@Param('examenId') examenID: string, @Request() req: any) {
+    const radiologistID = req.user.role === 'RADIOLOGUE' ? req.user.utilisateurID : undefined;
+    return this.examenMedicalService.getImagesByExam(examenID, radiologistID);
   }
 
   @Get(':examenId/images/count')
