@@ -167,7 +167,7 @@ export class ImageCollaborationService {
         titre: 'Invitation à collaborer',
         message: `${result.inviter.prenom} ${result.inviter.nom} vous a invité à collaborer sur une image médicale pour l'examen de ${result.image.examen.patient.prenom} ${result.image.examen.patient.nom} (${result.image.examen.typeExamen.nomType})`,
         type: 'collaboration',
-        lien: `/radiologue/dicom/image/${result.image.sopInstanceUID}`,
+        lien: `/radiologue/collaborations`,
       }, inviterID);
       
       this.logger.log(`Notification sent to invitee ${inviteeID} for collaboration invitation`);

@@ -133,12 +133,12 @@ export class CollaborativeOrthancService {
     const orthancConfig = await this.getOrthancConfigForImageOwner(image, userId);
     
     // Get the file from the owner's Orthanc server
-    if (!image.orthancInstanceId) {
+    if (!image.sopInstanceUID) {
       throw new NotFoundException('Orthanc instance ID not found for this image');
     }
 
     const fileData = await this.getDicomFileFromOrthanc(
-      image.orthancInstanceId,
+      image.sopInstanceUID,
       orthancConfig
     );
 

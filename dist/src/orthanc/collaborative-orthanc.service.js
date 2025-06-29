@@ -104,10 +104,10 @@ let CollaborativeOrthancService = CollaborativeOrthancService_1 = class Collabor
         }
         console.log('image1', image);
         const orthancConfig = await this.getOrthancConfigForImageOwner(image, userId);
-        if (!image.orthancInstanceId) {
+        if (!image.sopInstanceUID) {
             throw new common_1.NotFoundException('Orthanc instance ID not found for this image');
         }
-        const fileData = await this.getDicomFileFromOrthanc(image.orthancInstanceId, orthancConfig);
+        const fileData = await this.getDicomFileFromOrthanc(image.sopInstanceUID, orthancConfig);
         this.logger.log(`Collaborative file served successfully for user ${userId}`);
         return fileData;
     }
