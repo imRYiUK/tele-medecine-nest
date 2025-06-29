@@ -556,7 +556,7 @@ let ExamenMedicalService = ExamenMedicalService_1 = class ExamenMedicalService {
             nombreRadiologues: exam._count.radiologues,
         }));
     }
-    async getRadiologistExamsWithImageCounts(radiologueID, status, category, search) {
+    async getRadiologistExamsWithImageCounts(radiologueID) {
         const radiologue = await this.prisma.utilisateur.findUnique({
             where: { utilisateurID: radiologueID },
             select: { etablissementID: true }
@@ -567,58 +567,6 @@ let ExamenMedicalService = ExamenMedicalService_1 = class ExamenMedicalService {
         const where = {
             demandePar: { etablissementID: radiologue.etablissementID }
         };
-        if (status && status !== 'TOUS') {
-            if (status === 'EN_ATTENTE') {
-                where.estAnalyse = false;
-            }
-            else if (status === 'EN_COURS') {
-                where.estAnalyse = false;
-                where.radiologues = {
-                    some: {}
-                };
-            }
-            else if (status === 'TERMINE') {
-                where.estAnalyse = true;
-            }
-            else if (status === 'URGENT') {
-                where.description = {
-                    contains: 'urgent'
-                };
-            }
-        }
-        if (category && category !== 'TOUS') {
-            where.typeExamen = {
-                categorie: category
-            };
-        }
-        if (search) {
-            where.OR = [
-                {
-                    patient: {
-                        OR: [
-                            { nom: { contains: search } },
-                            { prenom: { contains: search } }
-                        ]
-                    }
-                },
-                {
-                    typeExamen: {
-                        nomType: { contains: search }
-                    }
-                },
-                {
-                    demandePar: {
-                        OR: [
-                            { nom: { contains: search } },
-                            { prenom: { contains: search } }
-                        ]
-                    }
-                },
-                {
-                    description: { contains: search }
-                }
-            ];
-        }
         const exams = await this.prisma.examenMedical.findMany({
             where,
             include: {
