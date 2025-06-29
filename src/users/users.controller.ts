@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, Req, UnauthorizedException, ForbiddenException } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, Req, UnauthorizedException, ForbiddenException, Query, Logger } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { Request } from 'express';
 import { CreateUserDto, UpdateUserDto, UserDto } from '../common/dto/user.dto';
@@ -8,11 +8,14 @@ import { UserRole } from '../common/constants/roles';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { LogActivity } from '../common/decorators/log-activity.decorator';
+import { Public } from '../common/decorators/public.decorator';
 
 @ApiTags('users')
 @Controller('users')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class UsersController {
+  private readonly logger = new Logger(UsersController.name);
+
   constructor(private usersService: UsersService) {}
 
   private getUserId(req: Request): string {
@@ -65,6 +68,65 @@ export class UsersController {
   async findAll(@Req() req: Request) {
     const requesterRole = this.getUserRole(req);
     return this.usersService.findAll(requesterRole);
+  }
+
+  @Get('search')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMINISTRATEUR, UserRole.RADIOLOGUE)
+  @ApiOperation({ summary: 'Search users by email, name, or username' })
+  @ApiResponse({ status: 200, description: 'Returns matching users', type: [UserDto] })
+  async searchUsers(@Query('q') query: string, @Req() req: Request) {
+    this.logger.log(`Search request - query: ${query}, user: ${req.user?.['utilisateurID']}`);
+    
+    const requesterRole = this.getUserRole(req);
+    this.logger.log(`Requester role: ${requesterRole}`);
+    
+    if (!query) {
+      this.logger.log('Empty query, returning empty array');
+      return [];
+    }
+    
+    const results = await this.usersService.searchUsers(query, requesterRole);
+    
+    if (results === null) {
+      this.logger.log('No results found (null)');
+      return [];
+    }
+    
+    if (Array.isArray(results)) {
+      this.logger.log(`Search results count: ${results.length}`);
+      return results;
+    } else {
+      this.logger.log('Search result: single user');
+      return results;
+    }
+  }
+
+  @Get('search/test')
+  @Public()
+  @ApiOperation({ summary: 'Test search users by email, name, or username (public)' })
+  @ApiResponse({ status: 200, description: 'Returns matching users', type: [UserDto] })
+  async testSearchUsers(@Query('q') query: string) {
+    this.logger.log(`Test search request - query: ${query}`);
+    
+    if (!query) {
+      this.logger.log('Empty query, returning empty array');
+      return [];
+    }
+    
+    const results = await this.usersService.searchUsers(query);
+    
+    if (results === null) {
+      this.logger.log('No results found (null)');
+      return [];
+    }
+    
+    if (Array.isArray(results)) {
+      this.logger.log(`Test search results count: ${results.length}`);
+      return results;
+    } else {
+      this.logger.log('Test search result: single user');
+      return results;
+    }
   }
 
   @Get(':id')
@@ -171,5 +233,13 @@ export class UsersController {
   @ApiResponse({ status: 200, description: 'Returns all medecins for the etablissement', type: [UserDto] })
   async findMedecinsByEtablissement(@Param('etablissementID') etablissementID: string) {
     return this.usersService.findMedecinsByEtablissement(etablissementID);
+  }
+
+  @Get('radiologues/etablissement/:etablissementID')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMINISTRATEUR, UserRole.RECEPTIONNISTE)
+  @ApiOperation({ summary: 'Get all radiologues for a given etablissement' })
+  @ApiResponse({ status: 200, description: 'Returns all radiologues for the etablissement', type: [UserDto] })
+  async findRadiologuesByEtablissement(@Param('etablissementID') etablissementID: string) {
+    return this.usersService.findRadiologuesByEtablissement(etablissementID);
   }
 }

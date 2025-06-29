@@ -78,14 +78,15 @@ export declare class OrthancController {
         success: boolean;
         data: {
             description: string;
-            examenID: string;
             url: string | null;
             imageID: string;
+            examenID: string;
             studyInstanceUID: string;
             seriesInstanceUID: string;
             sopInstanceUID: string;
             dateAcquisition: Date;
             modalite: string;
+            orthancInstanceId: string | null;
         };
         message?: undefined;
         error?: undefined;

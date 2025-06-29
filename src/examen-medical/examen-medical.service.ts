@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { 
   CreateExamenMedicalDto, 
@@ -13,6 +13,8 @@ import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class ExamenMedicalService {
+  private readonly logger = new Logger(ExamenMedicalService.name);
+
   constructor(
     private prisma: PrismaService,
     private notificationsService: NotificationsService,
@@ -51,12 +53,12 @@ export class ExamenMedicalService {
 
     // Notifier le demandeur
     await this.notificationsService.create({
-      utilisateurID: demandeParID,
+      destinataires: [demandeParID],
       titre: 'Nouvel examen médical créé',
       message: `Un nouvel examen médical a été créé pour le patient ${examen.patient.prenom} ${examen.patient.nom}`,
       type: 'EXAMEN_CREATED',
       lien: `/examens/${examen.examenID}`,
-    });
+    }, demandeParID);
 
     return examen;
   }
@@ -134,7 +136,7 @@ export class ExamenMedicalService {
     });
   }
 
-  async findOne(examenID: string) {
+  async findOne(examenID: string, radiologistID?: string) {
     const examen = await this.prisma.examenMedical.findUnique({
       where: { examenID },
       include: {
@@ -164,11 +166,21 @@ export class ExamenMedicalService {
       throw new NotFoundException(`Examen médical avec l'ID ${examenID} non trouvé`);
     }
 
+    // Si un radiologistID est fourni, vérifier les permissions de consultation
+    if (radiologistID) {
+      await this.checkRadiologistViewPermissions(examenID, radiologistID);
+    }
+
     return examen;
   }
 
-  async update(examenID: string, updateExamenMedicalDto: UpdateExamenMedicalDto) {
-    const examen = await this.findOne(examenID);
+  async update(examenID: string, updateExamenMedicalDto: UpdateExamenMedicalDto, radiologistID?: string) {
+    const examen = await this.findOne(examenID, radiologistID);
+
+    // Si un radiologistID est fourni, vérifier les permissions
+    if (radiologistID) {
+      await this.checkRadiologistPermissions(examenID, radiologistID);
+    }
 
     // Convert dateExamen string to Date if provided
     const updateData: any = { ...updateExamenMedicalDto };
@@ -200,27 +212,27 @@ export class ExamenMedicalService {
 
     // Notifier le demandeur
     await this.notificationsService.create({
-      utilisateurID: examen.demandeParID,
+      destinataires: [examen.demandeParID],
       titre: 'Examen médical mis à jour',
       message: `L'examen médical du patient ${updatedExamen.patient.prenom} ${updatedExamen.patient.nom} a été mis à jour`,
       type: 'EXAMEN_UPDATED',
       lien: `/examens/${examenID}`,
-    });
+    }, examen.demandeParID);
 
     return updatedExamen;
   }
 
   async remove(examenID: string) {
-    const examen = await this.findOne(examenID);
+    const examen = await this.findOne(examenID, undefined);
 
     // Notifier le demandeur avant la suppression
     await this.notificationsService.create({
-      utilisateurID: examen.demandeParID,
+      destinataires: [examen.demandeParID],
       titre: 'Examen médical supprimé',
       message: `L'examen médical du patient ${examen.patient.prenom} ${examen.patient.nom} a été supprimé`,
       type: 'EXAMEN_DELETED',
       lien: '/examens',
-    });
+    }, examen.demandeParID);
 
     return this.prisma.examenMedical.delete({
       where: { examenID },
@@ -275,7 +287,7 @@ export class ExamenMedicalService {
 
   async inviteRadiologue(examenID: string, radiologueID: string) {
     // Vérifier que l'examen existe
-    await this.findOne(examenID);
+    await this.findOne(examenID, undefined);
     // Associer le radiologue à l'examen
     return this.prisma.examenMedical.update({
       where: { examenID },
@@ -293,6 +305,16 @@ export class ExamenMedicalService {
   }
 
   async getRadiologistStats(radiologueID: string) {
+    // Récupérer l'établissement du radiologue connecté
+    const radiologue = await this.prisma.utilisateur.findUnique({
+      where: { utilisateurID: radiologueID },
+      select: { etablissementID: true }
+    });
+
+    if (!radiologue || !radiologue.etablissementID) {
+      throw new ForbiddenException('Radiologue non trouvé ou non assigné à un établissement');
+    }
+
     const [
       examensEnAttente,
       examensEnCours,
@@ -302,26 +324,24 @@ export class ExamenMedicalService {
       this.prisma.examenMedical.count({
         where: {
           estAnalyse: false,
-          radiologues: {
-            none: {}
-          }
+          demandePar: { etablissementID: radiologue.etablissementID }
         }
       }),
       this.prisma.examenMedical.count({
         where: {
           estAnalyse: false,
-          radiologues: {
-            some: {}
-          }
+          demandePar: { etablissementID: radiologue.etablissementID }
         }
       }),
       this.prisma.examenMedical.count({
         where: {
-          estAnalyse: true
+          estAnalyse: true,
+          demandePar: { etablissementID: radiologue.etablissementID }
         }
       }),
       this.prisma.examenMedical.count({
         where: {
+          demandePar: { etablissementID: radiologue.etablissementID },
           OR: [
             { description: { contains: 'urgent' } },
             { description: { contains: 'critique' } }
@@ -339,12 +359,19 @@ export class ExamenMedicalService {
   }
 
   async getRecentExams(radiologueID: string) {
+    // Récupérer l'établissement du radiologue connecté
+    const radiologue = await this.prisma.utilisateur.findUnique({
+      where: { utilisateurID: radiologueID },
+      select: { etablissementID: true }
+    });
+
+    if (!radiologue || !radiologue.etablissementID) {
+      throw new ForbiddenException('Radiologue non trouvé ou non assigné à un établissement');
+    }
+
     return this.prisma.examenMedical.findMany({
       where: {
-        OR: [
-          { radiologues: { some: { utilisateurID: radiologueID } } },
-          { estAnalyse: false }
-        ]
+        demandePar: { etablissementID: radiologue.etablissementID }
       },
       include: {
         patient: true,
@@ -360,7 +387,10 @@ export class ExamenMedicalService {
     });
   }
 
-  async markAsAnalyzed(examenID: string, resultat: string) {
+  async markAsAnalyzed(examenID: string, resultat: string, radiologistID: string) {
+    // Vérifier les permissions du radiologue
+    await this.checkRadiologistPermissions(examenID, radiologistID);
+
     return this.prisma.examenMedical.update({
       where: { examenID },
       data: {
@@ -386,7 +416,7 @@ export class ExamenMedicalService {
   }
 
   // Image Management Methods
-  async createImage(createImageDto: CreateImageMedicaleDto): Promise<ImageMedicaleDto> {
+  async createImage(createImageDto: CreateImageMedicaleDto, radiologistID?: string): Promise<ImageMedicaleDto> {
     // Verify that the exam exists
     const exam = await this.prisma.examenMedical.findUnique({
       where: { examenID: createImageDto.examenID },
@@ -394,6 +424,11 @@ export class ExamenMedicalService {
 
     if (!exam) {
       throw new NotFoundException(`Examen médical avec l'ID ${createImageDto.examenID} non trouvé`);
+    }
+
+    // Si un radiologistID est fourni, vérifier les permissions
+    if (radiologistID) {
+      await this.checkRadiologistPermissions(createImageDto.examenID, radiologistID);
     }
 
     // Auto-generate a default WADO/preview URL if not provided
@@ -428,24 +463,28 @@ export class ExamenMedicalService {
 
     // Notify the exam requester about the new image
     await this.notificationsService.create({
-      utilisateurID: exam.demandeParID,
+      destinataires: [exam.demandeParID],
       titre: 'Nouvelle image ajoutée',
       message: `Une nouvelle image a été ajoutée à l'examen médical du patient`,
       type: 'IMAGE_ADDED',
       lien: `/examens/${exam.examenID}`,
-    });
+    }, exam.demandeParID);
 
     return image;
   }
 
-  async getImagesByExam(examenID: string): Promise<ImageMedicaleDto[]> {
-    // Verify that the exam exists
-    const exam = await this.prisma.examenMedical.findUnique({
-      where: { examenID },
-    });
+  async getImagesByExam(examenID: string, radiologistID?: string): Promise<ImageMedicaleDto[]> {
+    // Verify that the exam exists and check permissions if radiologistID is provided
+    if (radiologistID) {
+      await this.findOne(examenID, radiologistID);
+    } else {
+      const exam = await this.prisma.examenMedical.findUnique({
+        where: { examenID },
+      });
 
-    if (!exam) {
-      throw new NotFoundException(`Examen médical avec l'ID ${examenID} non trouvé`);
+      if (!exam) {
+        throw new NotFoundException(`Examen médical avec l'ID ${examenID} non trouvé`);
+      }
     }
 
     return this.prisma.imageMedicale.findMany({
@@ -454,7 +493,7 @@ export class ExamenMedicalService {
     });
   }
 
-  async updateImage(imageID: string, updateImageDto: UpdateImageMedicaleDto): Promise<ImageMedicaleDto> {
+  async updateImage(imageID: string, updateImageDto: UpdateImageMedicaleDto, radiologistID?: string): Promise<ImageMedicaleDto> {
     const image = await this.prisma.imageMedicale.findUnique({
       where: { imageID },
       include: {
@@ -468,6 +507,11 @@ export class ExamenMedicalService {
 
     if (!image) {
       throw new NotFoundException(`Image médicale avec l'ID ${imageID} non trouvée`);
+    }
+
+    // Si un radiologistID est fourni, vérifier les permissions
+    if (radiologistID) {
+      await this.checkRadiologistPermissions(image.examenID, radiologistID);
     }
 
     const updatedImage = await this.prisma.imageMedicale.update({
@@ -477,17 +521,17 @@ export class ExamenMedicalService {
 
     // Notify about image update
     await this.notificationsService.create({
-      utilisateurID: image.examen.demandeParID,
+      destinataires: [image.examen.demandeParID],
       titre: 'Image médicale mise à jour',
       message: `Une image de l'examen du patient ${image.examen.patient.prenom} ${image.examen.patient.nom} a été mise à jour`,
       type: 'IMAGE_UPDATED',
       lien: `/examens/${image.examenID}`,
-    });
+    }, image.examen.demandeParID);
 
     return updatedImage;
   }
 
-  async deleteImage(imageID: string): Promise<void> {
+  async deleteImage(imageID: string, radiologistID?: string): Promise<void> {
     const image = await this.prisma.imageMedicale.findUnique({
       where: { imageID },
       include: {
@@ -503,24 +547,51 @@ export class ExamenMedicalService {
       throw new NotFoundException(`Image médicale avec l'ID ${imageID} non trouvée`);
     }
 
+    // Si un radiologistID est fourni, vérifier les permissions
+    if (radiologistID) {
+      await this.checkRadiologistPermissions(image.examenID, radiologistID);
+    }
+
     await this.prisma.imageMedicale.delete({
       where: { imageID },
     });
 
     // Notify about image deletion
     await this.notificationsService.create({
-      utilisateurID: image.examen.demandeParID,
+      destinataires: [image.examen.demandeParID],
       titre: 'Image médicale supprimée',
       message: `Une image de l'examen du patient ${image.examen.patient.prenom} ${image.examen.patient.nom} a été supprimée`,
       type: 'IMAGE_DELETED',
       lien: `/examens/${image.examenID}`,
-    });
+    }, image.examen.demandeParID);
   }
 
   async getImageCountByExam(examenID: string): Promise<number> {
     return this.prisma.imageMedicale.count({
       where: { examenID },
     });
+  }
+
+  async findImageBySopInstanceUID(sopInstanceUID: string): Promise<ImageMedicaleDto> {
+    this.logger.log(`Searching for image with SOP Instance UID: ${sopInstanceUID}`);
+    
+    const image = await this.prisma.imageMedicale.findFirst({
+      where: { sopInstanceUID },
+    });
+
+    this.logger.log(`Database query result: ${image ? 'Image found' : 'Image not found'}`);
+    
+    if (image) {
+      this.logger.log(`Found image - imageID: ${image.imageID}, sopInstanceUID: ${image.sopInstanceUID}`);
+    } else {
+      this.logger.warn(`No image found with SOP Instance UID: ${sopInstanceUID}`);
+    }
+
+    if (!image) {
+      throw new NotFoundException(`Image with SOP Instance UID ${sopInstanceUID} not found`);
+    }
+
+    return image;
   }
 
   async getExamsWithImageCounts(etablissementID?: string): Promise<ExamenMedicalListDto[]> {
@@ -577,5 +648,200 @@ export class ExamenMedicalService {
       nombreImages: exam._count.images,
       nombreRadiologues: exam._count.radiologues,
     }));
+  }
+
+  async getRadiologistExamsWithImageCounts(radiologueID: string): Promise<ExamenMedicalListDto[]> {
+    // Récupérer l'établissement du radiologue connecté
+    const radiologue = await this.prisma.utilisateur.findUnique({
+      where: { utilisateurID: radiologueID },
+      select: { etablissementID: true }
+    });
+
+    if (!radiologue || !radiologue.etablissementID) {
+      throw new ForbiddenException('Radiologue non trouvé ou non assigné à un établissement');
+    }
+
+    const where: any = {
+      demandePar: { etablissementID: radiologue.etablissementID }
+    };
+    
+    const exams = await this.prisma.examenMedical.findMany({
+      where,
+      include: {
+        patient: {
+          select: {
+            nom: true,
+            prenom: true,
+          },
+        },
+        typeExamen: {
+          select: {
+            nomType: true,
+            categorie: true,
+          },
+        },
+        demandePar: {
+          select: {
+            nom: true,
+            prenom: true,
+            etablissementID: true,
+          },
+        },
+        _count: {
+          select: {
+            images: true,
+            radiologues: true,
+          },
+        },
+      },
+      orderBy: {
+        dateExamen: 'desc',
+      },
+    });
+
+    return exams.map(exam => ({
+      examenID: exam.examenID,
+      dateExamen: exam.dateExamen,
+      description: exam.description,
+      estAnalyse: exam.estAnalyse,
+      patientNom: exam.patient.nom,
+      patientPrenom: exam.patient.prenom,
+      typeExamenNom: exam.typeExamen.nomType,
+      typeExamenCategorie: exam.typeExamen.categorie,
+      demandeParNom: exam.demandePar.nom,
+      demandeParPrenom: exam.demandePar.prenom,
+      nombreImages: exam._count.images,
+      nombreRadiologues: exam._count.radiologues,
+    }));
+  }
+
+  /**
+   * Vérifie si un radiologue a la permission de voir un examen
+   * Un radiologue peut voir un examen si :
+   * 1. Il a été explicitement assigné à cet examen (dans la relation radiologues)
+   * 2. Il est un collaborateur accepté sur au moins une image de cet examen
+   */
+  async canRadiologistViewExam(examenID: string, radiologistID: string): Promise<boolean> {
+    const exam = await this.prisma.examenMedical.findUnique({
+      where: { examenID },
+      select: {
+        radiologues: {
+          select: {
+            utilisateurID: true,
+          },
+        },
+        images: {
+          select: {
+            imageID: true,
+            collaborations: {
+              where: {
+                status: 'ACCEPTED',
+                OR: [
+                  { inviterID: radiologistID },
+                  { inviteeID: radiologistID }
+                ]
+              },
+              select: {
+                id: true
+              }
+            }
+          }
+        }
+      },
+    });
+
+    if (!exam) {
+      return false;
+    }
+
+    // Vérifier si le radiologue a été assigné à cet examen
+    const isAssigned = exam.radiologues.some(rad => rad.utilisateurID === radiologistID);
+    if (isAssigned) {
+      return true;
+    }
+
+    // Vérifier si le radiologue est un collaborateur sur au moins une image de cet examen
+    const hasImageCollaboration = exam.images.some(image => image.collaborations.length > 0);
+    return hasImageCollaboration;
+  }
+
+  /**
+   * Vérifie les permissions avant d'autoriser la consultation d'un examen
+   * Lance une exception si le radiologue n'a pas les permissions
+   */
+  async checkRadiologistViewPermissions(examenID: string, radiologistID: string): Promise<void> {
+    const canView = await this.canRadiologistViewExam(examenID, radiologistID);
+    
+    if (!canView) {
+      throw new ForbiddenException(
+        'Vous n\'avez pas la permission de consulter cet examen. ' +
+        'Vous devez être invité à collaborer sur cet examen.'
+      );
+    }
+  }
+
+  /**
+   * Vérifie si un radiologue a la permission d'éditer un examen
+   * Un radiologue peut éditer un examen si :
+   * 1. Il a été explicitement assigné à cet examen (dans la relation radiologues)
+   * 2. Il est un collaborateur accepté sur au moins une image de cet examen
+   */
+  async canRadiologistEditExam(examenID: string, radiologistID: string): Promise<boolean> {
+    const exam = await this.prisma.examenMedical.findUnique({
+      where: { examenID },
+      select: {
+        radiologues: {
+          select: {
+            utilisateurID: true,
+          },
+        },
+        images: {
+          select: {
+            imageID: true,
+            collaborations: {
+              where: {
+                status: 'ACCEPTED',
+                OR: [
+                  { inviterID: radiologistID },
+                  { inviteeID: radiologistID }
+                ]
+              },
+              select: {
+                id: true
+              }
+            }
+          }
+        }
+      },
+    });
+
+    if (!exam) {
+      return false;
+    }
+
+    // Vérifier si le radiologue a été assigné à cet examen
+    const isAssigned = exam.radiologues.some(rad => rad.utilisateurID === radiologistID);
+    if (isAssigned) {
+      return true;
+    }
+
+    // Vérifier si le radiologue est un collaborateur sur au moins une image de cet examen
+    const hasImageCollaboration = exam.images.some(image => image.collaborations.length > 0);
+    return hasImageCollaboration;
+  }
+
+  /**
+   * Vérifie les permissions avant d'autoriser l'édition d'un examen
+   * Lance une exception si le radiologue n'a pas les permissions
+   */
+  async checkRadiologistPermissions(examenID: string, radiologistID: string): Promise<void> {
+    const canEdit = await this.canRadiologistEditExam(examenID, radiologistID);
+    
+    if (!canEdit) {
+      throw new ForbiddenException(
+        'Vous n\'avez pas la permission d\'éditer cet examen. ' +
+        'Vous devez être invité à collaborer sur cet examen.'
+      );
+    }
   }
 } 

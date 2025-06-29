@@ -43,4 +43,5 @@ export declare class EtablissementDto {
     orthancUrl?: string;
     orthancLogin?: string;
     orthancPassword?: string;
+    utilisateursCount?: number;
 }

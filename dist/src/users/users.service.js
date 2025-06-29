@@ -25,6 +25,18 @@ let UsersService = class UsersService {
         if (requesterRole === "ADMINISTRATEUR" && targetRole !== "SUPER_ADMIN") {
             return true;
         }
+        if (requesterRole === "RADIOLOGUE") {
+            return ["MEDECIN", "RECEPTIONNISTE", "TECHNICIEN", "RADIOLOGUE"].includes(targetRole);
+        }
+        if (requesterRole === "MEDECIN") {
+            return ["RECEPTIONNISTE", "TECHNICIEN", "MEDECIN"].includes(targetRole);
+        }
+        if (requesterRole === "RECEPTIONNISTE") {
+            return ["TECHNICIEN", "RECEPTIONNISTE"].includes(targetRole);
+        }
+        if (requesterRole === "TECHNICIEN") {
+            return targetRole === "TECHNICIEN";
+        }
         return false;
     }
     async create(createUserDto, adminId) {
@@ -137,8 +149,50 @@ let UsersService = class UsersService {
     }
     async remove(utilisateurID, adminId) {
         const user = await this.findOne(utilisateurID);
-        await this.prisma.utilisateur.delete({
-            where: { utilisateurID },
+        await this.prisma.$transaction(async (prisma) => {
+            await prisma.chatMessage.deleteMany({
+                where: { senderID: utilisateurID }
+            });
+            await prisma.imageCollaboration.deleteMany({
+                where: {
+                    OR: [
+                        { inviterID: utilisateurID },
+                        { inviteeID: utilisateurID }
+                    ]
+                }
+            });
+            await prisma.notificationRecipient.deleteMany({
+                where: { utilisateurID }
+            });
+            await prisma.journalActivite.deleteMany({
+                where: { utilisateurID }
+            });
+            await prisma.horaireMedecin.deleteMany({
+                where: { medecinID: utilisateurID }
+            });
+            await prisma.rendezVous.deleteMany({
+                where: {
+                    OR: [
+                        { createdByID: utilisateurID },
+                        { medecinID: utilisateurID }
+                    ]
+                }
+            });
+            await prisma.consultationMedicale.deleteMany({
+                where: { medecinID: utilisateurID }
+            });
+            await prisma.examenMedical.deleteMany({
+                where: { demandeParID: utilisateurID }
+            });
+            await prisma.dossierMedical.deleteMany({
+                where: { createdBy: utilisateurID }
+            });
+            await prisma.patient.deleteMany({
+                where: { createdBy: utilisateurID }
+            });
+            await prisma.utilisateur.delete({
+                where: { utilisateurID },
+            });
         });
     }
     async getProfile(userId) {
@@ -207,6 +261,90 @@ let UsersService = class UsersService {
                 },
             },
         });
+    }
+    async findRadiologuesByEtablissement(etablissementID) {
+        return this.prisma.utilisateur.findMany({
+            where: {
+                role: "RADIOLOGUE",
+                etablissementID,
+            },
+            select: {
+                utilisateurID: true,
+                nom: true,
+                prenom: true,
+                email: true,
+                username: true,
+                telephone: true,
+                role: true,
+                estActif: true,
+                etablissement: {
+                    select: {
+                        etablissementID: true,
+                        nom: true,
+                    },
+                },
+            },
+        });
+    }
+    async searchUsers(query, requesterRole) {
+        const isEmailSearch = query.includes('@');
+        if (isEmailSearch) {
+            const exactEmailUser = await this.prisma.utilisateur.findUnique({
+                where: { email: query },
+                select: {
+                    utilisateurID: true,
+                    nom: true,
+                    prenom: true,
+                    email: true,
+                    username: true,
+                    telephone: true,
+                    role: true,
+                    estActif: true,
+                    etablissement: {
+                        select: {
+                            etablissementID: true,
+                            nom: true,
+                        },
+                    },
+                },
+            });
+            if (exactEmailUser) {
+                if (requesterRole && !this.validateRoleHierarchy(requesterRole, exactEmailUser.role)) {
+                    return null;
+                }
+                return exactEmailUser;
+            }
+            return [];
+        }
+        const users = await this.prisma.utilisateur.findMany({
+            where: {
+                OR: [
+                    { nom: { contains: query } },
+                    { prenom: { contains: query } },
+                    { username: { contains: query } },
+                ],
+            },
+            select: {
+                utilisateurID: true,
+                nom: true,
+                prenom: true,
+                email: true,
+                username: true,
+                telephone: true,
+                role: true,
+                estActif: true,
+                etablissement: {
+                    select: {
+                        etablissementID: true,
+                        nom: true,
+                    },
+                },
+            },
+        });
+        if (requesterRole) {
+            return users.filter(user => this.validateRoleHierarchy(requesterRole, user.role));
+        }
+        return users;
     }
 };
 exports.UsersService = UsersService;

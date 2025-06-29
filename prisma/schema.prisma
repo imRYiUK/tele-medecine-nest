@@ -105,19 +105,29 @@ model TypeExamen {
   @@map("types_examens")
 }
 
+enum CollaborationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  EXPIRED
+}
+
 model ImageCollaboration {
-  id        String        @id @default(uuid())
+  id        String              @id @default(uuid())
   imageID   String
   inviterID String
   inviteeID String
-  createdAt DateTime      @default(now())
-  image     ImageMedicale @relation(fields: [imageID], references: [imageID])
-  invitee   Utilisateur   @relation("Invitee", fields: [inviteeID], references: [utilisateurID])
-  inviter   Utilisateur   @relation("Inviter", fields: [inviterID], references: [utilisateurID])
+  status    CollaborationStatus @default(PENDING)
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+  image     ImageMedicale       @relation(fields: [imageID], references: [imageID])
+  invitee   Utilisateur         @relation("Invitee", fields: [inviteeID], references: [utilisateurID])
+  inviter   Utilisateur         @relation("Inviter", fields: [inviterID], references: [utilisateurID])
 
   @@index([imageID], map: "ImageCollaboration_imageID_fkey")
   @@index([inviteeID], map: "ImageCollaboration_inviteeID_fkey")
   @@index([inviterID], map: "ImageCollaboration_inviterID_fkey")
+  @@index([status], map: "ImageCollaboration_status_fkey")
 }
 
 model ImageMedicale {
@@ -154,7 +164,8 @@ model Utilisateur {
   HoraireMedecin        HoraireMedecin[]
   invitedCollaborations ImageCollaboration[]   @relation("Invitee")
   sentInvitations       ImageCollaboration[]   @relation("Inviter")
-  Notification          Notification[]
+  notificationsCreated  Notification[]         @relation("NotificationCreator")
+  notificationRecipients NotificationRecipient[]
   rendezVousCrees       RendezVous[]           @relation("CreateurRendezVous")
   rendezVousMedecin     RendezVous[]           @relation("MedecinRendezVous")
   consultations         ConsultationMedicale[]
@@ -244,16 +255,30 @@ model JournalActivite {
 }
 
 model Notification {
-  notificationID String      @id @default(uuid())
-  utilisateurID  String
+  notificationID String                    @id @default(uuid())
   titre          String
   message        String
   type           String?
   lien           String?
-  dateCreation   DateTime    @default(now())
-  estLu          Boolean     @default(false)
-  utilisateur    Utilisateur @relation(fields: [utilisateurID], references: [utilisateurID])
+  dateCreation   DateTime                  @default(now())
+  createdByID    String
+  createdBy      Utilisateur               @relation("NotificationCreator", fields: [createdByID], references: [utilisateurID])
+  recipients     NotificationRecipient[]
 
+  @@index([createdByID])
+}
+
+model NotificationRecipient {
+  id             String      @id @default(uuid())
+  notificationID String
+  utilisateurID  String
+  estLu          Boolean     @default(false)
+  dateLecture    DateTime?
+  notification   Notification @relation(fields: [notificationID], references: [notificationID], onDelete: Cascade)
+  utilisateur    Utilisateur @relation(fields: [utilisateurID], references: [utilisateurID], onDelete: Cascade)
+
+  @@unique([notificationID, utilisateurID])
+  @@index([notificationID])
   @@index([utilisateurID])
 }
 

@@ -222,7 +222,7 @@ export class EtablissementsService {
 
   private mapToDto(etablissement: Etablissement & { _count?: { utilisateurs: number } }): EtablissementDto {
     const { _count, ...rest } = etablissement;
-    const { orthancLogin, orthancPassword, ...etablissementData } = rest as any;
+    const { orthancPassword, ...etablissementData } = rest as any;
     return {
       ...etablissementData,
       type: etablissementData.type,
@@ -231,6 +231,9 @@ export class EtablissementsService {
       updatedAt: etablissementData.updatedAt,
       description: etablissementData.description ?? undefined,
       siteWeb: etablissementData.siteWeb ?? undefined,
+      orthancUrl: etablissementData.orthancUrl ?? undefined,
+      orthancLogin: etablissementData.orthancLogin ?? undefined,
+      utilisateursCount: _count?.utilisateurs ?? 0,
     };
   }
 
@@ -245,9 +248,9 @@ export class EtablissementsService {
     });
     for (const admin of superAdmins) {
       await this.notificationsService.create({
-        utilisateurID: admin.utilisateurID,
+        destinataires: [admin.utilisateurID],
         ...notification,
-      });
+      }, admin.utilisateurID);
     }
   }
 } 

@@ -61,7 +61,15 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
   async sendNotificationToUser(userId: string, notification: any) {
     const client = this.connectedClients.get(userId);
     if (client) {
-      client.emit('notification', notification);
+      // Si c'est un événement de statut, utiliser le type spécifique
+      if (notification.type === 'notification_read') {
+        client.emit('notification_read', { notificationId: notification.notificationId });
+      } else if (notification.type === 'all_notifications_read') {
+        client.emit('all_notifications_read');
+      } else {
+        // Pour les vraies notifications, utiliser l'événement 'notification'
+        client.emit('notification', notification);
+      }
     }
   }
 

@@ -5,16 +5,16 @@ export declare class JournalService {
     private getUserEstablishment;
     findAll(requesterId: string, requesterRole: string): Promise<({
         utilisateur: {
-            etablissementID: string | null;
             nom: string;
-            email: string;
             prenom: string;
+            email: string;
             role: string;
+            etablissementID: string | null;
         };
     } & {
-        etablissementID: string | null;
         description: string;
         utilisateurID: string;
+        etablissementID: string | null;
         journalID: string;
         dateAction: Date;
         typeAction: string;
@@ -22,16 +22,16 @@ export declare class JournalService {
     })[]>;
     findByUser(utilisateurID: string, requesterId: string, requesterRole: string): Promise<({
         utilisateur: {
-            etablissementID: string | null;
             nom: string;
-            email: string;
             prenom: string;
+            email: string;
             role: string;
+            etablissementID: string | null;
         };
     } & {
-        etablissementID: string | null;
         description: string;
         utilisateurID: string;
+        etablissementID: string | null;
         journalID: string;
         dateAction: Date;
         typeAction: string;
@@ -39,16 +39,16 @@ export declare class JournalService {
     })[]>;
     findByDateRange(startDate: Date, endDate: Date, requesterId: string, requesterRole: string): Promise<({
         utilisateur: {
-            etablissementID: string | null;
             nom: string;
-            email: string;
             prenom: string;
+            email: string;
             role: string;
+            etablissementID: string | null;
         };
     } & {
-        etablissementID: string | null;
         description: string;
         utilisateurID: string;
+        etablissementID: string | null;
         journalID: string;
         dateAction: Date;
         typeAction: string;
@@ -56,16 +56,16 @@ export declare class JournalService {
     })[]>;
     findByTypeAction(typeAction: string, requesterId: string, requesterRole: string): Promise<({
         utilisateur: {
-            etablissementID: string | null;
             nom: string;
-            email: string;
             prenom: string;
+            email: string;
             role: string;
+            etablissementID: string | null;
         };
     } & {
-        etablissementID: string | null;
         description: string;
         utilisateurID: string;
+        etablissementID: string | null;
         journalID: string;
         dateAction: Date;
         typeAction: string;

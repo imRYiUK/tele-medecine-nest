@@ -1,8 +1,12 @@
 import { PrismaService } from '../prisma/prisma.service';
 import { RendezVousDto } from './dto/rendez-vous.dto';
+import { NotificationsService } from '../notifications/notifications.service';
+import { UsersService } from '../users/users.service';
 export declare class RendezVousService {
     private prisma;
-    constructor(prisma: PrismaService);
+    private notificationsService;
+    private usersService;
+    constructor(prisma: PrismaService, notificationsService: NotificationsService, usersService: UsersService);
     create(data: {
         date: string;
         debutTime: string;

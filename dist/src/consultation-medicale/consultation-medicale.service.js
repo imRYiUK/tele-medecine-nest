@@ -85,12 +85,12 @@ let ConsultationMedicaleService = class ConsultationMedicaleService {
             },
         });
         await this.notificationsService.create({
-            utilisateurID: medecinID,
+            destinataires: [medecinID],
             titre: 'Nouvelle Consultation Créée',
             message: `Une nouvelle consultation a été créée pour ${consultation.dossier.patient.nom} ${consultation.dossier.patient.prenom}`,
             type: 'CONSULTATION_CREATED',
             lien: `/consultations/${consultation.consultationID}`,
-        });
+        }, createConsultationMedicaleDto.medecinID);
         return consultation;
     }
     async findAll() {
@@ -203,23 +203,23 @@ let ConsultationMedicaleService = class ConsultationMedicaleService {
             },
         });
         await this.notificationsService.create({
-            utilisateurID: consultation.medecinID,
+            destinataires: [consultation.medecinID],
             titre: 'Consultation Mise à Jour',
             message: `La consultation pour ${consultation.dossier.patient.nom} ${consultation.dossier.patient.prenom} a été mise à jour`,
             type: 'CONSULTATION_UPDATED',
             lien: `/consultations/${consultationID}`,
-        });
+        }, consultation.medecinID);
         return updatedConsultation;
     }
     async remove(consultationID) {
         const consultation = await this.findOne(consultationID);
         await this.notificationsService.create({
-            utilisateurID: consultation.medecinID,
+            destinataires: [consultation.medecinID],
             titre: 'Consultation Supprimée',
             message: `La consultation pour ${consultation.dossier.patient.nom} ${consultation.dossier.patient.prenom} a été supprimée`,
             type: 'CONSULTATION_DELETED',
             lien: '/consultations',
-        });
+        }, consultation.medecinID);
         return this.prisma.consultationMedicale.delete({
             where: { consultationID },
         });

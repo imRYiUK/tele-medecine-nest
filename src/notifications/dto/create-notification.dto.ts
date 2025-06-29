@@ -1,9 +1,10 @@
-import { IsString, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsArray, IsUUID } from 'class-validator';
 
 export class CreateNotificationDto {
-  @IsString()
+  @IsArray()
+  @IsUUID('4', { each: true })
   @IsNotEmpty()
-  utilisateurID: string;
+  destinataires: string[]; // Array of user IDs
 
   @IsString()
   @IsNotEmpty()

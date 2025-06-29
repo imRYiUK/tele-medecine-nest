@@ -27,6 +27,11 @@ export class RendezVousController {
     return this.rendezVousService.findByMedecin(medecinID);
   }
 
+  @Get('radiologue/:radiologueID')
+  async findByRadiologue(@Param('radiologueID') radiologueID: string) {
+    return this.rendezVousService.findByMedecin(radiologueID);
+  }
+
   @Get('patient/:patientID')
   async findByPatient(@Param('patientID') patientID: string) {
     return this.rendezVousService.findByPatient(patientID);

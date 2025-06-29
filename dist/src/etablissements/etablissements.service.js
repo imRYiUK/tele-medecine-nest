@@ -194,7 +194,7 @@ let EtablissementsService = class EtablissementsService {
     }
     mapToDto(etablissement) {
         const { _count, ...rest } = etablissement;
-        const { orthancLogin, orthancPassword, ...etablissementData } = rest;
+        const { orthancPassword, ...etablissementData } = rest;
         return {
             ...etablissementData,
             type: etablissementData.type,
@@ -203,6 +203,9 @@ let EtablissementsService = class EtablissementsService {
             updatedAt: etablissementData.updatedAt,
             description: etablissementData.description ?? undefined,
             siteWeb: etablissementData.siteWeb ?? undefined,
+            orthancUrl: etablissementData.orthancUrl ?? undefined,
+            orthancLogin: etablissementData.orthancLogin ?? undefined,
+            utilisateursCount: _count?.utilisateurs ?? 0,
         };
     }
     async notifySuperAdmins(notification) {
@@ -215,9 +218,9 @@ let EtablissementsService = class EtablissementsService {
         });
         for (const admin of superAdmins) {
             await this.notificationsService.create({
-                utilisateurID: admin.utilisateurID,
+                destinataires: [admin.utilisateurID],
                 ...notification,
-            });
+            }, admin.utilisateurID);
         }
     }
 };

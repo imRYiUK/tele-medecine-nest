@@ -8,20 +8,28 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ExamenMedicalModule = void 0;
 const common_1 = require("@nestjs/common");
+const jwt_1 = require("@nestjs/jwt");
 const examen_medical_service_1 = require("./examen-medical.service");
 const examen_medical_controller_1 = require("./examen-medical.controller");
 const notifications_module_1 = require("../notifications/notifications.module");
 const image_collaboration_controller_1 = require("./image-collaboration.controller");
 const image_collaboration_service_1 = require("./image-collaboration.service");
+const chat_gateway_1 = require("./chat.gateway");
 let ExamenMedicalModule = class ExamenMedicalModule {
 };
 exports.ExamenMedicalModule = ExamenMedicalModule;
 exports.ExamenMedicalModule = ExamenMedicalModule = __decorate([
     (0, common_1.Module)({
-        imports: [notifications_module_1.NotificationsModule],
+        imports: [
+            notifications_module_1.NotificationsModule,
+            jwt_1.JwtModule.register({
+                secret: process.env.JWT_SECRET || 'your-secret-key',
+                signOptions: { expiresIn: '24h' },
+            }),
+        ],
         controllers: [examen_medical_controller_1.ExamenMedicalController, image_collaboration_controller_1.ImageCollaborationController],
-        providers: [examen_medical_service_1.ExamenMedicalService, image_collaboration_service_1.ImageCollaborationService],
-        exports: [examen_medical_service_1.ExamenMedicalService]
+        providers: [examen_medical_service_1.ExamenMedicalService, image_collaboration_service_1.ImageCollaborationService, chat_gateway_1.ChatGateway],
+        exports: [examen_medical_service_1.ExamenMedicalService, image_collaboration_service_1.ImageCollaborationService]
     })
 ], ExamenMedicalModule);
 //# sourceMappingURL=examen-medical.module.js.map

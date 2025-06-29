@@ -165,4 +165,7 @@ export class EtablissementDto {
 
   @ApiProperty({ description: "Mot de passe pour l'accès à Orthanc" })
   orthancPassword?: string;
+
+  @ApiProperty({ description: 'Nombre d\'utilisateurs dans cet établissement' })
+  utilisateursCount?: number;
 } 

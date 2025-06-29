@@ -2,286 +2,928 @@ import { ImageCollaborationService } from './image-collaboration.service';
 import { CreateChatMessageDto } from './dto/chat-message.dto';
 export declare class ImageCollaborationController {
     private readonly collaborationService;
+    private readonly logger;
     constructor(collaborationService: ImageCollaborationService);
-    invite(imageID: string, inviteeID: string, req: any): Promise<{
-        createdAt: Date;
-        id: string;
-        imageID: string;
-        inviterID: string;
-        inviteeID: string;
-    }>;
-    collaborators(imageID: string): Promise<{
-        etablissementID: string | null;
-        nom: string;
-        telephone: string;
-        email: string;
-        estActif: boolean;
-        utilisateurID: string;
-        prenom: string;
-        username: string;
-        password: string;
-        role: string;
-    }[]>;
-    sendMessage(imageID: string, createMessageDto: CreateChatMessageDto, req: any): Promise<{
-        content: string;
-        imageID: string;
-        messageID: string;
-        senderID: string;
-        timestamp: Date;
-    }>;
-    getMessages(imageID: string): Promise<({
+    getReceivedInvitations(req: any): Promise<({
+        inviter: {
+            utilisateurID: string;
+            nom: string;
+            prenom: string;
+            username: string;
+            password: string;
+            email: string;
+            telephone: string;
+            role: string;
+            etablissementID: string | null;
+            estActif: boolean;
+        };
+        invitee: {
+            utilisateurID: string;
+            nom: string;
+            prenom: string;
+            username: string;
+            password: string;
+            email: string;
+            telephone: string;
+            role: string;
+            etablissementID: string | null;
+            estActif: boolean;
+        };
         image: {
             examen: {
+                typeExamen: {
+                    typeExamenID: string;
+                    nomType: string;
+                    description: string;
+                    categorie: string;
+                };
                 patient: {
                     nom: string;
-                    adresse: string;
-                    telephone: string;
+                    prenom: string;
                     email: string | null;
+                    telephone: string;
+                    adresse: string;
                     createdAt: Date;
                     updatedAt: Date;
-                    prenom: string;
+                    createdBy: string;
                     patientID: string;
                     dateNaissance: Date;
                     genre: string;
                     groupeSanguin: string;
-                    createdBy: string;
-                };
-                typeExamen: {
-                    description: string;
-                    typeExamenID: string;
-                    nomType: string;
-                    categorie: string;
                 };
                 demandePar: {
-                    etablissementID: string | null;
-                    nom: string;
-                    telephone: string;
-                    email: string;
-                    estActif: boolean;
                     utilisateurID: string;
+                    nom: string;
                     prenom: string;
                     username: string;
                     password: string;
+                    email: string;
+                    telephone: string;
                     role: string;
+                    etablissementID: string | null;
+                    estActif: boolean;
                 };
             } & {
-                description: string;
-                patientID: string;
-                dossierID: string;
                 typeExamenID: string;
-                consultationID: string | null;
-                examenID: string;
+                description: string;
                 demandeParID: string;
+                examenID: string;
+                dossierID: string;
+                patientID: string;
                 dateExamen: Date;
                 resultat: string | null;
                 estAnalyse: boolean;
+                consultationID: string | null;
             };
         } & {
             description: string;
-            examenID: string;
             url: string | null;
             imageID: string;
+            examenID: string;
             studyInstanceUID: string;
             seriesInstanceUID: string;
             sopInstanceUID: string;
             dateAcquisition: Date;
             modalite: string;
+            orthancInstanceId: string | null;
+        };
+    } & {
+        createdAt: Date;
+        updatedAt: Date;
+        inviteeID: string;
+        inviterID: string;
+        id: string;
+        imageID: string;
+        status: import(".prisma/client").$Enums.CollaborationStatus;
+    })[]>;
+    getReceivedRejectedInvitations(req: any): Promise<({
+        inviter: {
+            utilisateurID: string;
+            nom: string;
+            prenom: string;
+            username: string;
+            password: string;
+            email: string;
+            telephone: string;
+            role: string;
+            etablissementID: string | null;
+            estActif: boolean;
+        };
+        invitee: {
+            utilisateurID: string;
+            nom: string;
+            prenom: string;
+            username: string;
+            password: string;
+            email: string;
+            telephone: string;
+            role: string;
+            etablissementID: string | null;
+            estActif: boolean;
+        };
+        image: {
+            examen: {
+                typeExamen: {
+                    typeExamenID: string;
+                    nomType: string;
+                    description: string;
+                    categorie: string;
+                };
+                patient: {
+                    nom: string;
+                    prenom: string;
+                    email: string | null;
+                    telephone: string;
+                    adresse: string;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    createdBy: string;
+                    patientID: string;
+                    dateNaissance: Date;
+                    genre: string;
+                    groupeSanguin: string;
+                };
+                demandePar: {
+                    utilisateurID: string;
+                    nom: string;
+                    prenom: string;
+                    username: string;
+                    password: string;
+                    email: string;
+                    telephone: string;
+                    role: string;
+                    etablissementID: string | null;
+                    estActif: boolean;
+                };
+            } & {
+                typeExamenID: string;
+                description: string;
+                demandeParID: string;
+                examenID: string;
+                dossierID: string;
+                patientID: string;
+                dateExamen: Date;
+                resultat: string | null;
+                estAnalyse: boolean;
+                consultationID: string | null;
+            };
+        } & {
+            description: string;
+            url: string | null;
+            imageID: string;
+            examenID: string;
+            studyInstanceUID: string;
+            seriesInstanceUID: string;
+            sopInstanceUID: string;
+            dateAcquisition: Date;
+            modalite: string;
+            orthancInstanceId: string | null;
+        };
+    } & {
+        createdAt: Date;
+        updatedAt: Date;
+        inviteeID: string;
+        inviterID: string;
+        id: string;
+        imageID: string;
+        status: import(".prisma/client").$Enums.CollaborationStatus;
+    })[]>;
+    getSentInvitations(req: any): Promise<({
+        inviter: {
+            utilisateurID: string;
+            nom: string;
+            prenom: string;
+            username: string;
+            password: string;
+            email: string;
+            telephone: string;
+            role: string;
+            etablissementID: string | null;
+            estActif: boolean;
+        };
+        invitee: {
+            utilisateurID: string;
+            nom: string;
+            prenom: string;
+            username: string;
+            password: string;
+            email: string;
+            telephone: string;
+            role: string;
+            etablissementID: string | null;
+            estActif: boolean;
+        };
+        image: {
+            examen: {
+                typeExamen: {
+                    typeExamenID: string;
+                    nomType: string;
+                    description: string;
+                    categorie: string;
+                };
+                patient: {
+                    nom: string;
+                    prenom: string;
+                    email: string | null;
+                    telephone: string;
+                    adresse: string;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    createdBy: string;
+                    patientID: string;
+                    dateNaissance: Date;
+                    genre: string;
+                    groupeSanguin: string;
+                };
+                demandePar: {
+                    utilisateurID: string;
+                    nom: string;
+                    prenom: string;
+                    username: string;
+                    password: string;
+                    email: string;
+                    telephone: string;
+                    role: string;
+                    etablissementID: string | null;
+                    estActif: boolean;
+                };
+            } & {
+                typeExamenID: string;
+                description: string;
+                demandeParID: string;
+                examenID: string;
+                dossierID: string;
+                patientID: string;
+                dateExamen: Date;
+                resultat: string | null;
+                estAnalyse: boolean;
+                consultationID: string | null;
+            };
+        } & {
+            description: string;
+            url: string | null;
+            imageID: string;
+            examenID: string;
+            studyInstanceUID: string;
+            seriesInstanceUID: string;
+            sopInstanceUID: string;
+            dateAcquisition: Date;
+            modalite: string;
+            orthancInstanceId: string | null;
+        };
+    } & {
+        createdAt: Date;
+        updatedAt: Date;
+        inviteeID: string;
+        inviterID: string;
+        id: string;
+        imageID: string;
+        status: import(".prisma/client").$Enums.CollaborationStatus;
+    })[]>;
+    getAllSentInvitations(req: any): Promise<({
+        inviter: {
+            utilisateurID: string;
+            nom: string;
+            prenom: string;
+            username: string;
+            password: string;
+            email: string;
+            telephone: string;
+            role: string;
+            etablissementID: string | null;
+            estActif: boolean;
+        };
+        invitee: {
+            utilisateurID: string;
+            nom: string;
+            prenom: string;
+            username: string;
+            password: string;
+            email: string;
+            telephone: string;
+            role: string;
+            etablissementID: string | null;
+            estActif: boolean;
+        };
+        image: {
+            examen: {
+                typeExamen: {
+                    typeExamenID: string;
+                    nomType: string;
+                    description: string;
+                    categorie: string;
+                };
+                patient: {
+                    nom: string;
+                    prenom: string;
+                    email: string | null;
+                    telephone: string;
+                    adresse: string;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    createdBy: string;
+                    patientID: string;
+                    dateNaissance: Date;
+                    genre: string;
+                    groupeSanguin: string;
+                };
+                demandePar: {
+                    utilisateurID: string;
+                    nom: string;
+                    prenom: string;
+                    username: string;
+                    password: string;
+                    email: string;
+                    telephone: string;
+                    role: string;
+                    etablissementID: string | null;
+                    estActif: boolean;
+                };
+            } & {
+                typeExamenID: string;
+                description: string;
+                demandeParID: string;
+                examenID: string;
+                dossierID: string;
+                patientID: string;
+                dateExamen: Date;
+                resultat: string | null;
+                estAnalyse: boolean;
+                consultationID: string | null;
+            };
+        } & {
+            description: string;
+            url: string | null;
+            imageID: string;
+            examenID: string;
+            studyInstanceUID: string;
+            seriesInstanceUID: string;
+            sopInstanceUID: string;
+            dateAcquisition: Date;
+            modalite: string;
+            orthancInstanceId: string | null;
+        };
+    } & {
+        createdAt: Date;
+        updatedAt: Date;
+        inviteeID: string;
+        inviterID: string;
+        id: string;
+        imageID: string;
+        status: import(".prisma/client").$Enums.CollaborationStatus;
+    })[]>;
+    getActiveCollaborations(req: any): Promise<({
+        inviter: {
+            utilisateurID: string;
+            nom: string;
+            prenom: string;
+            username: string;
+            password: string;
+            email: string;
+            telephone: string;
+            role: string;
+            etablissementID: string | null;
+            estActif: boolean;
+        };
+        invitee: {
+            utilisateurID: string;
+            nom: string;
+            prenom: string;
+            username: string;
+            password: string;
+            email: string;
+            telephone: string;
+            role: string;
+            etablissementID: string | null;
+            estActif: boolean;
+        };
+        image: {
+            examen: {
+                typeExamen: {
+                    typeExamenID: string;
+                    nomType: string;
+                    description: string;
+                    categorie: string;
+                };
+                patient: {
+                    nom: string;
+                    prenom: string;
+                    email: string | null;
+                    telephone: string;
+                    adresse: string;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    createdBy: string;
+                    patientID: string;
+                    dateNaissance: Date;
+                    genre: string;
+                    groupeSanguin: string;
+                };
+                demandePar: {
+                    utilisateurID: string;
+                    nom: string;
+                    prenom: string;
+                    username: string;
+                    password: string;
+                    email: string;
+                    telephone: string;
+                    role: string;
+                    etablissementID: string | null;
+                    estActif: boolean;
+                };
+            } & {
+                typeExamenID: string;
+                description: string;
+                demandeParID: string;
+                examenID: string;
+                dossierID: string;
+                patientID: string;
+                dateExamen: Date;
+                resultat: string | null;
+                estAnalyse: boolean;
+                consultationID: string | null;
+            };
+        } & {
+            description: string;
+            url: string | null;
+            imageID: string;
+            examenID: string;
+            studyInstanceUID: string;
+            seriesInstanceUID: string;
+            sopInstanceUID: string;
+            dateAcquisition: Date;
+            modalite: string;
+            orthancInstanceId: string | null;
+        };
+    } & {
+        createdAt: Date;
+        updatedAt: Date;
+        inviteeID: string;
+        inviterID: string;
+        id: string;
+        imageID: string;
+        status: import(".prisma/client").$Enums.CollaborationStatus;
+    })[]>;
+    inviteRadiologistToImage(imageID: string, inviteeID: string, req: any): Promise<{
+        inviter: {
+            utilisateurID: string;
+            nom: string;
+            prenom: string;
+            email: string;
+        };
+        invitee: {
+            utilisateurID: string;
+            nom: string;
+            prenom: string;
+            email: string;
+        };
+        image: {
+            examen: {
+                typeExamen: {
+                    nomType: string;
+                };
+                patient: {
+                    nom: string;
+                    prenom: string;
+                };
+            } & {
+                typeExamenID: string;
+                description: string;
+                demandeParID: string;
+                examenID: string;
+                dossierID: string;
+                patientID: string;
+                dateExamen: Date;
+                resultat: string | null;
+                estAnalyse: boolean;
+                consultationID: string | null;
+            };
+        } & {
+            description: string;
+            url: string | null;
+            imageID: string;
+            examenID: string;
+            studyInstanceUID: string;
+            seriesInstanceUID: string;
+            sopInstanceUID: string;
+            dateAcquisition: Date;
+            modalite: string;
+            orthancInstanceId: string | null;
+        };
+    } & {
+        createdAt: Date;
+        updatedAt: Date;
+        inviteeID: string;
+        inviterID: string;
+        id: string;
+        imageID: string;
+        status: import(".prisma/client").$Enums.CollaborationStatus;
+    }>;
+    inviteRadiologistToImageBySopInstanceUID(sopInstanceUID: string, inviteeID: string, req: any): Promise<{
+        inviter: {
+            utilisateurID: string;
+            nom: string;
+            prenom: string;
+            email: string;
+        };
+        invitee: {
+            utilisateurID: string;
+            nom: string;
+            prenom: string;
+            email: string;
+        };
+        image: {
+            examen: {
+                typeExamen: {
+                    nomType: string;
+                };
+                patient: {
+                    nom: string;
+                    prenom: string;
+                };
+            } & {
+                typeExamenID: string;
+                description: string;
+                demandeParID: string;
+                examenID: string;
+                dossierID: string;
+                patientID: string;
+                dateExamen: Date;
+                resultat: string | null;
+                estAnalyse: boolean;
+                consultationID: string | null;
+            };
+        } & {
+            description: string;
+            url: string | null;
+            imageID: string;
+            examenID: string;
+            studyInstanceUID: string;
+            seriesInstanceUID: string;
+            sopInstanceUID: string;
+            dateAcquisition: Date;
+            modalite: string;
+            orthancInstanceId: string | null;
+        };
+    } & {
+        createdAt: Date;
+        updatedAt: Date;
+        inviteeID: string;
+        inviterID: string;
+        id: string;
+        imageID: string;
+        status: import(".prisma/client").$Enums.CollaborationStatus;
+    }>;
+    acceptCollaborationInvitation(collaborationId: string, req: any): Promise<{
+        inviter: {
+            utilisateurID: string;
+            nom: string;
+            prenom: string;
+            username: string;
+            password: string;
+            email: string;
+            telephone: string;
+            role: string;
+            etablissementID: string | null;
+            estActif: boolean;
+        };
+        invitee: {
+            utilisateurID: string;
+            nom: string;
+            prenom: string;
+            username: string;
+            password: string;
+            email: string;
+            telephone: string;
+            role: string;
+            etablissementID: string | null;
+            estActif: boolean;
+        };
+        image: {
+            examen: {
+                typeExamen: {
+                    typeExamenID: string;
+                    nomType: string;
+                    description: string;
+                    categorie: string;
+                };
+                patient: {
+                    nom: string;
+                    prenom: string;
+                    email: string | null;
+                    telephone: string;
+                    adresse: string;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    createdBy: string;
+                    patientID: string;
+                    dateNaissance: Date;
+                    genre: string;
+                    groupeSanguin: string;
+                };
+            } & {
+                typeExamenID: string;
+                description: string;
+                demandeParID: string;
+                examenID: string;
+                dossierID: string;
+                patientID: string;
+                dateExamen: Date;
+                resultat: string | null;
+                estAnalyse: boolean;
+                consultationID: string | null;
+            };
+        } & {
+            description: string;
+            url: string | null;
+            imageID: string;
+            examenID: string;
+            studyInstanceUID: string;
+            seriesInstanceUID: string;
+            sopInstanceUID: string;
+            dateAcquisition: Date;
+            modalite: string;
+            orthancInstanceId: string | null;
+        };
+    } & {
+        createdAt: Date;
+        updatedAt: Date;
+        inviteeID: string;
+        inviterID: string;
+        id: string;
+        imageID: string;
+        status: import(".prisma/client").$Enums.CollaborationStatus;
+    }>;
+    rejectCollaborationInvitation(collaborationId: string, req: any): Promise<{
+        inviter: {
+            utilisateurID: string;
+            nom: string;
+            prenom: string;
+            username: string;
+            password: string;
+            email: string;
+            telephone: string;
+            role: string;
+            etablissementID: string | null;
+            estActif: boolean;
+        };
+        invitee: {
+            utilisateurID: string;
+            nom: string;
+            prenom: string;
+            username: string;
+            password: string;
+            email: string;
+            telephone: string;
+            role: string;
+            etablissementID: string | null;
+            estActif: boolean;
+        };
+        image: {
+            examen: {
+                typeExamen: {
+                    typeExamenID: string;
+                    nomType: string;
+                    description: string;
+                    categorie: string;
+                };
+                patient: {
+                    nom: string;
+                    prenom: string;
+                    email: string | null;
+                    telephone: string;
+                    adresse: string;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    createdBy: string;
+                    patientID: string;
+                    dateNaissance: Date;
+                    genre: string;
+                    groupeSanguin: string;
+                };
+            } & {
+                typeExamenID: string;
+                description: string;
+                demandeParID: string;
+                examenID: string;
+                dossierID: string;
+                patientID: string;
+                dateExamen: Date;
+                resultat: string | null;
+                estAnalyse: boolean;
+                consultationID: string | null;
+            };
+        } & {
+            description: string;
+            url: string | null;
+            imageID: string;
+            examenID: string;
+            studyInstanceUID: string;
+            seriesInstanceUID: string;
+            sopInstanceUID: string;
+            dateAcquisition: Date;
+            modalite: string;
+            orthancInstanceId: string | null;
+        };
+    } & {
+        createdAt: Date;
+        updatedAt: Date;
+        inviteeID: string;
+        inviterID: string;
+        id: string;
+        imageID: string;
+        status: import(".prisma/client").$Enums.CollaborationStatus;
+    }>;
+    getImageCollaborators(imageID: string): Promise<any[]>;
+    getImageCollaboratorsBySopInstanceUID(sopInstanceUID: string): Promise<any[]>;
+    getPendingCollaborationsBySopInstanceUID(sopInstanceUID: string): Promise<({
+        inviter: {
+            utilisateurID: string;
+            nom: string;
+            prenom: string;
+            username: string;
+            password: string;
+            email: string;
+            telephone: string;
+            role: string;
+            etablissementID: string | null;
+            estActif: boolean;
+        };
+        invitee: {
+            utilisateurID: string;
+            nom: string;
+            prenom: string;
+            username: string;
+            password: string;
+            email: string;
+            telephone: string;
+            role: string;
+            etablissementID: string | null;
+            estActif: boolean;
+        };
+        image: {
+            examen: {
+                typeExamen: {
+                    typeExamenID: string;
+                    nomType: string;
+                    description: string;
+                    categorie: string;
+                };
+                patient: {
+                    nom: string;
+                    prenom: string;
+                    email: string | null;
+                    telephone: string;
+                    adresse: string;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    createdBy: string;
+                    patientID: string;
+                    dateNaissance: Date;
+                    genre: string;
+                    groupeSanguin: string;
+                };
+                demandePar: {
+                    utilisateurID: string;
+                    nom: string;
+                    prenom: string;
+                    username: string;
+                    password: string;
+                    email: string;
+                    telephone: string;
+                    role: string;
+                    etablissementID: string | null;
+                    estActif: boolean;
+                };
+            } & {
+                typeExamenID: string;
+                description: string;
+                demandeParID: string;
+                examenID: string;
+                dossierID: string;
+                patientID: string;
+                dateExamen: Date;
+                resultat: string | null;
+                estAnalyse: boolean;
+                consultationID: string | null;
+            };
+        } & {
+            description: string;
+            url: string | null;
+            imageID: string;
+            examenID: string;
+            studyInstanceUID: string;
+            seriesInstanceUID: string;
+            sopInstanceUID: string;
+            dateAcquisition: Date;
+            modalite: string;
+            orthancInstanceId: string | null;
+        };
+    } & {
+        createdAt: Date;
+        updatedAt: Date;
+        inviteeID: string;
+        inviterID: string;
+        id: string;
+        imageID: string;
+        status: import(".prisma/client").$Enums.CollaborationStatus;
+    })[]>;
+    sendMessageOnImage(imageID: string, createMessageDto: CreateChatMessageDto, req: any): Promise<{
+        sender: {
+            utilisateurID: string;
+            nom: string;
+            prenom: string;
+            username: string;
+            password: string;
+            email: string;
+            telephone: string;
+            role: string;
+            etablissementID: string | null;
+            estActif: boolean;
+        };
+    } & {
+        senderID: string;
+        content: string;
+        imageID: string;
+        messageID: string;
+        timestamp: Date;
+    }>;
+    getImageMessages(imageID: string): Promise<({
+        image: {
+            examen: {
+                typeExamen: {
+                    typeExamenID: string;
+                    nomType: string;
+                    description: string;
+                    categorie: string;
+                };
+                patient: {
+                    nom: string;
+                    prenom: string;
+                    email: string | null;
+                    telephone: string;
+                    adresse: string;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    createdBy: string;
+                    patientID: string;
+                    dateNaissance: Date;
+                    genre: string;
+                    groupeSanguin: string;
+                };
+                demandePar: {
+                    utilisateurID: string;
+                    nom: string;
+                    prenom: string;
+                    username: string;
+                    password: string;
+                    email: string;
+                    telephone: string;
+                    role: string;
+                    etablissementID: string | null;
+                    estActif: boolean;
+                };
+            } & {
+                typeExamenID: string;
+                description: string;
+                demandeParID: string;
+                examenID: string;
+                dossierID: string;
+                patientID: string;
+                dateExamen: Date;
+                resultat: string | null;
+                estAnalyse: boolean;
+                consultationID: string | null;
+            };
+        } & {
+            description: string;
+            url: string | null;
+            imageID: string;
+            examenID: string;
+            studyInstanceUID: string;
+            seriesInstanceUID: string;
+            sopInstanceUID: string;
+            dateAcquisition: Date;
+            modalite: string;
+            orthancInstanceId: string | null;
         };
         sender: {
-            etablissementID: string | null;
-            nom: string;
-            telephone: string;
-            email: string;
-            estActif: boolean;
             utilisateurID: string;
+            nom: string;
             prenom: string;
             username: string;
             password: string;
+            email: string;
+            telephone: string;
             role: string;
+            etablissementID: string | null;
+            estActif: boolean;
         };
     } & {
+        senderID: string;
         content: string;
         imageID: string;
         messageID: string;
-        senderID: string;
         timestamp: Date;
-    })[]>;
-    getUserCollaborations(req: any): Promise<({
-        image: {
-            examen: {
-                patient: {
-                    nom: string;
-                    adresse: string;
-                    telephone: string;
-                    email: string | null;
-                    createdAt: Date;
-                    updatedAt: Date;
-                    prenom: string;
-                    patientID: string;
-                    dateNaissance: Date;
-                    genre: string;
-                    groupeSanguin: string;
-                    createdBy: string;
-                };
-                typeExamen: {
-                    description: string;
-                    typeExamenID: string;
-                    nomType: string;
-                    categorie: string;
-                };
-                demandePar: {
-                    etablissementID: string | null;
-                    nom: string;
-                    telephone: string;
-                    email: string;
-                    estActif: boolean;
-                    utilisateurID: string;
-                    prenom: string;
-                    username: string;
-                    password: string;
-                    role: string;
-                };
-            } & {
-                description: string;
-                patientID: string;
-                dossierID: string;
-                typeExamenID: string;
-                consultationID: string | null;
-                examenID: string;
-                demandeParID: string;
-                dateExamen: Date;
-                resultat: string | null;
-                estAnalyse: boolean;
-            };
-        } & {
-            description: string;
-            examenID: string;
-            url: string | null;
-            imageID: string;
-            studyInstanceUID: string;
-            seriesInstanceUID: string;
-            sopInstanceUID: string;
-            dateAcquisition: Date;
-            modalite: string;
-        };
-        invitee: {
-            etablissementID: string | null;
-            nom: string;
-            telephone: string;
-            email: string;
-            estActif: boolean;
-            utilisateurID: string;
-            prenom: string;
-            username: string;
-            password: string;
-            role: string;
-        };
-        inviter: {
-            etablissementID: string | null;
-            nom: string;
-            telephone: string;
-            email: string;
-            estActif: boolean;
-            utilisateurID: string;
-            prenom: string;
-            username: string;
-            password: string;
-            role: string;
-        };
-    } & {
-        createdAt: Date;
-        id: string;
-        imageID: string;
-        inviterID: string;
-        inviteeID: string;
-    })[]>;
-    getPendingCollaborations(req: any): Promise<({
-        image: {
-            examen: {
-                patient: {
-                    nom: string;
-                    adresse: string;
-                    telephone: string;
-                    email: string | null;
-                    createdAt: Date;
-                    updatedAt: Date;
-                    prenom: string;
-                    patientID: string;
-                    dateNaissance: Date;
-                    genre: string;
-                    groupeSanguin: string;
-                    createdBy: string;
-                };
-                typeExamen: {
-                    description: string;
-                    typeExamenID: string;
-                    nomType: string;
-                    categorie: string;
-                };
-                demandePar: {
-                    etablissementID: string | null;
-                    nom: string;
-                    telephone: string;
-                    email: string;
-                    estActif: boolean;
-                    utilisateurID: string;
-                    prenom: string;
-                    username: string;
-                    password: string;
-                    role: string;
-                };
-            } & {
-                description: string;
-                patientID: string;
-                dossierID: string;
-                typeExamenID: string;
-                consultationID: string | null;
-                examenID: string;
-                demandeParID: string;
-                dateExamen: Date;
-                resultat: string | null;
-                estAnalyse: boolean;
-            };
-        } & {
-            description: string;
-            examenID: string;
-            url: string | null;
-            imageID: string;
-            studyInstanceUID: string;
-            seriesInstanceUID: string;
-            sopInstanceUID: string;
-            dateAcquisition: Date;
-            modalite: string;
-        };
-        invitee: {
-            etablissementID: string | null;
-            nom: string;
-            telephone: string;
-            email: string;
-            estActif: boolean;
-            utilisateurID: string;
-            prenom: string;
-            username: string;
-            password: string;
-            role: string;
-        };
-        inviter: {
-            etablissementID: string | null;
-            nom: string;
-            telephone: string;
-            email: string;
-            estActif: boolean;
-            utilisateurID: string;
-            prenom: string;
-            username: string;
-            password: string;
-            role: string;
-        };
-    } & {
-        createdAt: Date;
-        id: string;
-        imageID: string;
-        inviterID: string;
-        inviteeID: string;
     })[]>;
 }

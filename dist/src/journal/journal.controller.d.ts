@@ -4,16 +4,16 @@ export declare class JournalController {
     constructor(journalService: JournalService);
     findAll(req: any): Promise<({
         utilisateur: {
-            etablissementID: string | null;
             nom: string;
-            email: string;
             prenom: string;
+            email: string;
             role: string;
+            etablissementID: string | null;
         };
     } & {
-        etablissementID: string | null;
         description: string;
         utilisateurID: string;
+        etablissementID: string | null;
         journalID: string;
         dateAction: Date;
         typeAction: string;
@@ -21,16 +21,16 @@ export declare class JournalController {
     })[]>;
     findByUser(utilisateurID: string, req: any): Promise<({
         utilisateur: {
-            etablissementID: string | null;
             nom: string;
-            email: string;
             prenom: string;
+            email: string;
             role: string;
+            etablissementID: string | null;
         };
     } & {
-        etablissementID: string | null;
         description: string;
         utilisateurID: string;
+        etablissementID: string | null;
         journalID: string;
         dateAction: Date;
         typeAction: string;
@@ -38,16 +38,16 @@ export declare class JournalController {
     })[]>;
     findByDateRange(startDate: string, endDate: string, req: any): Promise<({
         utilisateur: {
-            etablissementID: string | null;
             nom: string;
-            email: string;
             prenom: string;
+            email: string;
             role: string;
+            etablissementID: string | null;
         };
     } & {
-        etablissementID: string | null;
         description: string;
         utilisateurID: string;
+        etablissementID: string | null;
         journalID: string;
         dateAction: Date;
         typeAction: string;
@@ -55,16 +55,16 @@ export declare class JournalController {
     })[]>;
     findByTypeAction(typeAction: string, req: any): Promise<({
         utilisateur: {
-            etablissementID: string | null;
             nom: string;
-            email: string;
             prenom: string;
+            email: string;
             role: string;
+            etablissementID: string | null;
         };
     } & {
-        etablissementID: string | null;
         description: string;
         utilisateurID: string;
+        etablissementID: string | null;
         journalID: string;
         dateAction: Date;
         typeAction: string;

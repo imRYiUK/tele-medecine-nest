@@ -15,10 +15,10 @@ export declare class ConsultationMedicaleService {
             };
         } & {
             createdAt: Date;
-            patientID: string;
             createdBy: string;
-            dossierID: string;
             dateCreation: Date;
+            dossierID: string;
+            patientID: string;
             etatDossier: string;
         };
         medecin: {
@@ -34,11 +34,11 @@ export declare class ConsultationMedicaleService {
                 };
             } & {
                 medicamentID: string;
-                ordonnanceID: string;
-                prescriptionID: string;
                 posologie: string;
                 duree: string;
                 instructions: string;
+                ordonnanceID: string;
+                prescriptionID: string;
             })[];
         } & {
             consultationID: string;
@@ -50,9 +50,9 @@ export declare class ConsultationMedicaleService {
     } & {
         createdAt: Date;
         updatedAt: Date;
+        medecinID: string;
         dossierID: string;
         consultationID: string;
-        medecinID: string;
         dateConsultation: Date;
         motif: string;
         diagnostics: string;
@@ -70,10 +70,10 @@ export declare class ConsultationMedicaleService {
             };
         } & {
             createdAt: Date;
-            patientID: string;
             createdBy: string;
-            dossierID: string;
             dateCreation: Date;
+            dossierID: string;
+            patientID: string;
             etatDossier: string;
         };
         medecin: {
@@ -89,11 +89,11 @@ export declare class ConsultationMedicaleService {
                 };
             } & {
                 medicamentID: string;
-                ordonnanceID: string;
-                prescriptionID: string;
                 posologie: string;
                 duree: string;
                 instructions: string;
+                ordonnanceID: string;
+                prescriptionID: string;
             })[];
         } & {
             consultationID: string;
@@ -105,9 +105,9 @@ export declare class ConsultationMedicaleService {
     } & {
         createdAt: Date;
         updatedAt: Date;
+        medecinID: string;
         dossierID: string;
         consultationID: string;
-        medecinID: string;
         dateConsultation: Date;
         motif: string;
         diagnostics: string;
@@ -125,10 +125,10 @@ export declare class ConsultationMedicaleService {
             };
         } & {
             createdAt: Date;
-            patientID: string;
             createdBy: string;
-            dossierID: string;
             dateCreation: Date;
+            dossierID: string;
+            patientID: string;
             etatDossier: string;
         };
         medecin: {
@@ -144,11 +144,11 @@ export declare class ConsultationMedicaleService {
                 };
             } & {
                 medicamentID: string;
-                ordonnanceID: string;
-                prescriptionID: string;
                 posologie: string;
                 duree: string;
                 instructions: string;
+                ordonnanceID: string;
+                prescriptionID: string;
             })[];
         } & {
             consultationID: string;
@@ -160,9 +160,9 @@ export declare class ConsultationMedicaleService {
     } & {
         createdAt: Date;
         updatedAt: Date;
+        medecinID: string;
         dossierID: string;
         consultationID: string;
-        medecinID: string;
         dateConsultation: Date;
         motif: string;
         diagnostics: string;
@@ -180,10 +180,10 @@ export declare class ConsultationMedicaleService {
             };
         } & {
             createdAt: Date;
-            patientID: string;
             createdBy: string;
-            dossierID: string;
             dateCreation: Date;
+            dossierID: string;
+            patientID: string;
             etatDossier: string;
         };
         medecin: {
@@ -199,11 +199,11 @@ export declare class ConsultationMedicaleService {
                 };
             } & {
                 medicamentID: string;
-                ordonnanceID: string;
-                prescriptionID: string;
                 posologie: string;
                 duree: string;
                 instructions: string;
+                ordonnanceID: string;
+                prescriptionID: string;
             })[];
         } & {
             consultationID: string;
@@ -215,9 +215,9 @@ export declare class ConsultationMedicaleService {
     } & {
         createdAt: Date;
         updatedAt: Date;
+        medecinID: string;
         dossierID: string;
         consultationID: string;
-        medecinID: string;
         dateConsultation: Date;
         motif: string;
         diagnostics: string;
@@ -229,9 +229,9 @@ export declare class ConsultationMedicaleService {
     remove(consultationID: string): Promise<{
         createdAt: Date;
         updatedAt: Date;
+        medecinID: string;
         dossierID: string;
         consultationID: string;
-        medecinID: string;
         dateConsultation: Date;
         motif: string;
         diagnostics: string;
@@ -249,10 +249,10 @@ export declare class ConsultationMedicaleService {
             };
         } & {
             createdAt: Date;
-            patientID: string;
             createdBy: string;
-            dossierID: string;
             dateCreation: Date;
+            dossierID: string;
+            patientID: string;
             etatDossier: string;
         };
         medecin: {
@@ -268,11 +268,11 @@ export declare class ConsultationMedicaleService {
                 };
             } & {
                 medicamentID: string;
-                ordonnanceID: string;
-                prescriptionID: string;
                 posologie: string;
                 duree: string;
                 instructions: string;
+                ordonnanceID: string;
+                prescriptionID: string;
             })[];
         } & {
             consultationID: string;
@@ -284,9 +284,9 @@ export declare class ConsultationMedicaleService {
     } & {
         createdAt: Date;
         updatedAt: Date;
+        medecinID: string;
         dossierID: string;
         consultationID: string;
-        medecinID: string;
         dateConsultation: Date;
         motif: string;
         diagnostics: string;
@@ -304,10 +304,10 @@ export declare class ConsultationMedicaleService {
             };
         } & {
             createdAt: Date;
-            patientID: string;
             createdBy: string;
-            dossierID: string;
             dateCreation: Date;
+            dossierID: string;
+            patientID: string;
             etatDossier: string;
         };
         medecin: {
@@ -323,11 +323,11 @@ export declare class ConsultationMedicaleService {
                 };
             } & {
                 medicamentID: string;
-                ordonnanceID: string;
-                prescriptionID: string;
                 posologie: string;
                 duree: string;
                 instructions: string;
+                ordonnanceID: string;
+                prescriptionID: string;
             })[];
         } & {
             consultationID: string;
@@ -339,9 +339,9 @@ export declare class ConsultationMedicaleService {
     } & {
         createdAt: Date;
         updatedAt: Date;
+        medecinID: string;
         dossierID: string;
         consultationID: string;
-        medecinID: string;
         dateConsultation: Date;
         motif: string;
         diagnostics: string;
@@ -359,10 +359,10 @@ export declare class ConsultationMedicaleService {
             };
         } & {
             createdAt: Date;
-            patientID: string;
             createdBy: string;
-            dossierID: string;
             dateCreation: Date;
+            dossierID: string;
+            patientID: string;
             etatDossier: string;
         };
         ordonnances: ({
@@ -373,11 +373,11 @@ export declare class ConsultationMedicaleService {
                 };
             } & {
                 medicamentID: string;
-                ordonnanceID: string;
-                prescriptionID: string;
                 posologie: string;
                 duree: string;
                 instructions: string;
+                ordonnanceID: string;
+                prescriptionID: string;
             })[];
         } & {
             consultationID: string;
@@ -389,9 +389,9 @@ export declare class ConsultationMedicaleService {
     } & {
         createdAt: Date;
         updatedAt: Date;
+        medecinID: string;
         dossierID: string;
         consultationID: string;
-        medecinID: string;
         dateConsultation: Date;
         motif: string;
         diagnostics: string;

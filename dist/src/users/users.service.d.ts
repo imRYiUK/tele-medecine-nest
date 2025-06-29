@@ -9,34 +9,36 @@ export declare class UsersService {
     findOne(utilisateurID: string): Promise<UserDto>;
     findById(userId: string): Promise<UserDto>;
     update(id: string, updateUserDto: UpdateUserDto, adminId: string): Promise<{
-        etablissement: {
-            etablissementID: string;
-            nom: string;
-        } | null;
-        nom: string;
-        telephone: string;
-        email: string;
-        estActif: boolean;
         utilisateurID: string;
+        nom: string;
         prenom: string;
         username: string;
+        email: string;
+        telephone: string;
         role: string;
+        estActif: boolean;
+        etablissement: {
+            nom: string;
+            etablissementID: string;
+        } | null;
     }>;
     remove(utilisateurID: string, adminId: string): Promise<void>;
     getProfile(userId: string): Promise<UserDto>;
     updateProfile(userId: string, updateUserDto: UpdateUserDto): Promise<{
-        etablissement: {
-            etablissementID: string;
-            nom: string;
-        } | null;
-        nom: string;
-        telephone: string;
-        email: string;
-        estActif: boolean;
         utilisateurID: string;
+        nom: string;
         prenom: string;
         username: string;
+        email: string;
+        telephone: string;
         role: string;
+        estActif: boolean;
+        etablissement: {
+            nom: string;
+            etablissementID: string;
+        } | null;
     }>;
     findMedecinsByEtablissement(etablissementID: string): Promise<UserDto[]>;
+    findRadiologuesByEtablissement(etablissementID: string): Promise<UserDto[]>;
+    searchUsers(query: string, requesterRole?: string): Promise<UserDto | UserDto[] | null>;
 }

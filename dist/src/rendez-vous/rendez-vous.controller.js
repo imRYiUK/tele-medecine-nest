@@ -31,6 +31,9 @@ let RendezVousController = class RendezVousController {
     async findByMedecin(medecinID) {
         return this.rendezVousService.findByMedecin(medecinID);
     }
+    async findByRadiologue(radiologueID) {
+        return this.rendezVousService.findByMedecin(radiologueID);
+    }
     async findByPatient(patientID) {
         return this.rendezVousService.findByPatient(patientID);
     }
@@ -67,6 +70,13 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], RendezVousController.prototype, "findByMedecin", null);
+__decorate([
+    (0, common_1.Get)('radiologue/:radiologueID'),
+    __param(0, (0, common_1.Param)('radiologueID')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], RendezVousController.prototype, "findByRadiologue", null);
 __decorate([
     (0, common_1.Get)('patient/:patientID'),
     __param(0, (0, common_1.Param)('patientID')),

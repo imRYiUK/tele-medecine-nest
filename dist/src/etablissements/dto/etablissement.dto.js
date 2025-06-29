@@ -197,6 +197,7 @@ class EtablissementDto {
     orthancUrl;
     orthancLogin;
     orthancPassword;
+    utilisateursCount;
 }
 exports.EtablissementDto = EtablissementDto;
 __decorate([
@@ -259,4 +260,8 @@ __decorate([
     (0, swagger_1.ApiProperty)({ description: "Mot de passe pour l'accès à Orthanc" }),
     __metadata("design:type", String)
 ], EtablissementDto.prototype, "orthancPassword", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: 'Nombre d\'utilisateurs dans cet établissement' }),
+    __metadata("design:type", Number)
+], EtablissementDto.prototype, "utilisateursCount", void 0);
 //# sourceMappingURL=etablissement.dto.js.map

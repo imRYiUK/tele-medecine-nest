@@ -5,55 +5,84 @@ export declare class NotificationsService {
     private prisma;
     private notificationsGateway;
     constructor(prisma: PrismaService, notificationsGateway: NotificationsGateway);
-    create(createNotificationDto: CreateNotificationDto): Promise<{
+    create(createNotificationDto: CreateNotificationDto, createdByID: string): Promise<{
+        recipients: {
+            utilisateurID: string;
+            id: string;
+            estLu: boolean;
+            notificationID: string;
+            dateLecture: Date | null;
+        }[];
         type: string | null;
-        utilisateurID: string;
-        dateCreation: Date;
         message: string;
+        createdByID: string;
         titre: string;
         lien: string | null;
-        estLu: boolean;
         notificationID: string;
-    }>;
-    findAll(userId: string): Promise<{
-        type: string | null;
-        utilisateurID: string;
         dateCreation: Date;
-        message: string;
-        titre: string;
-        lien: string | null;
-        estLu: boolean;
-        notificationID: string;
-    }[]>;
-    findUnread(userId: string): Promise<{
-        type: string | null;
+    } | null>;
+    findAll(userId: string): Promise<({
+        notification: {
+            createdBy: {
+                utilisateurID: string;
+                nom: string;
+                prenom: string;
+                email: string;
+            };
+        } & {
+            type: string | null;
+            message: string;
+            createdByID: string;
+            titre: string;
+            lien: string | null;
+            notificationID: string;
+            dateCreation: Date;
+        };
+    } & {
         utilisateurID: string;
-        dateCreation: Date;
-        message: string;
-        titre: string;
-        lien: string | null;
+        id: string;
         estLu: boolean;
         notificationID: string;
-    }[]>;
-    markAsRead(notificationId: string): Promise<{
-        type: string | null;
+        dateLecture: Date | null;
+    })[]>;
+    findUnread(userId: string): Promise<({
+        notification: {
+            createdBy: {
+                utilisateurID: string;
+                nom: string;
+                prenom: string;
+                email: string;
+            };
+        } & {
+            type: string | null;
+            message: string;
+            createdByID: string;
+            titre: string;
+            lien: string | null;
+            notificationID: string;
+            dateCreation: Date;
+        };
+    } & {
         utilisateurID: string;
-        dateCreation: Date;
-        message: string;
-        titre: string;
-        lien: string | null;
+        id: string;
         estLu: boolean;
         notificationID: string;
+        dateLecture: Date | null;
+    })[]>;
+    private verifyNotificationOwnership;
+    markAsRead(notificationId: string, userId: string): Promise<{
+        utilisateurID: string;
+        id: string;
+        estLu: boolean;
+        notificationID: string;
+        dateLecture: Date | null;
     }>;
     markAllAsRead(userId: string): Promise<import(".prisma/client").Prisma.BatchPayload>;
-    remove(notificationId: string): Promise<{
-        type: string | null;
+    remove(notificationId: string, userId: string): Promise<{
         utilisateurID: string;
-        dateCreation: Date;
-        message: string;
-        titre: string;
-        lien: string | null;
+        id: string;
         estLu: boolean;
         notificationID: string;
+        dateLecture: Date | null;
     }>;
 }

@@ -8,142 +8,142 @@ export declare class PatientsService {
     create(createPatientDto: CreatePatientDto, userId: string): Promise<{
         dossierMedical: {
             createdAt: Date;
-            patientID: string;
             createdBy: string;
-            dossierID: string;
             dateCreation: Date;
+            dossierID: string;
+            patientID: string;
             etatDossier: string;
         } | null;
     } & {
         nom: string;
-        adresse: string;
-        telephone: string;
+        prenom: string;
         email: string | null;
+        telephone: string;
+        adresse: string;
         createdAt: Date;
         updatedAt: Date;
-        prenom: string;
+        createdBy: string;
         patientID: string;
         dateNaissance: Date;
         genre: string;
         groupeSanguin: string;
-        createdBy: string;
     }>;
     findAll(): Promise<({
-        dossierMedical: {
-            createdAt: Date;
-            patientID: string;
-            createdBy: string;
-            dossierID: string;
-            dateCreation: Date;
-            etatDossier: string;
-        } | null;
         examens: {
-            description: string;
-            patientID: string;
-            dossierID: string;
             typeExamenID: string;
-            consultationID: string | null;
-            examenID: string;
+            description: string;
             demandeParID: string;
+            examenID: string;
+            dossierID: string;
+            patientID: string;
             dateExamen: Date;
             resultat: string | null;
             estAnalyse: boolean;
+            consultationID: string | null;
         }[];
+        dossierMedical: {
+            createdAt: Date;
+            createdBy: string;
+            dateCreation: Date;
+            dossierID: string;
+            patientID: string;
+            etatDossier: string;
+        } | null;
     } & {
         nom: string;
-        adresse: string;
-        telephone: string;
+        prenom: string;
         email: string | null;
+        telephone: string;
+        adresse: string;
         createdAt: Date;
         updatedAt: Date;
-        prenom: string;
+        createdBy: string;
         patientID: string;
         dateNaissance: Date;
         genre: string;
         groupeSanguin: string;
-        createdBy: string;
     })[]>;
     findOne(patientID: string): Promise<{
-        dossierMedical: {
-            createdAt: Date;
-            patientID: string;
-            createdBy: string;
-            dossierID: string;
-            dateCreation: Date;
-            etatDossier: string;
-        } | null;
         examens: {
-            description: string;
-            patientID: string;
-            dossierID: string;
             typeExamenID: string;
-            consultationID: string | null;
-            examenID: string;
+            description: string;
             demandeParID: string;
+            examenID: string;
+            dossierID: string;
+            patientID: string;
             dateExamen: Date;
             resultat: string | null;
             estAnalyse: boolean;
+            consultationID: string | null;
         }[];
+        dossierMedical: {
+            createdAt: Date;
+            createdBy: string;
+            dateCreation: Date;
+            dossierID: string;
+            patientID: string;
+            etatDossier: string;
+        } | null;
     } & {
         nom: string;
-        adresse: string;
-        telephone: string;
+        prenom: string;
         email: string | null;
+        telephone: string;
+        adresse: string;
         createdAt: Date;
         updatedAt: Date;
-        prenom: string;
+        createdBy: string;
         patientID: string;
         dateNaissance: Date;
         genre: string;
         groupeSanguin: string;
-        createdBy: string;
     }>;
     update(patientID: string, updatePatientDto: UpdatePatientDto): Promise<{
         dossierMedical: {
             createdAt: Date;
-            patientID: string;
             createdBy: string;
-            dossierID: string;
             dateCreation: Date;
+            dossierID: string;
+            patientID: string;
             etatDossier: string;
         } | null;
     } & {
         nom: string;
-        adresse: string;
-        telephone: string;
+        prenom: string;
         email: string | null;
+        telephone: string;
+        adresse: string;
         createdAt: Date;
         updatedAt: Date;
-        prenom: string;
+        createdBy: string;
         patientID: string;
         dateNaissance: Date;
         genre: string;
         groupeSanguin: string;
-        createdBy: string;
     }>;
     remove(patientID: string): Promise<void>;
     createMedicalRecord(patientID: string, createMedicalRecordDto: CreateMedicalRecordDto, userId: string): Promise<{
         createdAt: Date;
-        patientID: string;
         createdBy: string;
-        dossierID: string;
         dateCreation: Date;
+        dossierID: string;
+        patientID: string;
         etatDossier: string;
     }>;
     getMedicalRecord(patientID: string): Promise<{
         createdAt: Date;
-        patientID: string;
         createdBy: string;
-        dossierID: string;
         dateCreation: Date;
+        dossierID: string;
+        patientID: string;
         etatDossier: string;
     } | null>;
     updateMedicalRecord(patientID: string, updateMedicalRecordDto: CreateMedicalRecordDto): Promise<{
         createdAt: Date;
-        patientID: string;
         createdBy: string;
-        dossierID: string;
         dateCreation: Date;
+        dossierID: string;
+        patientID: string;
         etatDossier: string;
     }>;
 }
