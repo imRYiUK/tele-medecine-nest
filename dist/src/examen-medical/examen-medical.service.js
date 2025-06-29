@@ -624,13 +624,34 @@ let ExamenMedicalService = ExamenMedicalService_1 = class ExamenMedicalService {
                         utilisateurID: true,
                     },
                 },
+                images: {
+                    select: {
+                        imageID: true,
+                        collaborations: {
+                            where: {
+                                status: 'ACCEPTED',
+                                OR: [
+                                    { inviterID: radiologistID },
+                                    { inviteeID: radiologistID }
+                                ]
+                            },
+                            select: {
+                                id: true
+                            }
+                        }
+                    }
+                }
             },
         });
         if (!exam) {
             return false;
         }
         const isAssigned = exam.radiologues.some(rad => rad.utilisateurID === radiologistID);
-        return isAssigned;
+        if (isAssigned) {
+            return true;
+        }
+        const hasImageCollaboration = exam.images.some(image => image.collaborations.length > 0);
+        return hasImageCollaboration;
     }
     async checkRadiologistViewPermissions(examenID, radiologistID) {
         const canView = await this.canRadiologistViewExam(examenID, radiologistID);
@@ -648,13 +669,34 @@ let ExamenMedicalService = ExamenMedicalService_1 = class ExamenMedicalService {
                         utilisateurID: true,
                     },
                 },
+                images: {
+                    select: {
+                        imageID: true,
+                        collaborations: {
+                            where: {
+                                status: 'ACCEPTED',
+                                OR: [
+                                    { inviterID: radiologistID },
+                                    { inviteeID: radiologistID }
+                                ]
+                            },
+                            select: {
+                                id: true
+                            }
+                        }
+                    }
+                }
             },
         });
         if (!exam) {
             return false;
         }
         const isAssigned = exam.radiologues.some(rad => rad.utilisateurID === radiologistID);
-        return isAssigned;
+        if (isAssigned) {
+            return true;
+        }
+        const hasImageCollaboration = exam.images.some(image => image.collaborations.length > 0);
+        return hasImageCollaboration;
     }
     async checkRadiologistPermissions(examenID, radiologistID) {
         const canEdit = await this.canRadiologistEditExam(examenID, radiologistID);

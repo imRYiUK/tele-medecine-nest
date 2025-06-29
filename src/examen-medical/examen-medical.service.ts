@@ -719,6 +719,7 @@ export class ExamenMedicalService {
    * Vérifie si un radiologue a la permission de voir un examen
    * Un radiologue peut voir un examen si :
    * 1. Il a été explicitement assigné à cet examen (dans la relation radiologues)
+   * 2. Il est un collaborateur accepté sur au moins une image de cet examen
    */
   async canRadiologistViewExam(examenID: string, radiologistID: string): Promise<boolean> {
     const exam = await this.prisma.examenMedical.findUnique({
@@ -729,6 +730,23 @@ export class ExamenMedicalService {
             utilisateurID: true,
           },
         },
+        images: {
+          select: {
+            imageID: true,
+            collaborations: {
+              where: {
+                status: 'ACCEPTED',
+                OR: [
+                  { inviterID: radiologistID },
+                  { inviteeID: radiologistID }
+                ]
+              },
+              select: {
+                id: true
+              }
+            }
+          }
+        }
       },
     });
 
@@ -738,7 +756,13 @@ export class ExamenMedicalService {
 
     // Vérifier si le radiologue a été assigné à cet examen
     const isAssigned = exam.radiologues.some(rad => rad.utilisateurID === radiologistID);
-    return isAssigned;
+    if (isAssigned) {
+      return true;
+    }
+
+    // Vérifier si le radiologue est un collaborateur sur au moins une image de cet examen
+    const hasImageCollaboration = exam.images.some(image => image.collaborations.length > 0);
+    return hasImageCollaboration;
   }
 
   /**
@@ -760,6 +784,7 @@ export class ExamenMedicalService {
    * Vérifie si un radiologue a la permission d'éditer un examen
    * Un radiologue peut éditer un examen si :
    * 1. Il a été explicitement assigné à cet examen (dans la relation radiologues)
+   * 2. Il est un collaborateur accepté sur au moins une image de cet examen
    */
   async canRadiologistEditExam(examenID: string, radiologistID: string): Promise<boolean> {
     const exam = await this.prisma.examenMedical.findUnique({
@@ -770,6 +795,23 @@ export class ExamenMedicalService {
             utilisateurID: true,
           },
         },
+        images: {
+          select: {
+            imageID: true,
+            collaborations: {
+              where: {
+                status: 'ACCEPTED',
+                OR: [
+                  { inviterID: radiologistID },
+                  { inviteeID: radiologistID }
+                ]
+              },
+              select: {
+                id: true
+              }
+            }
+          }
+        }
       },
     });
 
@@ -779,7 +821,13 @@ export class ExamenMedicalService {
 
     // Vérifier si le radiologue a été assigné à cet examen
     const isAssigned = exam.radiologues.some(rad => rad.utilisateurID === radiologistID);
-    return isAssigned;
+    if (isAssigned) {
+      return true;
+    }
+
+    // Vérifier si le radiologue est un collaborateur sur au moins une image de cet examen
+    const hasImageCollaboration = exam.images.some(image => image.collaborations.length > 0);
+    return hasImageCollaboration;
   }
 
   /**
