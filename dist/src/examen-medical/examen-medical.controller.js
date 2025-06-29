@@ -34,8 +34,8 @@ let ExamenMedicalController = ExamenMedicalController_1 = class ExamenMedicalCon
     getExamsWithImageCounts(etablissementID) {
         return this.examenMedicalService.getExamsWithImageCounts(etablissementID);
     }
-    getRadiologistExamsWithImageCounts(req) {
-        return this.examenMedicalService.getRadiologistExamsWithImageCounts(req.user.utilisateurID);
+    getRadiologistExamsWithImageCounts(status, category, search, req) {
+        return this.examenMedicalService.getRadiologistExamsWithImageCounts(req.user.utilisateurID, status, category, search);
     }
     findAll(status, category, search) {
         return this.examenMedicalService.findAll(status, category, search);
@@ -148,9 +148,12 @@ __decorate([
     (0, roles_decorator_1.Roles)("RADIOLOGUE"),
     (0, swagger_1.ApiOperation)({ summary: 'Récupérer la liste des examens du radiologue avec le nombre d\'images' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Liste des examens du radiologue avec compteurs d\'images récupérée avec succès', type: [dto_1.ExamenMedicalListDto] }),
-    __param(0, (0, common_1.Request)()),
+    __param(0, (0, common_1.Query)('status')),
+    __param(1, (0, common_1.Query)('category')),
+    __param(2, (0, common_1.Query)('search')),
+    __param(3, (0, common_1.Request)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [String, String, String, Object]),
     __metadata("design:returntype", void 0)
 ], ExamenMedicalController.prototype, "getRadiologistExamsWithImageCounts", null);
 __decorate([
