@@ -142,11 +142,38 @@ let ImageCollaborationService = ImageCollaborationService_1 = class ImageCollabo
             },
         });
         this.logger.log(`Collaboration invitation created successfully - collaborationID: ${result.id}`);
+        try {
+            await this.notificationsService.create({
+                destinataires: [inviteeID],
+                titre: 'Invitation à collaborer',
+                message: `${result.inviter.prenom} ${result.inviter.nom} vous a invité à collaborer sur une image médicale pour l'examen de ${result.image.examen.patient.prenom} ${result.image.examen.patient.nom} (${result.image.examen.typeExamen.nomType})`,
+                type: 'collaboration',
+                lien: `/radiologue/dicom/image/${result.image.sopInstanceUID}`,
+            }, inviterID);
+            this.logger.log(`Notification sent to invitee ${inviteeID} for collaboration invitation`);
+        }
+        catch (error) {
+            this.logger.error(`Failed to send notification to invitee ${inviteeID}:`, error);
+        }
         return result;
     }
     async acceptCollaboration(collaborationId, inviteeID) {
         const collaboration = await this.prisma.imageCollaboration.findUnique({
             where: { id: collaborationId },
+            include: {
+                inviter: true,
+                invitee: true,
+                image: {
+                    include: {
+                        examen: {
+                            include: {
+                                patient: true,
+                                typeExamen: true,
+                            },
+                        },
+                    },
+                },
+            },
         });
         if (!collaboration) {
             throw new common_1.NotFoundException('Collaboration not found');
@@ -157,7 +184,7 @@ let ImageCollaborationService = ImageCollaborationService_1 = class ImageCollabo
         if (collaboration.status !== 'PENDING') {
             throw new common_1.ForbiddenException('This invitation cannot be accepted');
         }
-        return this.prisma.imageCollaboration.update({
+        const result = await this.prisma.imageCollaboration.update({
             where: { id: collaborationId },
             data: { status: 'ACCEPTED' },
             include: {
@@ -175,10 +202,38 @@ let ImageCollaborationService = ImageCollaborationService_1 = class ImageCollabo
                 },
             },
         });
+        try {
+            await this.notificationsService.create({
+                destinataires: [collaboration.inviterID],
+                titre: 'Invitation acceptée',
+                message: `${result.invitee.prenom} ${result.invitee.nom} a accepté votre invitation à collaborer sur l'image médicale pour l'examen de ${result.image.examen.patient.prenom} ${result.image.examen.patient.nom} (${result.image.examen.typeExamen.nomType})`,
+                type: 'collaboration',
+                lien: `/radiologue/dicom/image/${result.image.sopInstanceUID}`,
+            }, inviteeID);
+            this.logger.log(`Notification sent to inviter ${collaboration.inviterID} for accepted collaboration`);
+        }
+        catch (error) {
+            this.logger.error(`Failed to send notification to inviter ${collaboration.inviterID}:`, error);
+        }
+        return result;
     }
     async rejectCollaboration(collaborationId, inviteeID) {
         const collaboration = await this.prisma.imageCollaboration.findUnique({
             where: { id: collaborationId },
+            include: {
+                inviter: true,
+                invitee: true,
+                image: {
+                    include: {
+                        examen: {
+                            include: {
+                                patient: true,
+                                typeExamen: true,
+                            },
+                        },
+                    },
+                },
+            },
         });
         if (!collaboration) {
             throw new common_1.NotFoundException('Collaboration not found');
@@ -189,7 +244,7 @@ let ImageCollaborationService = ImageCollaborationService_1 = class ImageCollabo
         if (collaboration.status !== 'PENDING') {
             throw new common_1.ForbiddenException('This invitation cannot be rejected');
         }
-        return this.prisma.imageCollaboration.update({
+        const result = await this.prisma.imageCollaboration.update({
             where: { id: collaborationId },
             data: { status: 'REJECTED' },
             include: {
@@ -207,6 +262,20 @@ let ImageCollaborationService = ImageCollaborationService_1 = class ImageCollabo
                 },
             },
         });
+        try {
+            await this.notificationsService.create({
+                destinataires: [collaboration.inviterID],
+                titre: 'Invitation rejetée',
+                message: `${result.invitee.prenom} ${result.invitee.nom} a rejeté votre invitation à collaborer sur l'image médicale pour l'examen de ${result.image.examen.patient.prenom} ${result.image.examen.patient.nom} (${result.image.examen.typeExamen.nomType})`,
+                type: 'collaboration',
+                lien: `/radiologue/dicom/image/${result.image.sopInstanceUID}`,
+            }, inviteeID);
+            this.logger.log(`Notification sent to inviter ${collaboration.inviterID} for rejected collaboration`);
+        }
+        catch (error) {
+            this.logger.error(`Failed to send notification to inviter ${collaboration.inviterID}:`, error);
+        }
+        return result;
     }
     async listCollaborators(imageID) {
         const image = await this.prisma.imageMedicale.findUnique({

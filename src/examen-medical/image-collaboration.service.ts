@@ -159,12 +159,43 @@ export class ImageCollaborationService {
     });
     
     this.logger.log(`Collaboration invitation created successfully - collaborationID: ${result.id}`);
+    
+    // Send notification to the invitee
+    try {
+      await this.notificationsService.create({
+        destinataires: [inviteeID],
+        titre: 'Invitation à collaborer',
+        message: `${result.inviter.prenom} ${result.inviter.nom} vous a invité à collaborer sur une image médicale pour l'examen de ${result.image.examen.patient.prenom} ${result.image.examen.patient.nom} (${result.image.examen.typeExamen.nomType})`,
+        type: 'collaboration',
+        lien: `/radiologue/dicom/image/${result.image.sopInstanceUID}`,
+      }, inviterID);
+      
+      this.logger.log(`Notification sent to invitee ${inviteeID} for collaboration invitation`);
+    } catch (error) {
+      this.logger.error(`Failed to send notification to invitee ${inviteeID}:`, error);
+      // Don't fail the invitation if notification fails
+    }
+    
     return result;
   }
 
   async acceptCollaboration(collaborationId: string, inviteeID: string) {
     const collaboration = await this.prisma.imageCollaboration.findUnique({
       where: { id: collaborationId },
+      include: {
+        inviter: true,
+        invitee: true,
+        image: {
+          include: {
+            examen: {
+              include: {
+                patient: true,
+                typeExamen: true,
+              },
+            },
+          },
+        },
+      },
     });
     
     if (!collaboration) {
@@ -179,7 +210,7 @@ export class ImageCollaborationService {
       throw new ForbiddenException('This invitation cannot be accepted');
     }
     
-    return this.prisma.imageCollaboration.update({
+    const result = await this.prisma.imageCollaboration.update({
       where: { id: collaborationId },
       data: { status: 'ACCEPTED' },
       include: {
@@ -197,11 +228,43 @@ export class ImageCollaborationService {
         },
       },
     });
+    
+    // Send notification to the inviter
+    try {
+      await this.notificationsService.create({
+        destinataires: [collaboration.inviterID],
+        titre: 'Invitation acceptée',
+        message: `${result.invitee.prenom} ${result.invitee.nom} a accepté votre invitation à collaborer sur l'image médicale pour l'examen de ${result.image.examen.patient.prenom} ${result.image.examen.patient.nom} (${result.image.examen.typeExamen.nomType})`,
+        type: 'collaboration',
+        lien: `/radiologue/dicom/image/${result.image.sopInstanceUID}`,
+      }, inviteeID);
+      
+      this.logger.log(`Notification sent to inviter ${collaboration.inviterID} for accepted collaboration`);
+    } catch (error) {
+      this.logger.error(`Failed to send notification to inviter ${collaboration.inviterID}:`, error);
+      // Don't fail the acceptance if notification fails
+    }
+    
+    return result;
   }
 
   async rejectCollaboration(collaborationId: string, inviteeID: string) {
     const collaboration = await this.prisma.imageCollaboration.findUnique({
       where: { id: collaborationId },
+      include: {
+        inviter: true,
+        invitee: true,
+        image: {
+          include: {
+            examen: {
+              include: {
+                patient: true,
+                typeExamen: true,
+              },
+            },
+          },
+        },
+      },
     });
     
     if (!collaboration) {
@@ -216,7 +279,7 @@ export class ImageCollaborationService {
       throw new ForbiddenException('This invitation cannot be rejected');
     }
     
-    return this.prisma.imageCollaboration.update({
+    const result = await this.prisma.imageCollaboration.update({
       where: { id: collaborationId },
       data: { status: 'REJECTED' },
       include: {
@@ -234,6 +297,24 @@ export class ImageCollaborationService {
         },
       },
     });
+    
+    // Send notification to the inviter
+    try {
+      await this.notificationsService.create({
+        destinataires: [collaboration.inviterID],
+        titre: 'Invitation rejetée',
+        message: `${result.invitee.prenom} ${result.invitee.nom} a rejeté votre invitation à collaborer sur l'image médicale pour l'examen de ${result.image.examen.patient.prenom} ${result.image.examen.patient.nom} (${result.image.examen.typeExamen.nomType})`,
+        type: 'collaboration',
+        lien: `/radiologue/dicom/image/${result.image.sopInstanceUID}`,
+      }, inviteeID);
+      
+      this.logger.log(`Notification sent to inviter ${collaboration.inviterID} for rejected collaboration`);
+    } catch (error) {
+      this.logger.error(`Failed to send notification to inviter ${collaboration.inviterID}:`, error);
+      // Don't fail the rejection if notification fails
+    }
+    
+    return result;
   }
 
   async listCollaborators(imageID: string) {
