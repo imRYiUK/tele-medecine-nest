@@ -3,7 +3,7 @@ services:
     name: tele-medecine-nest
     env: node
     plan: starter
-    buildCommand: npm run build:render
+    buildCommand: npm install && npm run build
     startCommand: npm run start:prod
     envVars:
       - key: NODE_ENV
