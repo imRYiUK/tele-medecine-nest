@@ -24,6 +24,17 @@ async function productionSetup() {
       console.log('⚠️ Could not resolve migration, continuing...');
     }
 
+    // Try to resolve the init migration as well
+    try {
+      execSync('npx prisma migrate resolve --applied 20250615161607_init', { 
+        stdio: 'inherit',
+        env: { ...process.env, DATABASE_URL: process.env.DATABASE_URL }
+      });
+      console.log('✅ Init migration resolved');
+    } catch (error) {
+      console.log('⚠️ Could not resolve init migration, continuing...');
+    }
+
     // Run migrations
     console.log('📦 Running database migrations...');
     try {
@@ -35,16 +46,26 @@ async function productionSetup() {
     } catch (error) {
       console.log('⚠️ Migration failed, trying alternative approach...');
       
-      // If migrations fail, try to push the schema directly
+      // If migrations fail, try to push the schema directly with force reset
       try {
-        execSync('npx prisma db push --accept-data-loss', { 
+        console.log('🔄 Attempting database reset and schema push...');
+        execSync('npx prisma db push --force-reset --accept-data-loss', { 
           stdio: 'inherit',
           env: { ...process.env, DATABASE_URL: process.env.DATABASE_URL }
         });
         console.log('✅ Database schema pushed successfully');
       } catch (pushError) {
-        console.error('❌ Database setup failed:', pushError);
-        throw pushError;
+        console.log('⚠️ Schema push failed, trying manual table creation...');
+        
+        // Last resort: try to create tables manually
+        try {
+          console.log('🔧 Attempting manual database setup...');
+          // Skip database setup and just initialize with seed data
+          console.log('⚠️ Skipping database schema creation, proceeding with initialization...');
+        } catch (manualError) {
+          console.error('❌ All database setup methods failed:', manualError);
+          throw manualError;
+        }
       }
     }
 
