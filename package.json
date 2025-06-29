@@ -6,7 +6,7 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build": "npx prisma generate && npx prisma migrate deploy && ts-node scripts/init-database.ts && nest build",
+    "build": "npx prisma generate && npx prisma db push --force-reset && ts-node scripts/init-database.ts && nest build",
     "build:with-init": "nest build && npm run db:init",
     "build:with-migrate": "nest build && npm run db:migrate",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
