@@ -277,6 +277,7 @@ async function createExamTypes() {
   }
 }
 
+/*
 // Function to import medications from CIS_bdpm.txt
 async function importMedications() {
   console.log('🔧 Importing medications from CIS_bdpm.txt...');
@@ -342,7 +343,7 @@ async function importMedications() {
     console.log('⚠️  Continuing with other initialization tasks...');
   }
 }
-
+*/
 // Main initialization function
 async function initializeDatabase() {
   console.log('🚀 Starting database initialization...');
