@@ -61,6 +61,19 @@ let NotificationsController = class NotificationsController {
         const userId = this.getUserId(req);
         return this.notificationsService.findUnread(userId);
     }
+    markAllAsRead(req) {
+        const userId = this.getUserId(req);
+        console.log(`[NotificationsController] markAllAsRead called for userId: ${userId}`);
+        try {
+            const result = this.notificationsService.markAllAsRead(userId);
+            console.log(`[NotificationsController] markAllAsRead completed for userId: ${userId}`);
+            return result;
+        }
+        catch (error) {
+            console.error(`[NotificationsController] Error in markAllAsRead for userId: ${userId}:`, error);
+            throw error;
+        }
+    }
     async markAsRead(id, req) {
         const userId = this.getUserId(req);
         try {
@@ -69,10 +82,6 @@ let NotificationsController = class NotificationsController {
         catch (error) {
             throw new common_1.HttpException(error.message, common_1.HttpStatus.NOT_FOUND);
         }
-    }
-    markAllAsRead(req) {
-        const userId = this.getUserId(req);
-        return this.notificationsService.markAllAsRead(userId);
     }
     async remove(id, req) {
         const userId = this.getUserId(req);
@@ -211,6 +220,13 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], NotificationsController.prototype, "findUnread", null);
 __decorate([
+    (0, common_1.Post)('read-all'),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], NotificationsController.prototype, "markAllAsRead", null);
+__decorate([
     (0, common_1.Post)(':id/read'),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Request)()),
@@ -218,13 +234,6 @@ __decorate([
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", Promise)
 ], NotificationsController.prototype, "markAsRead", null);
-__decorate([
-    (0, common_1.Post)('read-all'),
-    __param(0, (0, common_1.Request)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], NotificationsController.prototype, "markAllAsRead", null);
 __decorate([
     (0, common_1.Delete)(':id'),
     __param(0, (0, common_1.Param)('id')),

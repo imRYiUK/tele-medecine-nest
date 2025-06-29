@@ -140,6 +140,7 @@ let NotificationsService = class NotificationsService {
         return updatedRecipient;
     }
     async markAllAsRead(userId) {
+        console.log(`[NotificationsService] markAllAsRead called for userId: ${userId}`);
         const result = await this.prisma.notificationRecipient.updateMany({
             where: {
                 utilisateurID: userId,
@@ -150,9 +151,11 @@ let NotificationsService = class NotificationsService {
                 dateLecture: new Date(),
             },
         });
+        console.log(`[NotificationsService] Updated ${result.count} notifications for userId: ${userId}`);
         await this.notificationsGateway.sendNotificationToUser(userId, {
             type: 'all_notifications_read',
         });
+        console.log(`[NotificationsService] WebSocket notification sent for userId: ${userId}`);
         return result;
     }
     async remove(notificationId, userId) {

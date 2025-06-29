@@ -166,6 +166,8 @@ export class NotificationsService {
   }
 
   async markAllAsRead(userId: string) {
+    console.log(`[NotificationsService] markAllAsRead called for userId: ${userId}`);
+    
     const result = await this.prisma.notificationRecipient.updateMany({
       where: {
         utilisateurID: userId,
@@ -177,10 +179,14 @@ export class NotificationsService {
       },
     });
 
+    console.log(`[NotificationsService] Updated ${result.count} notifications for userId: ${userId}`);
+
     // Notifier le client que toutes les notifications ont été marquées comme lues
     await this.notificationsGateway.sendNotificationToUser(userId, {
       type: 'all_notifications_read',
     });
+
+    console.log(`[NotificationsService] WebSocket notification sent for userId: ${userId}`);
 
     return result;
   }

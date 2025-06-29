@@ -86,6 +86,7 @@ export declare class NotificationsController {
         notificationID: string;
         dateLecture: Date | null;
     })[]>;
+    markAllAsRead(req: any): Promise<import(".prisma/client").Prisma.BatchPayload>;
     markAsRead(id: string, req: any): Promise<{
         utilisateurID: string;
         id: string;
@@ -93,7 +94,6 @@ export declare class NotificationsController {
         notificationID: string;
         dateLecture: Date | null;
     }>;
-    markAllAsRead(req: any): Promise<import(".prisma/client").Prisma.BatchPayload>;
     remove(id: string, req: any): Promise<{
         utilisateurID: string;
         id: string;

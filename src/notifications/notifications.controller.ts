@@ -62,6 +62,21 @@ export class NotificationsController {
     return this.notificationsService.findUnread(userId);
   }
 
+  @Post('read-all')
+  markAllAsRead(@Request() req: any) {
+    const userId = this.getUserId(req);
+    console.log(`[NotificationsController] markAllAsRead called for userId: ${userId}`);
+    
+    try {
+      const result = this.notificationsService.markAllAsRead(userId);
+      console.log(`[NotificationsController] markAllAsRead completed for userId: ${userId}`);
+      return result;
+    } catch (error) {
+      console.error(`[NotificationsController] Error in markAllAsRead for userId: ${userId}:`, error);
+      throw error;
+    }
+  }
+
   @Post(':id/read')
   async markAsRead(@Param('id') id: string, @Request() req: any) {
     const userId = this.getUserId(req);
@@ -70,12 +85,6 @@ export class NotificationsController {
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.NOT_FOUND);
     }
-  }
-
-  @Post('read-all')
-  markAllAsRead(@Request() req: any) {
-    const userId = this.getUserId(req);
-    return this.notificationsService.markAllAsRead(userId);
   }
 
   @Delete(':id')

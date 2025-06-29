@@ -53,7 +53,15 @@ let NotificationsGateway = class NotificationsGateway {
     async sendNotificationToUser(userId, notification) {
         const client = this.connectedClients.get(userId);
         if (client) {
-            client.emit('notification', notification);
+            if (notification.type === 'notification_read') {
+                client.emit('notification_read', { notificationId: notification.notificationId });
+            }
+            else if (notification.type === 'all_notifications_read') {
+                client.emit('all_notifications_read');
+            }
+            else {
+                client.emit('notification', notification);
+            }
         }
     }
     async broadcastNotification(notification) {
