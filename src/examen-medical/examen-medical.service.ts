@@ -31,6 +31,10 @@ export class ExamenMedicalService {
         ...createExamenMedicalDto,
         dateExamen: new Date(createExamenMedicalDto.dateExamen),
         demandeParID,
+        // Automatically add the creator to the radiologues relationship
+        radiologues: {
+          connect: { utilisateurID: demandeParID }
+        }
       },
       include: {
         patient: {
@@ -48,6 +52,9 @@ export class ExamenMedicalService {
             role: true,
           },
         },
+        radiologues: {
+          select: { utilisateurID: true, nom: true, prenom: true, email: true }
+        }
       },
     });
 
@@ -720,11 +727,13 @@ export class ExamenMedicalService {
    * Un radiologue peut voir un examen si :
    * 1. Il a été explicitement assigné à cet examen (dans la relation radiologues)
    * 2. Il est un collaborateur accepté sur au moins une image de cet examen
+   * 3. Il est le créateur de l'examen (demandeParID)
    */
   async canRadiologistViewExam(examenID: string, radiologistID: string): Promise<boolean> {
     const exam = await this.prisma.examenMedical.findUnique({
       where: { examenID },
       select: {
+        demandeParID: true,
         radiologues: {
           select: {
             utilisateurID: true,
@@ -752,6 +761,11 @@ export class ExamenMedicalService {
 
     if (!exam) {
       return false;
+    }
+
+    // Vérifier si le radiologue est le créateur de l'examen
+    if (exam.demandeParID === radiologistID) {
+      return true;
     }
 
     // Vérifier si le radiologue a été assigné à cet examen
@@ -785,11 +799,13 @@ export class ExamenMedicalService {
    * Un radiologue peut éditer un examen si :
    * 1. Il a été explicitement assigné à cet examen (dans la relation radiologues)
    * 2. Il est un collaborateur accepté sur au moins une image de cet examen
+   * 3. Il est le créateur de l'examen (demandeParID)
    */
   async canRadiologistEditExam(examenID: string, radiologistID: string): Promise<boolean> {
     const exam = await this.prisma.examenMedical.findUnique({
       where: { examenID },
       select: {
+        demandeParID: true,
         radiologues: {
           select: {
             utilisateurID: true,
@@ -817,6 +833,11 @@ export class ExamenMedicalService {
 
     if (!exam) {
       return false;
+    }
+
+    // Vérifier si le radiologue est le créateur de l'examen
+    if (exam.demandeParID === radiologistID) {
+      return true;
     }
 
     // Vérifier si le radiologue a été assigné à cet examen
