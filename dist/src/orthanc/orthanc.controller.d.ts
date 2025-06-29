@@ -1,7 +1,6 @@
 import { FindDicomDto } from './dto/find-dicom.dto';
 import { OrthancService } from './orthanc.service';
-import { Response } from 'express';
-import { Request } from 'express';
+import { Response, Request } from 'express';
 export declare class OrthancController {
     private readonly orthancService;
     constructor(orthancService: OrthancService);

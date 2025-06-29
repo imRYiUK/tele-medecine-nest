@@ -357,7 +357,7 @@ async function initializeDatabase() {
     // Run initialization tasks
     await createSuperAdmin();
     await createExamTypes();
-    await importMedications();
+    //await importMedications();
 
     console.log('=====================================');
     console.log('🎉 Database initialization completed successfully!');

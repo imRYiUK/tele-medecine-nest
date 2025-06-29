@@ -10,12 +10,11 @@ import { UploadDicomDto } from './dto/upload-dicom.dto';
 import { OrthancService } from './orthanc.service';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
-import { Response } from 'express';
+import { Response, Request } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiOperation, ApiResponse, ApiConsumes, ApiBody } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { UserRole } from '../common/constants/roles';
-import { Request } from 'express';
 import { LogActivity } from '../common/decorators/log-activity.decorator';
 
 @Controller('dicom')

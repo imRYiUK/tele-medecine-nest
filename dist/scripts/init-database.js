@@ -3,8 +3,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.initializeDatabase = initializeDatabase;
 const client_1 = require("@prisma/client");
 const bcrypt = require("bcrypt");
-const fs = require("fs");
-const path = require("path");
 const prisma = new client_1.PrismaClient();
 const SUPER_ADMIN_CONFIG = {
     email: 'admin@sunusante.sn',
@@ -239,58 +237,6 @@ async function createExamTypes() {
         throw error;
     }
 }
-async function importMedications() {
-    console.log('🔧 Importing medications from CIS_bdpm.txt...');
-    try {
-        const filePath = path.join(__dirname, '..', 'CIS_bdpm.txt');
-        if (!fs.existsSync(filePath)) {
-            console.log('⚠️  CIS_bdpm.txt not found, skipping medication import');
-            return;
-        }
-        const fileContent = fs.readFileSync(filePath, 'utf-8');
-        const lines = fileContent.split('\n').filter(line => line.trim());
-        console.log(`📄 Found ${lines.length} lines in CIS_bdpm.txt`);
-        let importedCount = 0;
-        let skippedCount = 0;
-        const linesToProcess = lines.slice(0, 1000);
-        for (const line of linesToProcess) {
-            try {
-                const parts = line.split('\t');
-                if (parts.length >= 2) {
-                    const code = parts[0]?.trim();
-                    const name = parts[1]?.trim();
-                    if (code && name && name.length > 0) {
-                        const existing = await prisma.medicament.findFirst({
-                            where: { nom: name }
-                        });
-                        if (!existing) {
-                            await prisma.medicament.create({
-                                data: {
-                                    medicamentID: `med-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-                                    nom: name
-                                }
-                            });
-                            importedCount++;
-                        }
-                        else {
-                            skippedCount++;
-                        }
-                    }
-                }
-            }
-            catch (lineError) {
-                console.warn(`⚠️  Error processing line: ${line.substring(0, 50)}...`);
-                skippedCount++;
-            }
-        }
-        console.log(`✅ Medication import completed!`);
-        console.log(`📊 Imported: ${importedCount}, Skipped: ${skippedCount}`);
-    }
-    catch (error) {
-        console.error('❌ Error importing medications:', error);
-        console.log('⚠️  Continuing with other initialization tasks...');
-    }
-}
 async function initializeDatabase() {
     console.log('🚀 Starting database initialization...');
     console.log('=====================================');
@@ -299,7 +245,6 @@ async function initializeDatabase() {
         console.log('✅ Database connection established');
         await createSuperAdmin();
         await createExamTypes();
-        await importMedications();
         console.log('=====================================');
         console.log('🎉 Database initialization completed successfully!');
     }
