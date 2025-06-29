@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -18,14 +18,13 @@ model Patient {
   email          String?
   groupeSanguin  String
   createdBy      String
-  updatedAt      DateTime
-  createdAt      DateTime
+  updatedAt      DateTime        @updatedAt
+  createdAt      DateTime        @default(now())
   RendezVous     RendezVous[]
   dossierMedical DossierMedical?
   examens        ExamenMedical[]
   creator        Utilisateur     @relation(fields: [createdBy], references: [utilisateurID])
 
-  @@index([createdBy], map: "patients_createdBy_fkey")
   @@map("patients")
 }
 
@@ -35,13 +34,12 @@ model DossierMedical {
   dateCreation  DateTime               @default(now())
   etatDossier   String
   createdBy     String
-  createdAt     DateTime
+  createdAt     DateTime               @default(now())
   consultations ConsultationMedicale[]
   creator       Utilisateur            @relation(fields: [createdBy], references: [utilisateurID])
   patient       Patient                @relation(fields: [patientID], references: [patientID])
   examens       ExamenMedical[]
 
-  @@index([createdBy], map: "dossiers_medicaux_createdBy_fkey")
   @@map("dossiers_medicaux")
 }
 
@@ -56,42 +54,35 @@ model ConsultationMedicale {
   traitementPrescrit String
   estTelemedicine    Boolean         @default(false)
   lienVisio          String?
-  createdAt          DateTime
-  updatedAt          DateTime
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
   dossier            DossierMedical  @relation(fields: [dossierID], references: [dossierID])
   medecin            Utilisateur     @relation(fields: [medecinID], references: [utilisateurID])
   examens            ExamenMedical[]
   ordonnances        Ordonnance[]
 
-  @@index([dossierID], map: "consultations_medicales_dossierID_fkey")
-  @@index([medecinID], map: "consultations_medicales_medecinID_fkey")
   @@map("consultations_medicales")
 }
 
 model ExamenMedical {
-  examenID       String                @id @default(uuid())
-  dossierID      String
-  patientID      String
-  typeExamenID   String
-  demandeParID   String
-  dateExamen     DateTime
-  description    String
-  resultat       String?
-  estAnalyse     Boolean               @default(false)
-  consultationID String?
-  consultation   ConsultationMedicale? @relation(fields: [consultationID], references: [consultationID])
-  demandePar     Utilisateur           @relation(fields: [demandeParID], references: [utilisateurID])
-  dossier        DossierMedical        @relation(fields: [dossierID], references: [dossierID])
-  patient        Patient               @relation(fields: [patientID], references: [patientID])
-  typeExamen     TypeExamen            @relation(fields: [typeExamenID], references: [typeExamenID])
-  images         ImageMedicale[]
-  radiologues    Utilisateur[]         @relation("ExamensRadiologues")
+  examenID        String                @id @default(uuid())
+  dossierID       String
+  patientID       String
+  typeExamenID    String
+  demandeParID    String
+  dateExamen      DateTime
+  description     String
+  resultat        String?
+  estAnalyse      Boolean               @default(false)
+  consultationID  String?
+  consultation    ConsultationMedicale? @relation(fields: [consultationID], references: [consultationID])
+  demandePar      Utilisateur           @relation(fields: [demandeParID], references: [utilisateurID])
+  dossier         DossierMedical        @relation(fields: [dossierID], references: [dossierID])
+  patient         Patient               @relation(fields: [patientID], references: [patientID])
+  typeExamen      TypeExamen            @relation(fields: [typeExamenID], references: [typeExamenID])
+  images          ImageMedicale[]
+  radiologues     Utilisateur[]         @relation("ExamensRadiologues")
 
-  @@index([consultationID], map: "examens_medicaux_consultationID_fkey")
-  @@index([demandeParID], map: "examens_medicaux_demandeParID_fkey")
-  @@index([dossierID], map: "examens_medicaux_dossierID_fkey")
-  @@index([patientID], map: "examens_medicaux_patientID_fkey")
-  @@index([typeExamenID], map: "examens_medicaux_typeExamenID_fkey")
   @@map("examens_medicaux")
 }
 
@@ -123,11 +114,6 @@ model ImageCollaboration {
   image     ImageMedicale       @relation(fields: [imageID], references: [imageID])
   invitee   Utilisateur         @relation("Invitee", fields: [inviteeID], references: [utilisateurID])
   inviter   Utilisateur         @relation("Inviter", fields: [inviterID], references: [utilisateurID])
-
-  @@index([imageID], map: "ImageCollaboration_imageID_fkey")
-  @@index([inviteeID], map: "ImageCollaboration_inviteeID_fkey")
-  @@index([inviterID], map: "ImageCollaboration_inviterID_fkey")
-  @@index([status], map: "ImageCollaboration_status_fkey")
 }
 
 model ImageMedicale {
@@ -145,38 +131,36 @@ model ImageMedicale {
   collaborations    ImageCollaboration[]
   examen            ExamenMedical        @relation(fields: [examenID], references: [examenID])
 
-  @@index([examenID], map: "images_medicales_examenID_fkey")
   @@map("images_medicales")
 }
 
 model Utilisateur {
-  utilisateurID         String                 @id @default(uuid())
-  nom                   String
-  prenom                String
-  username              String                 @unique
-  password              String
-  email                 String                 @unique
-  telephone             String
-  role                  String
-  etablissementID       String?
-  estActif              Boolean                @default(true)
-  chatMessages          ChatMessage[]
-  HoraireMedecin        HoraireMedecin[]
-  invitedCollaborations ImageCollaboration[]   @relation("Invitee")
-  sentInvitations       ImageCollaboration[]   @relation("Inviter")
-  notificationsCreated  Notification[]         @relation("NotificationCreator")
+  utilisateurID          String                 @id @default(uuid())
+  nom                    String
+  prenom                 String
+  username               String                 @unique
+  password               String
+  email                  String                 @unique
+  telephone              String
+  role                   String
+  etablissementID        String?
+  estActif               Boolean                @default(true)
+  chatMessages           ChatMessage[]
+  HoraireMedecin         HoraireMedecin[]
+  invitedCollaborations  ImageCollaboration[]   @relation("Invitee")
+  sentInvitations        ImageCollaboration[]   @relation("Inviter")
+  notificationsCreated   Notification[]         @relation("NotificationCreator")
   notificationRecipients NotificationRecipient[]
-  rendezVousCrees       RendezVous[]           @relation("CreateurRendezVous")
-  rendezVousMedecin     RendezVous[]           @relation("MedecinRendezVous")
-  consultations         ConsultationMedicale[]
-  DossierMedicalCreated DossierMedical[]
-  examensOrdonnes       ExamenMedical[]
-  activites             JournalActivite[]
-  Patient               Patient[]
-  etablissement         Etablissement?         @relation(fields: [etablissementID], references: [etablissementID])
-  examensInvites        ExamenMedical[]        @relation("ExamensRadiologues")
+  rendezVousCrees        RendezVous[]           @relation("CreateurRendezVous")
+  rendezVousMedecin      RendezVous[]           @relation("MedecinRendezVous")
+  consultations          ConsultationMedicale[]
+  DossierMedicalCreated  DossierMedical[]
+  examensOrdonnes        ExamenMedical[]
+  activites              JournalActivite[]
+  Patient                Patient[]
+  etablissement          Etablissement?         @relation(fields: [etablissementID], references: [etablissementID])
+  examensInvites         ExamenMedical[]        @relation("ExamensRadiologues")
 
-  @@index([etablissementID], map: "utilisateurs_etablissementID_fkey")
   @@map("utilisateurs")
 }
 
@@ -212,8 +196,6 @@ model Prescription {
   medicament     Medicament @relation(fields: [medicamentID], references: [medicamentID])
   ordonnance     Ordonnance @relation(fields: [ordonnanceID], references: [ordonnanceID])
 
-  @@index([medicamentID], map: "prescriptions_medicamentID_fkey")
-  @@index([ordonnanceID], map: "prescriptions_ordonnanceID_fkey")
   @@map("prescriptions")
 }
 
@@ -226,7 +208,6 @@ model Ordonnance {
   consultation    ConsultationMedicale @relation(fields: [consultationID], references: [consultationID])
   prescriptions   Prescription[]
 
-  @@index([consultationID], map: "ordonnances_consultationID_fkey")
   @@map("ordonnances")
 }
 
@@ -249,37 +230,31 @@ model JournalActivite {
   etablissement   Etablissement? @relation(fields: [etablissementID], references: [etablissementID])
   utilisateur     Utilisateur    @relation(fields: [utilisateurID], references: [utilisateurID])
 
-  @@index([etablissementID], map: "journal_activites_etablissementID_fkey")
-  @@index([utilisateurID], map: "journal_activites_utilisateurID_fkey")
   @@map("journal_activites")
 }
 
 model Notification {
-  notificationID String                    @id @default(uuid())
+  notificationID String                  @id @default(uuid())
   titre          String
   message        String
   type           String?
   lien           String?
-  dateCreation   DateTime                  @default(now())
+  dateCreation   DateTime                @default(now())
   createdByID    String
-  createdBy      Utilisateur               @relation("NotificationCreator", fields: [createdByID], references: [utilisateurID])
+  createdBy      Utilisateur             @relation("NotificationCreator", fields: [createdByID], references: [utilisateurID])
   recipients     NotificationRecipient[]
-
-  @@index([createdByID])
 }
 
 model NotificationRecipient {
-  id             String      @id @default(uuid())
+  id             String       @id @default(uuid())
   notificationID String
   utilisateurID  String
-  estLu          Boolean     @default(false)
+  estLu          Boolean      @default(false)
   dateLecture    DateTime?
   notification   Notification @relation(fields: [notificationID], references: [notificationID], onDelete: Cascade)
-  utilisateur    Utilisateur @relation(fields: [utilisateurID], references: [utilisateurID], onDelete: Cascade)
+  utilisateur    Utilisateur  @relation(fields: [utilisateurID], references: [utilisateurID], onDelete: Cascade)
 
   @@unique([notificationID, utilisateurID])
-  @@index([notificationID])
-  @@index([utilisateurID])
 }
 
 model RendezVous {
@@ -295,10 +270,6 @@ model RendezVous {
   createdBy    Utilisateur @relation("CreateurRendezVous", fields: [createdByID], references: [utilisateurID])
   medecin      Utilisateur @relation("MedecinRendezVous", fields: [medecinID], references: [utilisateurID])
   patient      Patient     @relation(fields: [patientID], references: [patientID])
-
-  @@index([createdByID], map: "RendezVous_createdByID_fkey")
-  @@index([medecinID], map: "RendezVous_medecinID_fkey")
-  @@index([patientID], map: "RendezVous_patientID_fkey")
 }
 
 model HoraireMedecin {
@@ -308,8 +279,6 @@ model HoraireMedecin {
   heureDebut  String
   heureFin    String
   medecin     Utilisateur @relation(fields: [medecinID], references: [utilisateurID])
-
-  @@index([medecinID], map: "HoraireMedecin_medecinID_fkey")
 }
 
 model ChatMessage {
@@ -320,9 +289,6 @@ model ChatMessage {
   timestamp DateTime      @default(now())
   image     ImageMedicale @relation(fields: [imageID], references: [imageID])
   sender    Utilisateur   @relation(fields: [senderID], references: [utilisateurID])
-
-  @@index([imageID], map: "ChatMessage_imageID_fkey")
-  @@index([senderID], map: "ChatMessage_senderID_fkey")
 }
 
 enum TypeEtablissement {
