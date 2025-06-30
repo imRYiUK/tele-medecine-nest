@@ -25,7 +25,6 @@ Ce dépôt contient l'API backend du projet de télémédecine, développée ave
 - [Node.js](https://nodejs.org/) >= 18
 - [npm](https://www.npmjs.com/) >= 9
 - [PostgreSQL](https://www.postgresql.org/) (ou accès à une base cloud)
-- [Docker](https://www.docker.com/) (optionnel, pour le déploiement)
 
 ---
 
