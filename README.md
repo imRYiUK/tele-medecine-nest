@@ -1,6 +1,6 @@
-# 🩺 Backend Télémédecine – NestJS
+# 🩺 Backend SunuSanté – NestJS
 
-Bienvenue dans le backend du projet **Télémédecine** ! 🚀
+Bienvenue dans le backend du projet **SunuSanté** ! 🚀
 
 ---
 
