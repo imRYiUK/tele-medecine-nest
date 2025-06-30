@@ -33,7 +33,7 @@ Ce dépôt contient l'API backend du projet de télémédecine, développée ave
 
 1. **Clonez le dépôt :**
    ```bash
-   git clone <url-du-repo>
+   git clone https://github.com/imRYiUK/tele-medecine-nest
    cd tele-medecine-nest
    ```
 2. **Installez les dépendances :**
