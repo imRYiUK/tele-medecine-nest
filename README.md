@@ -89,11 +89,7 @@ tele-medecine-nest/
 
 ## 🚢 Déploiement
 
-- **Docker** :
-  ```bash
-  docker-compose up --build
-  ```
-- **CI/CD** : configurez vos secrets et variables d'environnement sur votre plateforme (GitHub Actions, etc.)
+- **Render** : connectez le repo et déployez automatiquement
 
 ---
 
